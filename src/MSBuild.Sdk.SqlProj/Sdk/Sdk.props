@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file defines the necessary properties for a MSBuild.Sdk.SqlProj project.
+  It is heavily inspired by Microsoft.Build.NoTargets with some modifications.
+  See https://github.com/microsoft/MSBuildSdks for more details.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UsingMSBuildSdkSqlProj>true</UsingMSBuildSdkSqlProj>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Copy logic to know if managed targets got imported: https://github.com/dotnet/sdk/blob/49002c14cf91ecd08e79d6184dbd4716c005b509/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L25-L27 -->
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.csproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.vbproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.fsproj'">true</ManagedLanguageTargetsGotImported>
+  </PropertyGroup>
+
+  <Import Project="$(CustomBeforeNoTargetsProps)" Condition=" '$(CustomBeforeNoTargetsProps)' != '' And Exists('$(CustomBeforeNoTargetsProps)') " />
+
+  <PropertyGroup>
+    <!-- Disable default Compile and EmbeddedResource items for NoTargets projects -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
+
+  <Import Project="$(CustomAfterNoTargetsProps)" Condition=" '$(CustomAfterNoTargetsProps)' != '' And Exists('$(CustomAfterNoTargetsProps)') " />
+
+  <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
+  <Target Name="CompileDesignTime" />
+
+  <ItemGroup>
+    <Content Include="**\*.sql" />
+    <Content Remove="Pre-Deployment\**\*.sql" />
+    <Content Remove="Post-Deployment\**\*.sql" />
+  </ItemGroup>
+</Project>

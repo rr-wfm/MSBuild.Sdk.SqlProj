@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RR.DatabaseProject.Tasks": {
+      "commandName": "Project",
+      "commandLineArgs": "-r:\"C:\\Users\\jmezach\\.nuget\\packages\\devries.wms.database\\26.1.3\\tools\\DeVries.WMS.Database.dacpac\" \"C:\\sc\\DeVries.WMS.Forecasting\\DeVries.WMS.Database.Forecasting\\ForecastingProcedures\\ForecastingProcedures.schema.sql\" \"C:\\sc\\DeVries.WMS.Forecasting\\DeVries.WMS.Database.Forecasting\\ForecastingProcedures\\Stored Procedures\\Cockpit\\csp_GetForecastingToDoTasks.procedure.sql\""
+    }
+  }
+}

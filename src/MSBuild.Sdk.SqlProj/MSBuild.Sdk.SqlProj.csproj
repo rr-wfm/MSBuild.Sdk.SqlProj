@@ -1,0 +1,30 @@
+
+<Project Sdk="Microsoft.Build.NoTargets/1.0.94">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <Description>Provides targets for projects that result into a data-tier application package (DACPAC).</Description>
+    <PackageTags>MSBuild MSBuildSdk notargets notarget</PackageTags>
+    <PackageProjectUrl>https://dev.azure.com/rr-wfm/Platform</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NuspecFile>RR.DatabaseProject.nuspec</NuspecFile>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        description=$(PackageDescription);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        copyright=$(Copyright);
+        projecturl=$(PackageProjectUrl);
+        tags=$(PackageTags);
+        packagetype=MSBuildSdk
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>
