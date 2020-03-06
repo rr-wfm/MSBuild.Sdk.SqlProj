@@ -42,6 +42,6 @@ jobs:
       run: |
            for f in ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
            do
-             curl PUT -u "jmezach:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
+             curl -vX PUT -u "jmezach:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
            done
       shell: bash
