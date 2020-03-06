@@ -12,7 +12,7 @@
     <packageTypes>
       <packageType name="$packagetype$" />
     </packageTypes>
-    <repository type="git" url="https://github.com/jmezach/" />
+    <repository type="git" url="https://github.com/jmezach/MSBuild.Sdk.SqlProj/" />
   </metadata>
   <files>
     <file src="Sdk\**" target="Sdk" />
