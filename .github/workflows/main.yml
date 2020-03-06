@@ -38,12 +38,10 @@ jobs:
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
     # Push
-    - uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.102'
-        source-url: https://nuget.pkg.github.com/jmezach/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
     - name: dotnet push
-      run: dotnet nuget push src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
+      run: |
+           for f in ./[repository]/bin/Release/*.nupkg
+           do
+             curl -vX PUT -u "jmezach:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
+           done
+      shell: bash
