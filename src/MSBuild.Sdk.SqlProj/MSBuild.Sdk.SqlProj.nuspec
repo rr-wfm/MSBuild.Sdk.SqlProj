@@ -12,6 +12,7 @@
     <packageTypes>
       <packageType name="$packagetype$" />
     </packageTypes>
+    <repository type="git" url="https://github.com/jmezach/" />
   </metadata>
   <files>
     <file src="Sdk\**" target="Sdk" />
