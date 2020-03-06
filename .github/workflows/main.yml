@@ -25,13 +25,20 @@ jobs:
       with:
         dotnet-version: '3.1.102'
 
-    # Run build
+    # Build command line tool
     - name: dotnet build
       run: dotnet build -c Release
+      working-directory: src/BuildDacpac/
 
-    # Run tests
+    # Run tests for command line tool
     - name: dotnet test
       run: dotnet test -c Release
+      working-directory: test/BuildDacpac.Tests/
+
+    # Run build for SDK package
+    - name: dotnet build
+      run: dotnet build -c Release
+      working-directory: src/MSBuild.Sdk.SqlProj
 
     # Ensure that test project builds
     - name: dotnet build TestProject
