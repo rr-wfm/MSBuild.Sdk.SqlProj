@@ -40,8 +40,8 @@ jobs:
     # Push
     - name: dotnet push
       run: |
-           for f in ./[repository]/bin/Release/*.nupkg
+           for f in ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
            do
-             curl -vX PUT -u "jmezach:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
+             curl PUT -u "jmezach:${{ secrets.GHPackagesToken }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
            done
       shell: bash
