@@ -4,8 +4,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
     <Description>Provides targets for projects that result into a data-tier application package (DACPAC).</Description>
-    <PackageTags>MSBuild MSBuildSdk notargets notarget</PackageTags>
-    <PackageProjectUrl>https://dev.azure.com/rr-wfm/Platform</PackageProjectUrl>
+    <PackageTags>MSBuild MSBuildSdk sql dacpac</PackageTags>
+    <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,5 +26,10 @@
         packagetype=MSBuildSdk
       </NuspecProperties>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
+    <!-- Run dotnet publish on the BuildDacpac tool -->
+    <Exec Command="dotnet publish -c $(Configuration) -o $(MSBuildThisFileDirectory)tools" WorkingDirectory="../BuildDacpac" />
   </Target>
 </Project>

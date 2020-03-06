@@ -113,7 +113,7 @@
       <OutputPathArgument>@(IntermediateAssembly->'-o:&quot;%(Identity)&quot;', ' ')</OutputPathArgument>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
-    <Exec Command="dotnet $(MSBuildThisFileDirectory)\..\tools\RR.DatabaseProject.Tasks.dll $(OutputPathArgument) $(ReferenceArguments) $(SqlFileArguments)"
+    <Exec Command="dotnet $(MSBuildThisFileDirectory)..\tools\BuildDacpac.dll $(OutputPathArgument) $(ReferenceArguments) $(SqlFileArguments)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
   </Target>
   
