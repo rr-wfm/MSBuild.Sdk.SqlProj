@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <NuspecFile>RR.DatabaseProject.nuspec</NuspecFile>
+    <NuspecFile>MSBuild.Sdk.SqlProj.nuspec</NuspecFile>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
 
