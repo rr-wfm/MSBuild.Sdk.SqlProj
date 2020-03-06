@@ -32,6 +32,11 @@ jobs:
     # Run tests
     - name: dotnet test
       run: dotnet test -c Release
+
+    # Ensure that test project builds
+    - name: dotnet build TestProject
+      run: dotnet build -c Release
+      working-directory: test/TestProject
     
     # Package
     - name: dotnet pack
