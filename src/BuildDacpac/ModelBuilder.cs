@@ -1,0 +1,154 @@
+using System;
+using System.IO;
+using System.Reflection;
+using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
+
+namespace MSBuild.Sdk.SqlProj.BuildDacpac
+{
+    public sealed class ModelBuilder : IDisposable
+    {
+        public void UsingVersion(SqlServerVersion version)
+        {
+            Model = new TSqlModel(version, Options);
+        }
+
+        public void AddReference(FileInfo referenceFile)
+        {
+            // Make sure the file exists
+            if (!referenceFile.Exists)
+            {
+                throw new ArgumentException($"Unable to find reference file {referenceFile}", nameof(referenceFile));
+            }
+
+            Console.WriteLine($"Adding reference to {referenceFile.FullName}");
+            Model.AddReference(referenceFile.FullName);
+        }
+
+        public void AddInputFile(FileInfo inputFile)
+        {
+            // Make sure the file exists
+            if (!inputFile.Exists)
+            {
+                throw new ArgumentException($"Unable to find input file {inputFile}", nameof(inputFile));
+            }
+
+            Console.WriteLine($"Adding {inputFile.FullName} to the model");
+            Model.AddObjects(File.ReadAllText(inputFile.FullName));
+        }
+
+        public void SaveToDisk(FileInfo outputFile)
+        {
+            // Check if the file already exists
+            if (outputFile.Exists)
+            {
+                // Delete the existing file
+                Console.WriteLine($"Deleting existing file {outputFile.FullName}");
+                outputFile.Delete();
+            }
+
+            System.Console.WriteLine($"Writing model to {outputFile.FullName}");
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, new PackageMetadata { Name = outputFile.FullName }, new PackageOptions { });
+        }
+
+        public void SetProperty(string key, string value)
+        {
+            try
+            {
+                // Convert value into the appropriate type depending on the key
+                var propertyValue = key switch
+                {
+                    "QueryStoreIntervalLength" => int.Parse(value),
+                    "QueryStoreFlushInterval" => int.Parse(value),
+                    "QueryStoreDesiredState" => Enum.Parse(typeof(QueryStoreDesiredState), value),
+                    "QueryStoreCaptureMode" => Enum.Parse(typeof(QueryStoreCaptureMode), value),
+                    "ParameterizationOption" => Enum.Parse(typeof(ParameterizationOption), value),
+                    "PageVerifyMode" => Enum.Parse(typeof(PageVerifyMode), value),
+                    "QueryStoreMaxStorageSize" => int.Parse(value),
+                    "NumericRoundAbortOn" => bool.Parse(value),
+                    "NestedTriggersOn" => bool.Parse(value),
+                    "HonorBrokerPriority" => bool.Parse(value),
+                    "FullTextEnabled" => bool.Parse(value),
+                    "FileStreamDirectoryName" => value,
+                    "DbScopedConfigQueryOptimizerHotfixesSecondary" => bool.Parse(value),
+                    "DbScopedConfigQueryOptimizerHotfixes" => bool.Parse(value),
+                    "NonTransactedFileStreamAccess" => Enum.Parse(typeof(NonTransactedFileStreamAccess), value),
+                    "DbScopedConfigParameterSniffingSecondary" => bool.Parse(value),
+                    "QueryStoreMaxPlansPerQuery" => int.Parse(value),
+                    "QuotedIdentifierOn" => bool.Parse(value),
+                    "VardecimalStorageFormatOn" => bool.Parse(value),
+                    "TwoDigitYearCutoff" => short.Parse(value),
+                    "Trustworthy" => bool.Parse(value),
+                    "TransformNoiseWords" => bool.Parse(value),
+                    "TornPageProtectionOn" => bool.Parse(value),
+                    "TargetRecoveryTimeUnit" => Enum.Parse(typeof(TimeUnit), value),
+                    "QueryStoreStaleQueryThreshold" => int.Parse(value),
+                    "TargetRecoveryTimePeriod" => int.Parse(value),
+                    "ServiceBrokerOption" => Enum.Parse(typeof(ServiceBrokerOption), value),
+                    "RecursiveTriggersOn" => bool.Parse(value),
+                    "DelayedDurabilityMode" => Enum.Parse(typeof(DelayedDurabilityMode), value),
+                    "RecoveryMode" => Enum.Parse(typeof(RecoveryMode), value),
+                    "ReadOnly" => bool.Parse(value),
+                    "SupplementalLoggingOn" => bool.Parse(value),
+                    "DbScopedConfigParameterSniffing" => bool.Parse(value),
+                    "DbScopedConfigMaxDOPSecondary" => int.Parse(value),
+                    "DbScopedConfigMaxDOP" => int.Parse(value),
+                    "AutoShrink" => bool.Parse(value),
+                    "AutoCreateStatisticsIncremental" => bool.Parse(value),
+                    "AutoCreateStatistics" => bool.Parse(value),
+                    "AutoClose" => bool.Parse(value),
+                    "ArithAbortOn" => bool.Parse(value),
+                    "AnsiWarningsOn" => bool.Parse(value),
+                    "AutoUpdateStatistics" => bool.Parse(value),
+                    "AnsiPaddingOn" => bool.Parse(value),
+                    "AnsiNullDefaultOn" => bool.Parse(value),
+                    "MemoryOptimizedElevateToSnapshot" => bool.Parse(value),
+                    "TransactionIsolationReadCommittedSnapshot" => bool.Parse(value),
+                    "AllowSnapshotIsolation" => bool.Parse(value),
+                    "Collation" => value,
+                    "AnsiNullsOn" => bool.Parse(value),
+                    "AutoUpdateStatisticsAsync" => bool.Parse(value),
+                    "CatalogCollation" => Enum.Parse(typeof(CatalogCollation), value),
+                    "ChangeTrackingAutoCleanup" => bool.Parse(value),
+                    "DbScopedConfigLegacyCardinalityEstimationSecondary" => bool.Parse(value),
+                    "DbScopedConfigLegacyCardinalityEstimation" => bool.Parse(value),
+                    "DBChainingOn" => bool.Parse(value),
+                    "DefaultLanguage" => value,
+                    "DefaultFullTextLanguage" => value,
+                    "DateCorrelationOptimizationOn" => bool.Parse(value),
+                    "DatabaseStateOffline" => bool.Parse(value),
+                    "CursorDefaultGlobalScope" => bool.Parse(value),
+                    "CursorCloseOnCommit" => bool.Parse(value),
+                    "Containment" => Enum.Parse(typeof(Containment), value),
+                    "ConcatNullYieldsNull" => bool.Parse(value),
+                    "CompatibilityLevel" => int.Parse(value),
+                    "ChangeTrackingRetentionUnit" => Enum.Parse(typeof(TimeUnit), value),
+                    "ChangeTrackingRetentionPeriod" => int.Parse(value),
+                    "ChangeTrackingEnabled" => bool.Parse(value),
+                    "UserAccessOption" => Enum.Parse(typeof(UserAccessOption), value),
+                    "WithEncryption" => bool.Parse(value),
+                    _ => throw new ArgumentException($"Unknown property with name {key}", nameof(key))
+                };
+
+                PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+                property.SetValue(Options, propertyValue);
+
+                Console.WriteLine($"Set property {key} to value {value}");
+            }
+            catch (FormatException)
+            {
+                throw new ArgumentException($"Unable to parse value for property with name {key}: {value}", nameof(value));
+            }
+        }
+
+        public void Dispose()
+        {
+            Model?.Dispose();
+            Model = null;
+        }
+
+        public TSqlModelOptions Options { get; } = new TSqlModelOptions();
+
+        public TSqlModel Model { get; private set; }
+    }
+}

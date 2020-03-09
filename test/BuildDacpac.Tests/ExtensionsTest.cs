@@ -17,12 +17,12 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         public void CanAddReference()
         {
             // Arrange
-            var referencePackage = new ModelBuilder()
+            var referencePackage = new TestModelBuilder()
                 .AddTable("MyTable", ("Column1", "nvarchar(100)"))
                 .SaveAsPackage();
 
             // Act
-            var model = new ModelBuilder()
+            var model = new TestModelBuilder()
                 .AddReference(referencePackage)
                 .AddStoredProcedure("MyProc", "SELECT * FROM MyTable;")
                 .Build();

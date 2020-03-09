@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/RR.DatabaseProject.Tasks/RR.DatabaseProject.Tasks.csproj",
+                "${workspaceFolder}/src/BuildDacpac/BuildDacpac.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/RR.DatabaseProject.Tasks/RR.DatabaseProject.Tasks.csproj",
+                "${workspaceFolder}/src/BuildDacpac/BuildDacpac.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,7 +32,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/RR.DatabaseProject.Tasks/RR.DatabaseProject.Tasks.csproj",
+                "${workspaceFolder}/src/BuildDacpac/BuildDacpac.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

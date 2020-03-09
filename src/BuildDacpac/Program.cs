@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
@@ -7,48 +10,55 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
-            var tSqlModelOptions = new TSqlModelOptions
+            var rootCommand = new RootCommand
             {
-                AnsiNullsOn = true,
-                Collation = "SQL_Latin1_General_CP1_CI_AI",
-                CompatibilityLevel = 110,
-                QuotedIdentifierOn = true,
+                new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
+                new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, "Target version of the model"), 
+                new Option<FileInfo[]>(new string[] { "--input", "-i" }, "Input file name(s)"),
+                new Option<FileInfo[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
+                new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
             };
 
-            var outputFilename = "output.dacpac";
-            var outputFilenameArgument = args.FirstOrDefault(a => a.StartsWith("-o:"));
-            if (outputFilenameArgument != null)
+            rootCommand.Description = "BuildDacpac";
+            rootCommand.Handler = CommandHandler.Create<FileInfo, SqlServerVersion, FileInfo[], FileInfo[], string[]>(BuildDacpac);
+
+            return await rootCommand.InvokeAsync(args);
+        }
+
+        private static int BuildDacpac(FileInfo output, SqlServerVersion sqlServerVersion, FileInfo[] input, FileInfo[] reference, string[] property)
+        {
+            if (input == null)
             {
-                outputFilename = outputFilenameArgument.Substring(3);
+                System.Console.WriteLine("Expected at least one input file");
+                return 1;
             }
 
-            using (var tSqlModel = new TSqlModel(SqlServerVersion.Sql110, tSqlModelOptions))
+            using var modelBuilder = new ModelBuilder();
+            foreach (var propertyValue in property)
             {
-                foreach (var item in args)
-                {
-                    if (item.StartsWith("-r:"))
-                    {
-                        var reference = item.Substring(3);
-                        System.Console.WriteLine($"Adding reference to {reference}...");
-                        tSqlModel.AddReference(reference);
-                    }
-                    else if (!item.StartsWith("-o:"))
-                    {
-                        System.Console.WriteLine($"Adding {item} to model...");
-                        tSqlModel.AddObjects(File.ReadAllText(item));
-                    }
-                }
-
-                if (File.Exists(outputFilename))
-                {
-                    File.Delete(outputFilename);
-                }
-
-                System.Console.WriteLine($"Writing model to {outputFilename}");
-                DacPackageExtensions.BuildPackage(outputFilename, tSqlModel, new PackageMetadata { Name = outputFilename }, new PackageOptions { });
+                string[] keyValuePair = propertyValue.Split('=', 2);
+                modelBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
             }
+
+            modelBuilder.UsingVersion(sqlServerVersion);
+
+            if (reference != null)
+            {
+                foreach (var referenceFile in reference)
+                {
+                    modelBuilder.AddReference(referenceFile);
+                }
+            }
+
+            foreach (var inputFile in input)
+            {
+                modelBuilder.AddInputFile(inputFile);
+            }
+
+            modelBuilder.SaveToDisk(output);
+            return 0;
         }
     }
 }
