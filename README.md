@@ -1,5 +1,6 @@
 # MSBuild.Sdk.SqlProj
 **THis is currently a prototype and work-in-progress**
+![Build Status](https://github.com/jmezach/MSBuild.Sdk.SqlProj/workflows/main/badge.svg)
 
 ## Introduction
 
