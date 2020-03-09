@@ -98,7 +98,7 @@ jobs:
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
       env:
-        VERSION: ${{ steps.nbgv.outputs.SemVer2 }}'
+        VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}'
 
     # Build the project
     - name: build project
