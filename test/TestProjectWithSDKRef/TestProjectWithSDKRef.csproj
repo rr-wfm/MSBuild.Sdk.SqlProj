@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/#{VERSION}#">
+<Project Sdk="MSBuild.Sdk.SqlProj">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>

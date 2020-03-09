@@ -97,7 +97,7 @@ jobs:
     - uses: cschleiden/replace-tokens@v1
       name: replace tokens
       with:
-        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+        files: 'test/TestProjectWithSDKRef/global.json'
       env:
         VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}'
 
