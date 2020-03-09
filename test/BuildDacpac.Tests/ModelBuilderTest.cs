@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -55,6 +56,59 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 
             // Assert
             packageBuilder.Model.Version.ShouldBe(SqlServerVersion.Sql150);
+        }
+
+        [TestMethod]
+        public void AddInputFile_FileDoesNotExist()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            Should.Throw<ArgumentException>(() => packageBuilder.AddInputFile(new FileInfo("NonExistentFile.sql")));
+        }
+
+        [TestMethod]
+        public void AddInputFile_FileExists()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddInputFile(new FileInfo("../../../../TestProject/Tables/MyTable.sql"));
+
+            // Assert
+            packageBuilder.Model.GetObject(Table.TypeClass, new ObjectIdentifier("dbo", "MyTable"), DacQueryScopes.Default).ShouldNotBeNull();
+        }
+
+        [TestMethod]
+        public void AddReference_FileDoesNotExist()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act & Assert
+            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
+        }
+
+        [TestMethod]
+        public void AddReference_FileExists()
+        {
+            // Arrange
+            var reference = new TestModelBuilder()
+                .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
+                .SaveAsPackage();
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddReference(new FileInfo(reference));
+
+            // Assert
+            packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
         }
 
         class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
