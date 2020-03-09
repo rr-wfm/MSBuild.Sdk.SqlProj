@@ -8,6 +8,7 @@
   <PropertyGroup>
     <UsingMSBuildSdkSqlProj>true</UsingMSBuildSdkSqlProj>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <SqlServerVersion>Sql150</SqlServerVersion>
   </PropertyGroup>
 
   <PropertyGroup>

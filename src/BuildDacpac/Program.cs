@@ -21,7 +21,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
             };
 
-            rootCommand.Description = "BuildDacpac";
+            rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
             rootCommand.Handler = CommandHandler.Create<string, string, FileInfo, SqlServerVersion, FileInfo[], FileInfo[], string[]>(BuildDacpac);
 
             return await rootCommand.InvokeAsync(args);

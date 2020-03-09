@@ -11,6 +11,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
+            Console.WriteLine($"Using SQL Server version {version}");
         }
 
         public void AddReference(FileInfo referenceFile)
@@ -68,6 +69,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 Name = name,
                 Version = version,
             };
+
+            Console.WriteLine($"Using package name {name} and version {version}");
         }
 
         public void SetProperty(string key, string value)
