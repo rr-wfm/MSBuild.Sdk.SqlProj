@@ -101,6 +101,11 @@ jobs:
       env:
         VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}'
 
+    # Restore packages
+    - name: dotnet restore
+      run: dotnet restore
+      working-directory: test/TestProjectWithSDKRef
+
     # Build the project
     - name: build project
       run: dotnet build
