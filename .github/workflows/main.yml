@@ -69,6 +69,7 @@ jobs:
   # Run tests in parallel
   test:
     runs-on: ${{ matrix.os }}
+    needs: build
     strategy:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
