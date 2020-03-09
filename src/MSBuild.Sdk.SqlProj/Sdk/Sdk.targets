@@ -106,6 +106,12 @@
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
   <Target Name="CoreCompile" DependsOnTargets="ResolveDatabasePackageReferences">
+    <ItemGroup>
+      <_PropertyNames Include="$(KnownModelProperties)" />
+      <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
+        <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
+      </PropertyNames>
+    </ItemGroup>
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
@@ -113,9 +119,10 @@
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(PhysicalLocation)\tools\%(Identity).dacpac&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
+      <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)')</PropertyArguments>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
-    <Exec Command="dotnet $(MSBuildThisFileDirectory)..\tools\BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments)"
+    <Exec Command="dotnet $(MSBuildThisFileDirectory)..\tools\BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(PropertyArguments)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
   </Target>
   

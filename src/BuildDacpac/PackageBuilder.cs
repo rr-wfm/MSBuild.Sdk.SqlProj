@@ -155,7 +155,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                 property.SetValue(Options, propertyValue);
 
-                Console.WriteLine($"Set property {key} to value {value}");
+                Console.WriteLine($"Setting property {key} to value {value}");
             }
             catch (FormatException)
             {
