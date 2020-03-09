@@ -82,7 +82,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
     
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@master
       with:
         dotnet-version: ${{ matrix.dotnet }}
         source-url: https://nuget.pkg.github.com/jmezach/index.json
