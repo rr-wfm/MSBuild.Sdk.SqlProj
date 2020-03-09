@@ -25,6 +25,8 @@ jobs:
       with:
         source-url: https://nuget.pkg.github.com/jmezach/index.json
         dotnet-version: '3.1.102'
+      env:
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
