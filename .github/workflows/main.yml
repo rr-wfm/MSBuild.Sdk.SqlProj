@@ -23,10 +23,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
     - uses: actions/setup-dotnet@v1
       with:
-        source-url: https://nuget.pkg.github.com/jmezach/index.json
         dotnet-version: '3.1.102'
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -85,7 +82,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
     
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@master
+    - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ matrix.dotnet }}
         source-url: https://nuget.pkg.github.com/jmezach/index.json
