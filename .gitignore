@@ -341,3 +341,6 @@ healthchecksdb
 
 # Exclude tools folder
 src/MSBuild.Sdk.SqlProj/tools/
+
+# Exclude generated Dacpac's
+*.dacpac
