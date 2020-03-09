@@ -35,29 +35,29 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 return 1;
             }
 
-            using var modelBuilder = new ModelBuilder();
+            using var packageBuilder = new PackageBuilder();
             foreach (var propertyValue in property)
             {
                 string[] keyValuePair = propertyValue.Split('=', 2);
-                modelBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+                packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
             }
 
-            modelBuilder.UsingVersion(sqlServerVersion);
+            packageBuilder.UsingVersion(sqlServerVersion);
 
             if (reference != null)
             {
                 foreach (var referenceFile in reference)
                 {
-                    modelBuilder.AddReference(referenceFile);
+                    packageBuilder.AddReference(referenceFile);
                 }
             }
 
             foreach (var inputFile in input)
             {
-                modelBuilder.AddInputFile(inputFile);
+                packageBuilder.AddInputFile(inputFile);
             }
 
-            modelBuilder.SaveToDisk(output);
+            packageBuilder.SaveToDisk(output);
             return 0;
         }
     }

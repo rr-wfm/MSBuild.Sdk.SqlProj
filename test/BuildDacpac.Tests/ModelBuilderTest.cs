@@ -8,53 +8,53 @@ using Shouldly;
 namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 {
     [TestClass]
-    public class ModelBuilderTest
+    public class PackageBuilderTest
     {
         [TestMethod]
         [ValidPropertiesTestData]
         public void WithProperty_Valid(PropertyInfo property, string value, object expected)
         {
             // Arrange
-            var modelBuilder = new ModelBuilder();
+            var packageBuilder = new PackageBuilder();
 
             // Act
-            modelBuilder.SetProperty(property.Name, value);
+            packageBuilder.SetProperty(property.Name, value);
 
             // Assert
-            property.GetValue(modelBuilder.Options).ShouldBe(expected);
+            property.GetValue(packageBuilder.Options).ShouldBe(expected);
         }
 
         [TestMethod]
         public void WithProperty_UnknownProperty()
         {
             // Arrange
-            var modelBuilder = new ModelBuilder();
+            var packageBuilder = new PackageBuilder();
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => modelBuilder.SetProperty("MyUnknownProperty", "MyValue"));
+            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("MyUnknownProperty", "MyValue"));
         }
 
         [TestMethod]
         public void WithProperty_InvalidValue()
         {
             // Arrange
-            var modelBuilder = new ModelBuilder();
+            var packageBuilder = new PackageBuilder();
 
             // Act
-            Should.Throw<ArgumentException>(() => modelBuilder.SetProperty("QueryStoreIntervalLength", "MyFancyText"));
+            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("QueryStoreIntervalLength", "MyFancyText"));
         }
 
         [TestMethod]
         public void UsingVersion()
         {
             // Arrange
-            var modelBuilder = new ModelBuilder();
+            var packageBuilder = new PackageBuilder();
 
             // Act
-            modelBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Assert
-            modelBuilder.Model.Version.ShouldBe(SqlServerVersion.Sql150);
+            packageBuilder.Model.Version.ShouldBe(SqlServerVersion.Sql150);
         }
 
         class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource

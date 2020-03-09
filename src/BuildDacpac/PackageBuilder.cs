@@ -6,7 +6,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.BuildDacpac
 {
-    public sealed class ModelBuilder : IDisposable
+    public sealed class PackageBuilder : IDisposable
     {
         public void UsingVersion(SqlServerVersion version)
         {
@@ -47,7 +47,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 outputFile.Delete();
             }
 
-            System.Console.WriteLine($"Writing model to {outputFile.FullName}");
+            Console.WriteLine($"Writing model to {outputFile.FullName}");
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, new PackageMetadata { Name = outputFile.FullName }, new PackageOptions { });
         }
 
