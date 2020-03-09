@@ -12,40 +12,6 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
     public class PackageBuilderTest
     {
         [TestMethod]
-        [ValidPropertiesTestData]
-        public void WithProperty_Valid(PropertyInfo property, string value, object expected)
-        {
-            // Arrange
-            var packageBuilder = new PackageBuilder();
-
-            // Act
-            packageBuilder.SetProperty(property.Name, value);
-
-            // Assert
-            property.GetValue(packageBuilder.Options).ShouldBe(expected);
-        }
-
-        [TestMethod]
-        public void WithProperty_UnknownProperty()
-        {
-            // Arrange
-            var packageBuilder = new PackageBuilder();
-
-            // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("MyUnknownProperty", "MyValue"));
-        }
-
-        [TestMethod]
-        public void WithProperty_InvalidValue()
-        {
-            // Arrange
-            var packageBuilder = new PackageBuilder();
-
-            // Act
-            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("QueryStoreIntervalLength", "MyFancyText"));
-        }
-
-        [TestMethod]
         public void UsingVersion()
         {
             // Arrange
@@ -98,17 +64,87 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         public void AddReference_FileExists()
         {
             // Arrange
-            var reference = new TestModelBuilder()
+            var reference = new FileInfo(new TestModelBuilder()
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
-                .SaveAsPackage();
+                .SaveAsPackage());
             var packageBuilder = new PackageBuilder();
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddReference(new FileInfo(reference));
+            packageBuilder.AddReference(reference);
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
+            
+            // Cleanup
+            reference.Delete();
+        }
+
+        [TestMethod]
+        [ValidPropertiesTestData]
+        public void SetProperty_Valid(PropertyInfo property, string value, object expected)
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+
+            // Act
+            packageBuilder.SetProperty(property.Name, value);
+
+            // Assert
+            property.GetValue(packageBuilder.Options).ShouldBe(expected);
+        }
+
+        [TestMethod]
+        public void SetProperty_UnknownProperty()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+
+            // Act & Assert
+            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("MyUnknownProperty", "MyValue"));
+        }
+
+        [TestMethod]
+        public void SetProperty_InvalidValue()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+
+            // Act
+            Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("QueryStoreIntervalLength", "MyFancyText"));
+        }
+
+        [TestMethod]
+        public void SetMetadata()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+
+            // Act
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+
+            // Assert
+            packageBuilder.Metadata.Name.ShouldBe("MyPackage");
+            packageBuilder.Metadata.Version.ShouldBe("1.0.0.0");
+        }
+
+        [TestMethod]
+        public void SaveToFile()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Assert
+            tempFile.Exists.ShouldBeTrue();
+
+            // Cleanup
+            tempFile.Delete();
         }
 
         class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource

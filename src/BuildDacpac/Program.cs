@@ -14,6 +14,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
         {
             var rootCommand = new RootCommand
             {
+                new Option<string>(new string[] { "--name", "-n" }, "Name of the package"),
+                new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, "Target version of the model"), 
                 new Option<FileInfo[]>(new string[] { "--input", "-i" }, "Input file name(s)"),
@@ -22,12 +24,12 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             };
 
             rootCommand.Description = "BuildDacpac";
-            rootCommand.Handler = CommandHandler.Create<FileInfo, SqlServerVersion, FileInfo[], FileInfo[], string[]>(BuildDacpac);
+            rootCommand.Handler = CommandHandler.Create<string, string, FileInfo, SqlServerVersion, FileInfo[], FileInfo[], string[]>(BuildDacpac);
 
             return await rootCommand.InvokeAsync(args);
         }
 
-        private static int BuildDacpac(FileInfo output, SqlServerVersion sqlServerVersion, FileInfo[] input, FileInfo[] reference, string[] property)
+        private static int BuildDacpac(string name, string version, FileInfo output, SqlServerVersion sqlServerVersion, FileInfo[] input, FileInfo[] reference, string[] property)
         {
             if (input == null)
             {
@@ -36,6 +38,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             }
 
             using var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata(name, version);
+
             foreach (var propertyValue in property)
             {
                 string[] keyValuePair = propertyValue.Split('=', 2);

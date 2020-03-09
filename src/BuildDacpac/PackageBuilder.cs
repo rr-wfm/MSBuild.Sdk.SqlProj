@@ -15,6 +15,9 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
         public void AddReference(FileInfo referenceFile)
         {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
             // Make sure the file exists
             if (!referenceFile.Exists)
             {
@@ -27,6 +30,9 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
         public void AddInputFile(FileInfo inputFile)
         {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
             // Make sure the file exists
             if (!inputFile.Exists)
             {
@@ -39,6 +45,10 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
         public void SaveToDisk(FileInfo outputFile)
         {
+            // Ensure that the model has been created and metadata has been set
+            EnsureModelCreated();
+            EnsureMetadataCreated();
+
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -48,7 +58,16 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             }
 
             Console.WriteLine($"Writing model to {outputFile.FullName}");
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, new PackageMetadata { Name = outputFile.FullName }, new PackageOptions { });
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
+        }
+
+        public void SetMetadata(string name, string version)
+        {
+            Metadata = new PackageMetadata
+            {
+                Name = name,
+                Version = version,
+            };
         }
 
         public void SetProperty(string key, string value)
@@ -148,7 +167,24 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
         }
 
         public TSqlModelOptions Options { get; } = new TSqlModelOptions();
-
         public TSqlModel Model { get; private set; }
+
+        public PackageMetadata Metadata { get; private set; }
+
+        private void EnsureModelCreated()
+        {
+            if (Model == null)
+            {
+                throw new InvalidOperationException("Model has not been initialized. Call UsingVersion first.");
+            }
+        }
+
+        private void EnsureMetadataCreated()
+        {
+            if (Metadata == null)
+            {
+                throw new InvalidOperationException("Package metadata has not been initialized. Call SetMetadata first.");
+            }
+        }
     }
 }
