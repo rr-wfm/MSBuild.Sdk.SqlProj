@@ -88,13 +88,9 @@ jobs:
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
-    # Install Nerdbank.GitVersioning
-    - name: install nbgv
-      run: dotnet tool install --tool-path . nbgv
-
-    # Set version
-    - name: set version
-      run: ./nbgv cloud -c
+    # Apply Nerdbank.GitVersioning
+    - uses: aarnott/nbgv@v0.3
+      id: nbgv
     
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -102,7 +98,7 @@ jobs:
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
       env:
-        VERSION: $NBGV_SemVer2
+        VERSION: ${{ steps.nbgv.outputs.SemVer2 }}'
 
     # Build the project
     - name: build project
