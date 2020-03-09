@@ -1,9 +1,7 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.BuildDacpac
