@@ -11,6 +11,10 @@
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/src/BuildDacpac/bin/Debug/netcoreapp3.1/BuildDacpac.dll",
             "args": [
+                "-n",
+                "MyPackage",
+                "-v",
+                "1.0.0.0",
                 "-o",
                 "output.dacpac",
                 "-sv",

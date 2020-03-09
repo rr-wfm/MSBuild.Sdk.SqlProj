@@ -344,3 +344,6 @@ src/MSBuild.Sdk.SqlProj/tools/
 
 # Exclude generated Dacpac's
 *.dacpac
+
+# Ignore Mac specific files
+.DS_Store
