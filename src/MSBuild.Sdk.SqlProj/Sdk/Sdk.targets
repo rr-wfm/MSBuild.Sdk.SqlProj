@@ -108,9 +108,9 @@
   <Target Name="CoreCompile" DependsOnTargets="ResolveDatabasePackageReferences">
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
-      <ReferenceArguments>@(DacpacReference->'-r:&quot;%(PhysicalLocation)\tools\%(Identity).dacpac&quot;', ' ')</ReferenceArguments>
-      <SqlFileArguments>@(Content->'&quot;%(FullPath)&quot;', ' ')</SqlFileArguments>
-      <OutputPathArgument>@(IntermediateAssembly->'-o:&quot;%(Identity)&quot;', ' ')</OutputPathArgument>
+      <ReferenceArguments>@(DacpacReference->'-r &quot;%(PhysicalLocation)\tools\%(Identity).dacpac&quot;', ' ')</ReferenceArguments>
+      <SqlFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</SqlFileArguments>
+      <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Exec Command="dotnet $(MSBuildThisFileDirectory)..\tools\BuildDacpac.dll $(OutputPathArgument) $(ReferenceArguments) $(SqlFileArguments)"
