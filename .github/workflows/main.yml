@@ -106,7 +106,7 @@ jobs:
     # List files
     - name: list files
       run: ls -la
-      working-directory: ./test/TestProjectWithSDKRef/
+      working-directory: ./test/TestProjectWithSDKRef/nuget-package/
 
     # Restore packages
     - name: dotnet restore
