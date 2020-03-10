@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: nuget-package
-        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
+        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
 
   # Run tests in parallel
   test:
