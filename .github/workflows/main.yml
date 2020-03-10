@@ -103,6 +103,11 @@ jobs:
         name: nuget-package
         path: test/TestProjectWithSDKRef/nuget-package
 
+    # List files
+    - name: list files
+      run: ls -la
+      working-directory: ./test/TestProjectWithSDKRef/
+
     # Restore packages
     - name: dotnet restore
       run: dotnet restore --verbosity n
