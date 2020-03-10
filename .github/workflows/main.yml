@@ -104,7 +104,7 @@ jobs:
 
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore -s nuget-package
+      run: dotnet restore -s ./nuget-package
       working-directory: test/TestProjectWithSDKRef
 
     # Build the project
