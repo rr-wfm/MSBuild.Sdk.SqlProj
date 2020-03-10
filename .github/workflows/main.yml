@@ -101,10 +101,11 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: nuget-package
+        path: test/TestProjectWithSDKRef/nuget-package
 
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore -s ./nuget-package
+      run: dotnet restore
       working-directory: test/TestProjectWithSDKRef
 
     # Build the project
