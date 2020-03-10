@@ -94,7 +94,7 @@ jobs:
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
       env:
-        VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}'
+        VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
 
     # Download artifact
     - name: download-artifact
