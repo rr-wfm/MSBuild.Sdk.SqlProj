@@ -105,7 +105,7 @@ jobs:
 
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore
+      run: dotnet restore --verbosity n
       working-directory: test/TestProjectWithSDKRef
 
     # Build the project
