@@ -57,14 +57,12 @@ jobs:
     - name: dotnet pack
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
-    # Push
-    - name: dotnet push
-      run: |
-           for f in ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
-           do
-             curl -X PUT -u "jmezach:${{ secrets.GITHUB_TOKEN }}" -F package=@$f https://nuget.pkg.github.com/jmezach/
-           done
-      shell: bash
+    # Upload package
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: nuget-package
+        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
 
   # Run tests in parallel
   test:
@@ -85,14 +83,11 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ matrix.dotnet }}
-        source-url: https://nuget.pkg.github.com/jmezach/index.json
-      env:
-        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
     # Apply Nerdbank.GitVersioning
     - uses: aarnott/nbgv@v0.3
       id: nbgv
-    
+
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
       name: replace tokens
@@ -101,9 +96,15 @@ jobs:
       env:
         VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}'
 
+    # Download artifact
+    - name: download-artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: nuget-package
+
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore
+      run: dotnet restore -s nuget-package
       working-directory: test/TestProjectWithSDKRef
 
     # Build the project
