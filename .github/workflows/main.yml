@@ -164,3 +164,4 @@ jobs:
         /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:temp-container-password
+        /TargetDatabaseName:TestProjectWithSDKRef
