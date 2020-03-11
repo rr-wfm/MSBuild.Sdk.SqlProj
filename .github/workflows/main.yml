@@ -88,7 +88,11 @@ jobs:
  
     # Download sqlpackage
     - name: download sqlpackage
-      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip
+      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip && unzip sqlpackage.zip -d ~/sqlpackage && chmod a+x ~/sqlpackage/sqlpackage
+
+    # Run sqlpackage
+    - name: sqlpackage publish
+      run: ~/sqlpackage/sqlpackage /Action:Publish
     
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
