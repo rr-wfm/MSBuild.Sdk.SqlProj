@@ -171,9 +171,10 @@ jobs:
       if: failure()
       uses: jwalton/gh-docker-logs@v1
 
-  # Publish the NuGet package to NuGet.org
+  # Publish the NuGet package to NuGet.org when building master branch
   publish:
     runs-on: ubuntu-18.04
+    if: github.ref == 'refs/heads/master'
     needs: deploy
     steps:
     # Setup .NET SDK
