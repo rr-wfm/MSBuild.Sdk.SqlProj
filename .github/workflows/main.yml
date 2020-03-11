@@ -137,7 +137,7 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2019-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: temp-container-password
+          SA_PASSWORD: ${{ secrets.SQL_CONTAINER_PASSWORD }}
         ports:
           - 1433:1433
     steps:
@@ -163,7 +163,7 @@ jobs:
         /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:temp-container-password
+        /TargetPassword:${{ secrets.SQL_CONTAINER_PASSWORD }}
         /TargetDatabaseName:TestProjectWithSDKRef
 
     # Dump logs of the container if something failed
