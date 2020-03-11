@@ -71,7 +71,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
-        dotnet: [ '2.1.804', '3.0.103', '3.1.102' ]
+        dotnet: [ '2.1.804', '3.1.102' ]
       fail-fast: false
     steps:
     # Fetch sources
