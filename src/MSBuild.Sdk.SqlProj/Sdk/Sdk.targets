@@ -122,7 +122,7 @@
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)')</PropertyArguments>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
-    <Exec Command="dotnet $(MSBuildThisFileDirectory)..\tools\BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(PropertyArguments)"
+    <Exec Command="dotnet $(MSBuildThisFileDirectory)../tools/netcoreapp2.1/BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(PropertyArguments)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
   </Target>
   

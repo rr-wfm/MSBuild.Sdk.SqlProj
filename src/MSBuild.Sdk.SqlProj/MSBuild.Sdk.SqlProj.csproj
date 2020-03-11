@@ -29,7 +29,8 @@
   </Target>
 
   <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
-    <!-- Run dotnet publish on the BuildDacpac tool -->
-    <Exec Command="dotnet publish -c $(Configuration) -o $(MSBuildThisFileDirectory)tools" WorkingDirectory="../BuildDacpac" />
+    <!-- Run dotnet publish on the BuildDacpac tool for each supported target framework -->
+    <Exec Command="dotnet publish -c $(Configuration) -f netcoreapp2.1 -o $(MSBuildThisFileDirectory)tools/netcoreapp2.1" WorkingDirectory="../BuildDacpac" />
+    <Exec Command="dotnet publish -c $(Configuration) -f netcoreapp3.1 -o $(MSBuildThisFileDirectory)tools/netcoreapp3.1" WorkingDirectory="../BuildDacpac" />
   </Target>
 </Project>
