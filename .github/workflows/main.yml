@@ -85,6 +85,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+ 
+    # Download sqlpackage
+    - name: download sqlpackage
+      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip
     
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
@@ -119,7 +123,3 @@ jobs:
     - name: build project
       run: dotnet build
       working-directory: ./test/TestProjectWithSDKRef/
-
-    # Download sqlpackage
-    - name: download sqlpackage
-      run: curl ${{ matrix.sqlpackage-url }} --output sqlpackage.zip
