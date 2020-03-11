@@ -90,7 +90,7 @@
       <BuildDacpacExe>$(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll</BuildDacpacExe>
     </PropertyGroup>
     <Error Condition="!Exists($(BuildDacpacExe))"
-           Message="The current SDK bundles target framework 'netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET Core SDK that supports 2.1 or 3.1, or file an issue at https://github.com/jmezach/MSBuild.Sdk.SqlProj/ to add support." />
+           Text="The current SDK bundles target framework 'netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET Core SDK that supports 2.1 or 3.1, or file an issue at https://github.com/jmezach/MSBuild.Sdk.SqlProj/ to add support." />
     <Message Importance="normal" Text="Using target framework $(BuildDacpacTfm) to run BuildDacpac" />
   </Target>
 
