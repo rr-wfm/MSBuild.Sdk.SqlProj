@@ -165,3 +165,8 @@ jobs:
         /TargetUser:sa
         /TargetPassword:temp-container-password
         /TargetDatabaseName:TestProjectWithSDKRef
+
+    # Dump logs of the container if something failed
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v1
