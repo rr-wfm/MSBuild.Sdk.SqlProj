@@ -163,7 +163,7 @@ jobs:
         /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:${{ secrets.SQL_CONTAINER_PASSWORD }}
+        /TargetPassword:JdMsKZPBBA8kVFXVrj8d
         /TargetDatabaseName:TestProjectWithSDKRef
 
     # Dump logs of the container if something failed
