@@ -80,14 +80,6 @@ jobs:
           - os: windows-2019
             sqlpackage-url: "https://go.microsoft.com/fwlink/?linkid=2113704"
       fail-fast: false
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: yourStrong(!)Password
-        ports:
-          - 1433:1433
 
     steps:
     # Fetch sources
@@ -129,16 +121,46 @@ jobs:
       run: dotnet build
       working-directory: ./test/TestProjectWithSDKRef/
 
+    # Upload artifact
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: dacpac-package
+        path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
+
+  # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container
+  deploy:
+    runs-on: ubuntu-18.04
+    needs: test
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: temp-container-password
+        ports:
+          - 1433:1433
+    steps:
+    # Download artifacts
+    - name: download-artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: dacpac-package
+        path: ~/dacpac-package
+
     # Download sqlpackage
     - name: download sqlpackage
-      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip && unzip sqlpackage.zip -d ~/sqlpackage && chmod a+x ~/sqlpackage/sqlpackage
+      run: >
+        curl -L https://go.microsoft.com/fwlink/?linkid=2113331 --output sqlpackage.zip &&
+        unzip sqlpackage.zip -d ~/sqlpackage &&
+        chmod a+x ~/sqlpackage/sqlpackage
 
     # Run sqlpackage
     - name: sqlpackage publish
       run: >
         ~/sqlpackage/sqlpackage
         /Action:Publish
-        /SourceFile:./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/TestProjectWithSDKRef.dacpac
+        /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:yourStrong(!)Password
+        /TargetPassword:temp-container-password
