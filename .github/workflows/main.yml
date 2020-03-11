@@ -139,6 +139,6 @@ jobs:
         ~/sqlpackage/sqlpackage
         /Action:Publish
         /SourceFile:./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/TestProjectWithSDKRef.dacpac
-        /TargetServerName:sqlserver
+        /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:yourStrong(!)Password
