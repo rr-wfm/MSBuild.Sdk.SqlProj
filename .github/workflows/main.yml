@@ -80,20 +80,21 @@ jobs:
           - os: windows-2019
             sqlpackage-url: "https://go.microsoft.com/fwlink/?linkid=2113704"
       fail-fast: false
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: yourStrong(!)Password
+        ports:
+          - 1433:1433
+
     steps:
     # Fetch sources
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
  
-    # Download sqlpackage
-    - name: download sqlpackage
-      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip && unzip sqlpackage.zip -d ~/sqlpackage && chmod a+x ~/sqlpackage/sqlpackage
-
-    # Run sqlpackage
-    - name: sqlpackage publish
-      run: ~/sqlpackage/sqlpackage /Action:Publish
-    
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
@@ -127,3 +128,17 @@ jobs:
     - name: build project
       run: dotnet build
       working-directory: ./test/TestProjectWithSDKRef/
+
+    # Download sqlpackage
+    - name: download sqlpackage
+      run: curl -L ${{ matrix.sqlpackage-url }} --output sqlpackage.zip && unzip sqlpackage.zip -d ~/sqlpackage && chmod a+x ~/sqlpackage/sqlpackage
+
+    # Run sqlpackage
+    - name: sqlpackage publish
+      run: >
+        ~/sqlpackage/sqlpackage
+        /Action:Publish
+        /SourceFile:./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/TestProjectWithSDKRef.dacpac
+        /TargetServerName:sqlserver
+        /TargetUser:sa
+        /TargetPassword:yourStrong(!)Password
