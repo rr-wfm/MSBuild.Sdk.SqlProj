@@ -170,3 +170,24 @@ jobs:
     - name: Dump docker logs on failure
       if: failure()
       uses: jwalton/gh-docker-logs@v1
+
+  # Publish the NuGet package to NuGet.org
+  publish:
+    runs-on: ubuntu-18.04
+    needs: deploy
+    steps:
+    # Setup .NET SDK
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.102'
+
+    # Download artifacts
+    - name: download-artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: nuget-package
+        path: ~/nuget-package
+
+    # Push
+    - name: dotnet nuget push
+      run: dotnet nuget push ~/nuget-package/*.nupkg -k ${{ secrets.NUGET_API_KEY }}
