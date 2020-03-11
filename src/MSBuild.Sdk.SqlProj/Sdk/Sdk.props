@@ -8,6 +8,7 @@
   <PropertyGroup>
     <UsingMSBuildSdkSqlProj>true</UsingMSBuildSdkSqlProj>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <SqlServerVersion>Sql150</SqlServerVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -37,4 +38,78 @@
     <Content Remove="Pre-Deployment\**\*.sql" />
     <Content Remove="Post-Deployment\**\*.sql" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <KnownModelProperties>
+      QueryStoreIntervalLength;
+      QueryStoreFlushInterval;
+      QueryStoreDesiredState;
+      QueryStoreCaptureMode;
+      ParameterizationOption;
+      PageVerifyMode;
+      QueryStoreMaxStorageSize;
+      NumericRoundAbortOn;
+      NestedTriggersOn;
+      HonorBrokerPriority;
+      FullTextEnabled;
+      FileStreamDirectoryName;
+      DbScopedConfigQueryOptimizerHotfixesSecondary;
+      DbScopedConfigQueryOptimizerHotfixes;
+      NonTransactedFileStreamAccess;
+      DbScopedConfigParameterSniffingSecondary;
+      QueryStoreMaxPlansPerQuery;
+      QuotedIdentifierOn;
+      VardecimalStorageFormatOn;
+      TwoDigitYearCutoff;
+      Trustworthy;
+      TransformNoiseWords;
+      TornPageProtectionOn;
+      TargetRecoveryTimeUnit;
+      QueryStoreStaleQueryThreshold;
+      TargetRecoveryTimePeriod;
+      ServiceBrokerOption;
+      RecursiveTriggersOn;
+      DelayedDurabilityMode;
+      RecoveryMode;
+      ReadOnly;
+      SupplementalLoggingOn;
+      DbScopedConfigParameterSniffing;
+      DbScopedConfigMaxDOPSecondary;
+      DbScopedConfigMaxDOP;
+      AutoShrink;
+      AutoCreateStatisticsIncremental;
+      AutoCreateStatistics;
+      AutoClose;
+      ArithAbortOn;
+      AnsiWarningsOn;
+      AutoUpdateStatistics;
+      AnsiPaddingOn;
+      AnsiNullDefaultOn;
+      MemoryOptimizedElevateToSnapshot;
+      TransactionIsolationReadCommittedSnapshot;
+      AllowSnapshotIsolation;
+      Collation;
+      AnsiNullsOn;
+      AutoUpdateStatisticsAsync;
+      CatalogCollation;
+      ChangeTrackingAutoCleanup;
+      DbScopedConfigLegacyCardinalityEstimationSecondary;
+      DbScopedConfigLegacyCardinalityEstimation;
+      DBChainingOn;
+      DefaultLanguage;
+      DefaultFullTextLanguage;
+      DateCorrelationOptimizationOn;
+      DatabaseStateOffline;
+      CursorDefaultGlobalScope;
+      CursorCloseOnCommit;
+      Containment;
+      ConcatNullYieldsNull;
+      CompatibilityLevel;
+      ChangeTrackingRetentionUnit;
+      ChangeTrackingRetentionPeriod;
+      ChangeTrackingEnabled;
+      UserAccessOption;
+      WithEncryption
+    </KnownModelProperties>
+  </PropertyGroup>
 </Project>

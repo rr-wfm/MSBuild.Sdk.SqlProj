@@ -5,11 +5,11 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 {
-    internal class ModelBuilder
+    internal class TestModelBuilder
     {
         private TSqlModel sqlModel;
         
-        public ModelBuilder()
+        public TestModelBuilder()
         {
             sqlModel = new TSqlModel(SqlServerVersion.Sql110, new TSqlModelOptions
             {
@@ -20,7 +20,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             });
         }
 
-        public ModelBuilder AddTable(string tableName, params (string name, string type)[] columns)
+        public TestModelBuilder AddTable(string tableName, params (string name, string type)[] columns)
         {
             var columnsDefinition = string.Join(",", columns.Select(column => $"{column.name} {column.type}"));
             var tableDefinition = $"CREATE TABLE [{tableName}] ({columnsDefinition});";
@@ -28,14 +28,14 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             return this;
         }
 
-        public ModelBuilder AddStoredProcedure(string procName, string body)
+        public TestModelBuilder AddStoredProcedure(string procName, string body)
         {
             var procDefinition = $"CREATE PROCEDURE [{procName}] AS BEGIN {body} END";
             sqlModel.AddObjects(procDefinition);
             return this;
         }
 
-        public ModelBuilder AddReference(string path)
+        public TestModelBuilder AddReference(string path)
         {
             sqlModel.AddReference(path);
             return this;

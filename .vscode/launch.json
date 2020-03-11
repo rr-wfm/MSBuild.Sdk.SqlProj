@@ -9,13 +9,22 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/RR.DatabaseProject.Tasks/bin/Debug/netcoreapp3.1/RR.DatabaseProject.Tasks.dll",
+            "program": "${workspaceFolder}/src/BuildDacpac/bin/Debug/netcoreapp3.1/BuildDacpac.dll",
             "args": [
-                "C:/sc/TestProject/ForecastingProcedures/ForecastingProcedures.schema.sql",
-                "C:/sc/TestProject/ForecastingProcedures/User Defined Types/OpeningTime_Table.sql",
-                "C:/sc/TestProject/ForecastingProcedures/Stored Procedures/Cockpit/csp_GetForecastingToDoTasks.procedure.sql"
+                "-n",
+                "MyPackage",
+                "-v",
+                "1.0.0.0",
+                "-o",
+                "output.dacpac",
+                "-sv",
+                "Sql110",
+                "-i",
+                "../../test/TestProject/Tables/MyTable.sql",
+                "-p",
+                "AnsiNullsOn=true"
             ],
-            "cwd": "${workspaceFolder}/RR.DatabaseProject.Tasks",
+            "cwd": "${workspaceFolder}/src/BuildDacpac",
             "console": "internalConsole",
             "stopAtEntry": false
         },
