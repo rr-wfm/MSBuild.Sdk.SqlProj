@@ -29,15 +29,11 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
         private static int BuildDacpac(string name, string version, FileInfo output, SqlServerVersion sqlServerVersion, FileInfo[] input, FileInfo[] reference, string[] property)
         {
-            if (input == null)
-            {
-                System.Console.WriteLine("Expected at least one input file");
-                return 1;
-            }
-
+            // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
             packageBuilder.SetMetadata(name, version);
 
+            // Set properties on the model (if defined)
             if (property != null)
             {
                 foreach (var propertyValue in property)
@@ -47,8 +43,10 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 }
             }
 
+            // Build the empty model for te targetted SQL Server version
             packageBuilder.UsingVersion(sqlServerVersion);
 
+            // Add references to the model
             if (reference != null)
             {
                 foreach (var referenceFile in reference)
@@ -57,11 +55,16 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 }
             }
 
-            foreach (var inputFile in input)
+            // Add input files
+            if (input != null)
             {
-                packageBuilder.AddInputFile(inputFile);
+                foreach (var inputFile in input)
+                {
+                    packageBuilder.AddInputFile(inputFile);
+                }
             }
 
+            // Save the package to disk
             packageBuilder.SaveToDisk(output);
             return 0;
         }
