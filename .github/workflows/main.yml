@@ -137,7 +137,7 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2019-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: ${{ secrets.SQL_CONTAINER_PASSWORD }}
+          SA_PASSWORD: JdMsKZPBBA8kVFXVrj8d
         ports:
           - 1433:1433
     steps:
