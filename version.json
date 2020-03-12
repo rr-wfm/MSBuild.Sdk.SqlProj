@@ -12,5 +12,8 @@
   },
   "pathFilters": [
     ":!.github/"
-  ]
+  ],
+  "nugetPackageVersion": {
+    "semVer": 2
+  }
 }
