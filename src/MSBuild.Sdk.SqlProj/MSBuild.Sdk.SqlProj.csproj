@@ -29,8 +29,13 @@
   </Target>
 
   <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
-    <!-- Run dotnet publish on the BuildDacpac tool for each supported target framework -->
-    <Exec Command="dotnet publish -c $(Configuration) -f netcoreapp2.1 -o $(MSBuildThisFileDirectory)tools/netcoreapp2.1" WorkingDirectory="../BuildDacpac" />
-    <Exec Command="dotnet publish -c $(Configuration) -f netcoreapp3.1 -o $(MSBuildThisFileDirectory)tools/netcoreapp3.1" WorkingDirectory="../BuildDacpac" />
+    <PropertyGroup>
+      <_BuildDacpacSupportedTfms>netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</_BuildDacpacSupportedTfms>
+    </PropertyGroup>
+    <ItemGroup>
+      <BuildDacpacSupportedTfms Include="$(_BuildDacpacSupportedTfms)" />
+    </ItemGroup>
+    <Exec Command="dotnet publish -c $(Configuration) -f %(BuildDacpacSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(BuildDacpacSupportedTfms.Identity)"
+          WorkingDirectory="../BuildDacpac" />
   </Target>
 </Project>
