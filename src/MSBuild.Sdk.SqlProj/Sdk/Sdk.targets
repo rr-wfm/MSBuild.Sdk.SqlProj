@@ -133,7 +133,7 @@
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(PhysicalLocation)\tools\%(Identity).dacpac&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
-      <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)')</PropertyArguments>
+      <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <BuildDacpacTfm>netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</BuildDacpacTfm>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
