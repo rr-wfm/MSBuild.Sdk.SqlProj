@@ -8,6 +8,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 {
     public sealed class PackageBuilder : IDisposable
     {
+        private bool? _modelValid;
+
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
@@ -44,12 +46,44 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             Model.AddObjects(File.ReadAllText(inputFile.FullName));
         }
 
+        public bool ValidateModel()
+        {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
+            // Validate the model and write out validation messages
+            int validationErrors = 0;
+            var messages = Model.Validate();
+            foreach (var message in messages)
+            {
+                if (message.MessageType == DacMessageType.Error)
+                {
+                    validationErrors++;
+                }
+
+                Console.WriteLine(message.ToString());
+            }
+
+            if (validationErrors > 0)
+            {
+                _modelValid = false;
+                Console.WriteLine($"Found {validationErrors} error(s), skip building package");
+            }
+            else
+            {
+                _modelValid = true;
+            }
+
+            return _modelValid.Value;
+        }
+
         public void SaveToDisk(FileInfo outputFile)
         {
             // Ensure that the model has been created and metadata has been set
             EnsureModelCreated();
+            EnsureModelValidated();
             EnsureMetadataCreated();
-
+            
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -187,6 +221,14 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             if (Metadata == null)
             {
                 throw new InvalidOperationException("Package metadata has not been initialized. Call SetMetadata first.");
+            }
+        }
+
+        private void EnsureModelValidated()
+        {
+            if (_modelValid == null)
+            {
+                throw new InvalidOperationException("Model has not been validated. Call ValidateModel first.");
             }
         }
     }

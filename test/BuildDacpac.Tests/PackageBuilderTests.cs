@@ -129,6 +129,54 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         }
 
         [TestMethod]
+        public void ValidateModel_ValidModel()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT 1 END");
+
+            // Act
+            bool result = packageBuilder.ValidateModel();
+
+            // Assert
+            result.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void ValidateModel_Warnings()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
+
+            // Act
+            bool result = packageBuilder.ValidateModel();
+
+            // Assert
+            result.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void ValidateModel_Errors()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] @p_Parameter [dbo].[CustomType] AS BEGIN SELECT 1 END");
+
+            // Act
+            bool result = packageBuilder.ValidateModel();
+
+            // Assert
+            result.ShouldBeFalse();
+        }
+
+        [TestMethod]
         public void SaveToFile()
         {
             // Arrange
@@ -136,6 +184,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             var packageBuilder = new PackageBuilder();
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.ValidateModel();
 
             // Act
             packageBuilder.SaveToDisk(tempFile);

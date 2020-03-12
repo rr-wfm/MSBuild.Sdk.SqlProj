@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql110</SqlServerVersion>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>

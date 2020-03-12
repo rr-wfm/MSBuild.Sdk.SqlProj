@@ -64,6 +64,12 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 }
             }
 
+            // Validate the model
+            if (!packageBuilder.ValidateModel())
+            {
+                return 1;
+            }
+
             // Save the package to disk
             packageBuilder.SaveToDisk(output);
             return 0;
