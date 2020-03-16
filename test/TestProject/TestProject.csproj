@@ -7,7 +7,8 @@
     <RecoveryMode>Simple</RecoveryMode>
     <AllowSnapshotIsolation>True</AllowSnapshotIsolation>
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
-    <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>    
+    <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
+    <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>    
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
