@@ -115,7 +115,7 @@
         <!-- Determine technical name of package (ie. DeVries.WMS.Database -> DeVries_WMS_Database) -->
         <PackageName>@(PackageReference->'%(Identity)'->Replace('.', '_'))</PackageName>
         <!-- Prepend Pkg to techical name from above and resolve variable (ie. PkgDeVries_WMS_Database -> C:\Users\<username>\.nuget\packages\devries.wms.database\<version> -->
-        <PhysicalLocation>$(Pkg%(_ResolvedPackageReference.PackageName))</PhysicalLocation>
+        <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)\%(PackageReference.Version)</PhysicalLocation>
       </_ResolvedPackageReference>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
