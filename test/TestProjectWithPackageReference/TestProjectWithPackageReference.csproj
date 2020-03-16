@@ -4,12 +4,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <SqlServerVersion>Sql110</SqlServerVersion>
-    <RecoveryMode>Simple</RecoveryMode>
-    <AllowSnapshotIsolation>True</AllowSnapshotIsolation>
-    <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
-    <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
-    <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>    
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TestProject" Version="1.0.0-beta.6" />
+  </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>

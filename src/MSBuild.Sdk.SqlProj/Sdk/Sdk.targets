@@ -20,24 +20,20 @@
 
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
-  <PropertyGroup>
-    <!-- Don't include build output in a package since NoTargets projects don't emit an assembly. -->
-    <IncludeBuildOutput Condition="'$(IncludeBuildOutput)' == ''">false</IncludeBuildOutput>
-  </PropertyGroup>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
   
   <ItemGroup>
+    <!-- Override primary output path to be a .dacpac -->
     <_IntermediateAssembly Include="@(IntermediateAssembly)" />
     <IntermediateAssembly Remove="@(IntermediateAssembly)" />
     <IntermediateAssembly Include="@(_IntermediateAssembly->'%(Identity)'->Replace('.dll', '.dacpac'))" />
+
+    <!-- Not generating a reference assembly, so skip that-->
     <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
   </ItemGroup>
 
   <PropertyGroup>
-    <!--
-      This property must be overridden to remove a few targets that compile assemblies
-    -->
+    <TargetPath>$(TargetDir)\$(MSBuildProjectName).dacpac</TargetPath>
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
@@ -49,7 +45,25 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
+
+  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        description=$(PackageDescription);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        copyright=$(Copyright);
+        projecturl=$(PackageProjectUrl);
+        tags=$(PackageTags);
+        configuration=$(Configuration);
+        tfm=$(TargetFramework);
+        packagetype=Dacpac
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
 
   <!--
     The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  NoTargets projects do no generate resource assemblies
@@ -61,10 +75,6 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
           Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
 
-  <!--
-    NoTargets projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
-  -->
-  <Target Name="GetTargetPath" />
 
   <!--
     The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
@@ -105,7 +115,7 @@
         <!-- Determine technical name of package (ie. DeVries.WMS.Database -> DeVries_WMS_Database) -->
         <PackageName>@(PackageReference->'%(Identity)'->Replace('.', '_'))</PackageName>
         <!-- Prepend Pkg to techical name from above and resolve variable (ie. PkgDeVries_WMS_Database -> C:\Users\<username>\.nuget\packages\devries.wms.database\<version> -->
-        <PhysicalLocation>$(Pkg%(_ResolvedPackageReference.PackageName))</PhysicalLocation>
+        <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)\%(PackageReference.Version)</PhysicalLocation>
       </_ResolvedPackageReference>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->

@@ -24,6 +24,8 @@
     <!-- Disable default Compile and EmbeddedResource items for NoTargets projects -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <NoPackageAnalysis>True</NoPackageAnalysis>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
@@ -34,7 +36,9 @@
   <Target Name="CompileDesignTime" />
 
   <ItemGroup>
-    <Content Include="**\*.sql" />
+    <Content Include="**\*.sql">
+      <Pack>False</Pack>
+    </Content>
     <Content Remove="Pre-Deployment\**\*.sql" />
     <Content Remove="Post-Deployment\**\*.sql" />
   </ItemGroup>
