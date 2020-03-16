@@ -60,7 +60,7 @@
         tags=$(PackageTags);
         configuration=$(Configuration);
         tfm=$(TargetFramework);
-        packagetype=MSBuildSdk
+        packagetype=Dacpac
       </NuspecProperties>
     </PropertyGroup>
   </Target>
