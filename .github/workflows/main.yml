@@ -97,8 +97,6 @@ jobs:
       name: replace tokens
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
-      env:
-        VERSION: ${{ steps.nbgv.outputs.NBGV_NuGetPackageVersion }}
 
     # Download artifact
     - name: download-artifact
