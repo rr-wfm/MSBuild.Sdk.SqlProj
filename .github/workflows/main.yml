@@ -33,23 +33,19 @@ jobs:
 
     # Build command line tool
     - name: dotnet build
-      run: dotnet build -c Release
-      working-directory: src/BuildDacpac/
+      run: dotnet build ./src/BuildDacpac/BuildDacpac.csproj -c Release
 
     # Run tests for command line tool
     - name: dotnet test
-      run: dotnet test -c Release
-      working-directory: test/BuildDacpac.Tests/
+      run: dotnet test ./test/BuildDacpac.Tests/BuildDacpac.Tests.csproj -c Release
 
     # Run build for SDK package
     - name: dotnet build
-      run: dotnet build -c Release
-      working-directory: src/MSBuild.Sdk.SqlProj
+      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
     # Ensure that test project builds
     - name: dotnet build TestProject
-      run: dotnet build -c Release
-      working-directory: test/TestProject
+      run: dotnet build ./test/TestProject/TestProject.csproj -c Release
     
     # Package
     - name: dotnet pack
@@ -104,13 +100,11 @@ jobs:
 
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore --verbosity n
-      working-directory: ./test/TestProjectWithSDKRef/
+      run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
 
     # Build the project
     - name: build project
-      run: dotnet build
-      working-directory: ./test/TestProjectWithSDKRef/
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
 
     # Upload artifact
     - name: upload
