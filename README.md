@@ -1,7 +1,8 @@
 # MSBuild.Sdk.SqlProj
-**THis is currently a prototype and work-in-progress**
 
 ![Build Status](https://github.com/jmezach/MSBuild.Sdk.SqlProj/workflows/CI/badge.svg)
+![Latest Stable Release](https://img.shields.io/badge/nuget/v/MSBuild.Sdk.SqlProj)
+![Latest Prerelease](https://img.shields.io/badge/nuget/vpre/MSBuild.Sdk.SqlProj)
 
 ## Introduction
 
@@ -95,4 +96,6 @@ Other metadata for the package can be controlled by using the [documented](https
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
 
-Additionally the static code analysis features of SQL Server Data Tools aren't available yet.
+The SQL Server Data Tools also includes a static code analysis feature. Currently this is not (yet) available when using this SDK.
+
+Project references, that is references between project within the same solution, are also currently not (yet) supported.
