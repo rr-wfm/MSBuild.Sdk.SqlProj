@@ -75,10 +75,12 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
     <repository type="git" url="<repository-url>" />
   </metadata>
   <files>
-    <file src="bin\$configuration$\$tfm$\$id$.dacpac" target="tools/" />
+    <file src="bin\$configuration$\$tfm$\*.dacpac" target="tools/" />
   </files>
 </package>
 ```
+
+> Note: The above `.nuspec` file will result in a package that includes the .dacpac of the project as well as any referenced .dacpac file's (those from `PackageReference`). This is by design since you'll probably need those later on when deploying the .dacpac. If you want to only include the .dacpac of the project replace `*.dacpac` with `$id$.dacpac`.
 
 Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
 
