@@ -89,7 +89,8 @@ jobs:
 
     # Set version
     - name: set version
-      run: ./nbgv cloud
+      run: ./nbgv cloud --all-vars
+      id: nbgv
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -97,7 +98,7 @@ jobs:
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
       env:
-        VERSION: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
+        VERSION: ${{ steps.nbgv.outputs.NBGV_NuGetPackageVersion }}
 
     # Download artifact
     - name: download-artifact
