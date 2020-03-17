@@ -53,6 +53,45 @@ Refer to the [documentation](https://docs.microsoft.com/en-us/dotnet/api/microso
 
 It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored.
 
+## Packaging support
+`MSBuild.Sdk.SqlProj` supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command. In order for this to work, you'll need to add a `.nuspec` file next to your project file with the same name. For example, if your `.csproj` is called `TestProject.csproj` you'll need to add a `TestProject.nuspec` file in the same folder. Fill this file with the following contents and replace the placeholder with the appropriate value:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <description>$description$</description>
+    <authors>$authors$</authors>
+    <owners>$authors$</owners>
+    <copyright>$copyright$</copyright>
+    <projectUrl>$projecturl$</projectUrl>
+    <tags>$tags$</tags>
+    <packageTypes>
+      <packageType name="$packagetype$" />
+    </packageTypes>
+    <repository type="git" url="<repository-url>" />
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\$tfm$\$id$.dacpac" target="tools/" />
+  </files>
+</package>
+```
+
+Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
+  <PropertyGroup>
+    ...
+    <PackageProjectUrl>your-project-url</PackageProjectUrl>
+  </PropertyGroup>
+</Project>
+```
+
+Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
+
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
 
