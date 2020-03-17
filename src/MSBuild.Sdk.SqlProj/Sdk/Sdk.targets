@@ -135,6 +135,7 @@
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
         <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
       </PropertyNames>
+      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(PhysicalLocation)\tools\%(Identity).dacpac')" />
     </ItemGroup>
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
@@ -149,6 +150,9 @@
     <!-- Run it, except during design-time builds -->
     <Exec Command="dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(PropertyArguments)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
+
+    <!-- Copy any referenced .dacpac packages to the output folder -->
+    <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
   </Target>
   
 </Project>
