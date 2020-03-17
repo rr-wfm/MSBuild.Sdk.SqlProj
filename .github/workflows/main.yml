@@ -33,7 +33,7 @@ jobs:
 
     # Set version
     - name: set version
-      run: ./nbgv cloud
+      run: ./nbgv cloud --all-vars
 
     # Build command line tool
     - name: dotnet build
