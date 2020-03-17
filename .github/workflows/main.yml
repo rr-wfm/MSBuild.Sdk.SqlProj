@@ -27,9 +27,13 @@ jobs:
       with:
         dotnet-version: '3.1.102'
 
-    # Apply Nerdbank.GitVersioning
-    - uses: aarnott/nbgv@v0.3
-      id: nbgv
+    # Install Nerdbank.GitVersioning
+    - name: install nbgv
+      run: dotnet tool install --tool-path . nbgv
+
+    # Set version
+    - name: set version
+      run: ./nbgv cloud
 
     # Build command line tool
     - name: dotnet build
