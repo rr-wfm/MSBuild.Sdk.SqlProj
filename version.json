@@ -11,7 +11,8 @@
     }
   },
   "release": {
-    "branchName": "release/v{version}"
+    "branchName": "release/v{version}",
+    "firstUnstableTag": "beta"
   },
   "pathFilters": [
     ":!.github/"
