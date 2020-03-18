@@ -33,7 +33,7 @@ jobs:
 
     # Set version
     - name: set version
-      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj --all-vars
+      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
 
     # Build command line tool
     - name: dotnet build
