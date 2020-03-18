@@ -112,9 +112,6 @@
     <ItemGroup> 
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
-        <!-- Determine technical name of package (ie. DeVries.WMS.Database -> DeVries_WMS_Database) -->
-        <PackageName>@(PackageReference->'%(Identity)'->Replace('.', '_'))</PackageName>
-        <!-- Prepend Pkg to techical name from above and resolve variable (ie. PkgDeVries_WMS_Database -> C:\Users\<username>\.nuget\packages\devries.wms.database\<version> -->
         <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)\%(PackageReference.Version)</PhysicalLocation>
       </_ResolvedPackageReference>
     
