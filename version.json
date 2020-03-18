@@ -1,6 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/AArnott/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "1.0.0-beta.{height}",
+  "version": "1.1.0-beta.{height}",
+  "nuGetPackageVersion": {
+    "semVer": 2.0
+  },
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
     "^refs/heads/release/v\\d+(?:\\.\\d+)+$"
@@ -13,8 +16,5 @@
   "release": {
     "branchName": "release/v{version}",
     "firstUnstableTag": "beta"
-  },
-  "nugetPackageVersion": {
-    "semVer": 2
   }
 }
