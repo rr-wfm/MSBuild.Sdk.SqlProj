@@ -89,7 +89,7 @@ jobs:
 
     # Set version
     - name: set version
-      run: ./nbgv cloud --all-vars
+      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
       id: nbgv
 
     # Replace tokens 
