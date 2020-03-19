@@ -1,8 +1,8 @@
 # MSBuild.Sdk.SqlProj
 
 ![Build Status](https://github.com/jmezach/MSBuild.Sdk.SqlProj/workflows/CI/badge.svg)
-![Latest Stable Release](https://img.shields.io/nuget/v/MSBuild.Sdk.SqlProj/)
-![Latest Prerelease](https://img.shields.io/nuget/vpre/MSBuild.Sdk.SqlProj/)
+![Latest Stable Release](https://img.shields.io/nuget/v/MSBuild.Sdk.SqlProj)
+![Latest Prerelease](https://img.shields.io/nuget/vpre/MSBuild.Sdk.SqlProj)
 
 ## Introduction
 
