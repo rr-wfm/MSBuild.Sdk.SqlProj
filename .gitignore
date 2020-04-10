@@ -347,3 +347,6 @@ src/MSBuild.Sdk.SqlProj/tools/
 
 # Ignore Mac specific files
 .DS_Store
+
+# Ignore LICENSE.txt files (needed to pack License into NuGet packages)
+LICENSE.txt
