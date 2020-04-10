@@ -9,6 +9,7 @@
     <copyright>$copyright$</copyright>
     <projectUrl>$projecturl$</projectUrl>
     <tags>$tags$</tags>
+    <license type="file">LICENSE.txt</license>
     <packageTypes>
       <packageType name="$packagetype$" />
     </packageTypes>
@@ -17,5 +18,6 @@
   <files>
     <file src="Sdk\**" target="Sdk" />
     <file src="tools\**" target="tools" />
+    <file src="LICENSE.txt" target="LICENSE.txt" />
   </files>
 </package>

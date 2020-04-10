@@ -26,6 +26,7 @@
         packagetype=MSBuildSdk
       </NuspecProperties>
     </PropertyGroup>
+    <Copy SourceFiles="../../LICENSE" DestinationFiles="LICENSE.txt" />
   </Target>
 
   <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
