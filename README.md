@@ -15,7 +15,7 @@ The simplest usage is to create a new project file with the following contents:
 <Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-    <PropertyGroup>
+    </PropertyGroup>
 </Project>
 ```
 
@@ -29,7 +29,7 @@ There are a lot of properties that can be set on the model in the resulting `.da
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
-    <PropertyGroup>
+    </PropertyGroup>
 </Project>
 ```
 
@@ -44,7 +44,7 @@ Refer to the [documentation](https://docs.microsoft.com/en-us/dotnet/api/microso
 <Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-    <PropertyGroup>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="MyDatabasePackage" Version="1.0.0" />
