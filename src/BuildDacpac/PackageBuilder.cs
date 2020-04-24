@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.SqlServer.Dac;
@@ -29,6 +29,15 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             Console.WriteLine($"Adding reference to {referenceFile.FullName}");
             Model.AddReference(referenceFile.FullName);
+        }
+
+        public void AddSqlCmdVariable(string variableName)
+        {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
+            Console.WriteLine($"Adding sqlcmd variable {variableName}");
+            Model.AddSqlCmdVariable(variableName);
         }
 
         public void AddInputFile(FileInfo inputFile)
