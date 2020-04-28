@@ -9,8 +9,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
     {
         public static void AddReference(this TSqlModel model, string referencePath)
         {
-            var service = model.GetType().GetField("_service", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(model);
-            var dataSchemaModel = service.GetType().GetProperty("DataSchemaModel", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(service);
+            var dataSchemaModel = CreateDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "Reference", "SqlSchema");
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
@@ -18,19 +17,30 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(referencePath) });
             setMetadataMethod.Invoke(customData, new object[] { "SuppressMissingDependenciesErrors", "False" });
 
-            var addCustomDataMethod = dataSchemaModel.GetType().GetMethod("AddCustomData", BindingFlags.Public | BindingFlags.Instance);
-            addCustomDataMethod.Invoke(dataSchemaModel, new object[] { customData });
+            InvokeAddMethod(dataSchemaModel, customData);
         }
+
 
         public static void AddSqlCmdVariable(this TSqlModel model, string variableName)
         {
-            var service = model.GetType().GetField("_service", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(model);
-            var dataSchemaModel = service.GetType().GetProperty("DataSchemaModel", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(service);
+            var dataSchemaModel = CreateDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "SqlCmdVariables", "SqlCmdVariable");
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
             setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
 
+            InvokeAddMethod(dataSchemaModel, customData);
+        }
+
+        private static object CreateDataSchemaModel(TSqlModel model)
+        {
+            var service = model.GetType().GetField("_service", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(model);
+            var dataSchemaModel = service.GetType().GetProperty("DataSchemaModel", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(service);
+            return dataSchemaModel;
+        }
+
+        private static void InvokeAddMethod(object dataSchemaModel, object customData)
+        {
             var addCustomDataMethod = dataSchemaModel.GetType().GetMethod("AddCustomData", BindingFlags.Public | BindingFlags.Instance);
             addCustomDataMethod.Invoke(dataSchemaModel, new object[] { customData });
         }

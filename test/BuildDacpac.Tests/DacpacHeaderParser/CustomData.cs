@@ -8,7 +8,6 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests.DacpacHeaderParser
         private readonly Dictionary<string, Metadata> _items = new Dictionary<string, Metadata>();
         public readonly string Category;
         public readonly string Type;
-        public List<string> RequiredSqlCmdVars = new List<string>();
 
         public CustomData(string category, string type)
         {

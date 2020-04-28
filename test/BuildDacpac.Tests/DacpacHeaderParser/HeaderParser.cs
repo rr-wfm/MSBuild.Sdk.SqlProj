@@ -14,17 +14,6 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests.DacpacHeaderParser
             _dacPacPath = dacPacPath;
         }
 
-        public bool HasCustomData(string category, string type, string name, string value)
-        {
-            return GetCustomData()
-                .Where(d => d.Category == "SqlCmdVariables"
-                    && d.Type == "SqlCmdVariable")
-                .SelectMany(d => d.Items)
-                .Where(i => i.Name == name
-                    && i.Value == value)
-                .ToList().Count == 1;
-        }
-
         public List<CustomData> GetCustomData()
         {
             var dac = new DacPacXml(_dacPacPath);
