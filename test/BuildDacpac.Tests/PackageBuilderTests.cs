@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -78,6 +79,46 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             
             // Cleanup
             reference.Delete();
+        }
+
+        [TestMethod]
+        public void AddSqlCmdvariable()
+        {
+            // Arrange
+            var first = "DbReader";
+            var second = "DbWriter";
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddSqlCmdVariable(first);
+            packageBuilder.AddSqlCmdVariable(second);
+
+            // Assert
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+            var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
+            
+            headerParser.GetCustomData()
+                .Where(d => d.Category == "SqlCmdVariables"
+                    && d.Type == "SqlCmdVariable")
+                .SelectMany(d => d.Items)
+                .Where(i => i.Name == "DbReader"
+                    && i.Value == string.Empty)
+                .ToList().Count.ShouldBe(1);
+
+            headerParser.GetCustomData()
+                .Where(d => d.Category == "SqlCmdVariables"
+                    && d.Type == "SqlCmdVariable")
+                .SelectMany(d => d.Items)
+                .Where(i => i.Name == "DbWriter"
+                    && i.Value == string.Empty)
+                .ToList().Count.ShouldBe(1);
+
+            // Cleanup
+            tempFile.Delete();
         }
 
         [TestMethod]
