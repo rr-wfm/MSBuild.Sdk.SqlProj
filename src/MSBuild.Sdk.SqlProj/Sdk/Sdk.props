@@ -21,7 +21,7 @@
   <Import Project="$(CustomBeforeNoTargetsProps)" Condition=" '$(CustomBeforeNoTargetsProps)' != '' And Exists('$(CustomBeforeNoTargetsProps)') " />
 
   <PropertyGroup>
-    <!-- Disable default Compile and EmbeddedResource items for NoTargets projects -->
+    <!-- Disable default Compile and EmbeddedResource items for MSBuild.Sdk.SqlProj projects -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <NoPackageAnalysis>True</NoPackageAnalysis>
