@@ -44,15 +44,6 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 }
             }
 
-            // Add SqlCmdVariables to the package (if defined)
-            if (options.SqlCmdVar != null)
-            {
-                foreach (var sqlcmdVariable in options.SqlCmdVar)
-                {
-                    packageBuilder.AddSqlCmdVariable(sqlcmdVariable);
-                }
-            }
-
             // Build the empty model for the target SQL Server version
             packageBuilder.UsingVersion(options.SqlServerVersion);
 
@@ -62,6 +53,15 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 foreach (var referenceFile in options.Reference)
                 {
                     packageBuilder.AddReference(referenceFile);
+                }
+            }
+
+            // Add SqlCmdVariables to the package (if defined)
+            if (options.SqlCmdVar != null)
+            {
+                foreach (var sqlcmdVariable in options.SqlCmdVar)
+                {
+                    packageBuilder.AddSqlCmdVariable(sqlcmdVariable);
                 }
             }
 
