@@ -1,0 +1,17 @@
+﻿using System.IO;
+using Microsoft.SqlServer.Dac.Model;
+
+namespace MSBuild.Sdk.SqlProj.BuildDacpac
+{
+    public class PackageBuilderOptions
+    {
+        public string Name { get; set; }
+        public string Version { get; set; }
+        public FileInfo Output { get; set; }
+        public SqlServerVersion SqlServerVersion { get; set; }
+        public FileInfo[] Input { get; set; }
+        public FileInfo[] Reference { get; set; }
+        public string[] Property { get; set; }
+        public string[] SqlCmdVar { get; set; }
+    }
+}
