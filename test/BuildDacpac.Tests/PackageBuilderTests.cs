@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Data.Tools.Schema.Sql.Packaging;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -116,6 +117,200 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
                 .Where(i => i.Name == "DbWriter"
                     && i.Value == string.Empty)
                 .ToList().Count.ShouldBe(1);
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_FilesExist()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act
+            packageBuilder.AddPrePostScripts(                
+                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
+                tempFile);
+
+            // Assert
+            var package = Package.Open(tempFile.FullName);
+            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));            
+            var postPart = package.GetPart(new Uri("/postdeploy.sql", UriKind.Relative));
+
+            prePart.ShouldNotBeNull();
+            prePart.ContentType.ShouldBe("text/plain");
+            prePart.GetStream().ShouldNotBeNull();
+
+            postPart.ShouldNotBeNull();
+            postPart.ContentType.ShouldBe("text/plain");
+            postPart.GetStream().ShouldNotBeNull();
+
+            // Cleanup
+            package.Close();
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_NoFilesPresent()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act
+            packageBuilder.AddPrePostScripts(
+                null,
+                null,
+                tempFile);
+
+            // Assert
+            var package = Package.Open(tempFile.FullName);
+            
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
+
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/postdeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
+
+            // Cleanup
+            package.Close();
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_PreFilePresent()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act
+            packageBuilder.AddPrePostScripts(
+                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+                null,
+                tempFile);
+
+            // Assert
+            var package = Package.Open(tempFile.FullName);
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldNotBeNull();
+
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/postdeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
+
+            // Cleanup
+            package.Close();
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_PostFilePresent()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act
+            packageBuilder.AddPrePostScripts(
+                null,
+                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
+                tempFile);
+
+            // Assert
+            var package = Package.Open(tempFile.FullName);
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
+
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/postdeploy.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldNotBeNull();
+
+            // Cleanup
+            package.Close();
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_WrongOrder()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+
+            // Act & Assert
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPrePostScripts(null, null, tempFile));
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_PreNotExists()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act & Assert
+            Should.Throw<ArgumentException>(() => packageBuilder.AddPrePostScripts(
+                new FileInfo("NonExistingScript.PreDeployment.sql"),
+                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
+                tempFile));
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePostDeployment_PostNotExists()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act & Assert
+            Should.Throw<ArgumentException>(() => packageBuilder.AddPrePostScripts(
+                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+                new FileInfo("NonExistingScript.PostDeployment.sql"),
+                tempFile));
 
             // Cleanup
             tempFile.Delete();

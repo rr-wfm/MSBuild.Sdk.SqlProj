@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using Microsoft.Data.Tools.Schema.Sql.Packaging;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
@@ -53,6 +55,31 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             Console.WriteLine($"Adding {inputFile.FullName} to the model");
             Model.AddObjects(File.ReadAllText(inputFile.FullName));
+        }
+
+        public void AddPrePostScripts(FileInfo pre, FileInfo post, FileInfo outputFile)
+        {
+            if (_modelValid != true)
+            {
+                throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
+            }
+
+            using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                if (pre != null)
+                {
+                    Console.WriteLine($"Adding {pre.FullName} to package");
+                    WritePart(pre, package, "/predeploy.sql");
+                }
+
+                if (post != null)
+                {
+                    Console.WriteLine($"Adding {post.FullName} to package");
+                    WritePart(post, package, "/postdeploy.sql");
+                }
+
+                package.Close();
+            }
         }
 
         public bool ValidateModel()
@@ -238,6 +265,21 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             if (_modelValid == null)
             {
                 throw new InvalidOperationException("Model has not been validated. Call ValidateModel first.");
+            }
+        }
+
+        private void WritePart(FileInfo file, Package package, string path)
+        {
+            if (!file.Exists)
+            {
+                throw new ArgumentException($"Unable to find script file {file.FullName}", nameof(file));
+            }
+
+            var part = package.CreatePart(new Uri(path, UriKind.Relative), "text/plain");
+
+            using (var stream = part.GetStream())
+            {
+                stream.Write(Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8)), 0, (int)file.Length);
             }
         }
     }

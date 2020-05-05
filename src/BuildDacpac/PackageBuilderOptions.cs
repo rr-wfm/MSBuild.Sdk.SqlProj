@@ -13,5 +13,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
         public FileInfo[] Reference { get; set; }
         public string[] Property { get; set; }
         public string[] SqlCmdVar { get; set; }
+        public FileInfo PreDeploy { get; set; }
+        public FileInfo PostDeploy { get; set; }
     }
 }
