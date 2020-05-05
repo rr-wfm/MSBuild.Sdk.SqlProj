@@ -57,29 +57,14 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             Model.AddObjects(File.ReadAllText(inputFile.FullName));
         }
 
-        public void AddPrePostScripts(FileInfo pre, FileInfo post, FileInfo outputFile)
+        public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
         {
-            if (_modelValid != true)
-            {
-                throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
-            }
+            AddScript(script, outputFile, "/predeploy.sql");
+        }
 
-            using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
-            {
-                if (pre != null)
-                {
-                    Console.WriteLine($"Adding {pre.FullName} to package");
-                    WritePart(pre, package, "/predeploy.sql");
-                }
-
-                if (post != null)
-                {
-                    Console.WriteLine($"Adding {post.FullName} to package");
-                    WritePart(post, package, "/postdeploy.sql");
-                }
-
-                package.Close();
-            }
+        public void AddPostDeploymentScript(FileInfo script, FileInfo outputFile)
+        {
+            AddScript(script, outputFile, "/postdeploy.sql");
         }
 
         public bool ValidateModel()
@@ -268,13 +253,34 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             }
         }
 
-        private void WritePart(FileInfo file, Package package, string path)
+        private void AddScript(FileInfo script, FileInfo outputFile, string path)
         {
-            if (!file.Exists)
+            if (_modelValid != true)
             {
-                throw new ArgumentException($"Unable to find script file {file.FullName}", nameof(file));
+                throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
             }
 
+            if (script == null)
+            {
+                return;
+            }
+
+            if (!script.Exists)
+            {
+                throw new ArgumentException($"Unable to find script file {script.FullName}", nameof(script));
+            }
+
+            using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                Console.WriteLine($"Adding {script.FullName} to package");
+                WritePart(script, package, path);
+
+                package.Close();
+            }
+        }
+
+        private void WritePart(FileInfo file, Package package, string path)
+        {
             var part = package.CreatePart(new Uri(path, UriKind.Relative), "text/plain");
 
             using (var stream = part.GetStream())

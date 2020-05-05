@@ -86,7 +86,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             packageBuilder.SaveToDisk(options.Output);
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
-            packageBuilder.AddPrePostScripts(options.PreDeploy, options.PostDeploy, options.Output);
+            packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
+            packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
 
             return 0;
         }

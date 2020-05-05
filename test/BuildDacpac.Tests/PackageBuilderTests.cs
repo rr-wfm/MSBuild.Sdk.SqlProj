@@ -123,7 +123,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         }
 
         [TestMethod]
-        public void AddPrePostDeployment_FilesExist()
+        public void AddPreDeployment_FilesExist()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -134,8 +134,11 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPrePostScripts(                
+            packageBuilder.AddPreDeploymentScript(                
                 new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+                tempFile);
+
+            packageBuilder.AddPostDeploymentScript(
                 new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
                 tempFile);
 
@@ -158,7 +161,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         }
 
         [TestMethod]
-        public void AddPrePostDeployment_NoFilesPresent()
+        public void AddPreDeployment_NoFilePresent()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -169,8 +172,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPrePostScripts(
-                null,
+            packageBuilder.AddPreDeploymentScript(
                 null,
                 tempFile);
 
@@ -193,7 +195,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         }
 
         [TestMethod]
-        public void AddPrePostDeployment_PreFilePresent()
+        public void AddPostDeployment_NoFilePresent()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -204,17 +206,12 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPrePostScripts(
-                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+            packageBuilder.AddPostDeploymentScript(
                 null,
                 tempFile);
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            package.GetParts()
-                .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
-                .FirstOrDefault()
-                .ShouldNotBeNull();
 
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/postdeploy.sql", UriKind.Relative))
@@ -226,42 +223,9 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             tempFile.Delete();
         }
 
-        [TestMethod]
-        public void AddPrePostDeployment_PostFilePresent()
-        {
-            // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
-            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
-            packageBuilder.ValidateModel();
-            packageBuilder.SaveToDisk(tempFile);
-
-            // Act
-            packageBuilder.AddPrePostScripts(
-                null,
-                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
-                tempFile);
-
-            // Assert
-            var package = Package.Open(tempFile.FullName);
-            package.GetParts()
-                .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
-                .FirstOrDefault()
-                .ShouldBeNull();
-
-            package.GetParts()
-                .Where(p => p.Uri == new Uri("/postdeploy.sql", UriKind.Relative))
-                .FirstOrDefault()
-                .ShouldNotBeNull();
-
-            // Cleanup
-            package.Close();
-            tempFile.Delete();
-        }
 
         [TestMethod]
-        public void AddPrePostDeployment_WrongOrder()
+        public void AddPreDeployment_WrongOrder()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -271,7 +235,21 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 
 
             // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPrePostScripts(null, null, tempFile));
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPreDeploymentScript(null, tempFile));
+        }
+
+        [TestMethod]
+        public void AddPostDeployment_WrongOrder()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+
+            // Act & Assert
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPostDeploymentScript(null, tempFile));
         }
 
         [TestMethod]
@@ -286,9 +264,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPrePostScripts(
+            Should.Throw<ArgumentException>(() => packageBuilder.AddPreDeploymentScript(
                 new FileInfo("NonExistingScript.PreDeployment.sql"),
-                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
                 tempFile));
 
             // Cleanup
@@ -296,7 +273,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
         }
 
         [TestMethod]
-        public void AddPrePostDeployment_PostNotExists()
+        public void AddPostDeployment_PostNotExists()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -307,8 +284,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPrePostScripts(
-                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+            Should.Throw<ArgumentException>(() => packageBuilder.AddPostDeploymentScript(
                 new FileInfo("NonExistingScript.PostDeployment.sql"),
                 tempFile));
 
