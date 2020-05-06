@@ -143,10 +143,14 @@
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
+      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
+      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <BuildDacpacTfm>netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</BuildDacpacTfm>
+      <BuildDacpacCommand>dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument)</BuildDacpacCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
-    <Exec Command="dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments)"
+    <Message Importance="Low" Text="Running command: $(BuildDacpacCommand)" />
+    <Exec Command="$(BuildDacpacCommand)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
 
     <!-- Copy any referenced .dacpac packages to the output folder -->

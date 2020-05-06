@@ -18,10 +18,10 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"), 
                 new Option<FileInfo[]>(new string[] { "--input", "-i" }, "Input file name(s)"),
                 new Option<FileInfo[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
+                new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
+                new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
-                new Option<FileInfo>(new string[] { "--predeploy", "-pre" }, "Filename of optional pre-deployment script"),
-                new Option<FileInfo>(new string[] { "--postdeploy", "-post" }, "Filename of optional post-deployment script"),
             };
 
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
