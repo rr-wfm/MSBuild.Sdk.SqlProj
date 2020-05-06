@@ -20,6 +20,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 new Option<FileInfo[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
+                new Option<FileInfo>(new string[] { "--predeploy", "-pre" }, "Filename of optional pre-deployment script"),
+                new Option<FileInfo>(new string[] { "--postdeploy", "-post" }, "Filename of optional post-deployment script"),
             };
 
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
@@ -82,6 +84,11 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             // Save the package to disk
             packageBuilder.SaveToDisk(options.Output);
+
+            // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
+            packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
+            packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
+
             return 0;
         }
 
