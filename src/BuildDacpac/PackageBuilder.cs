@@ -285,7 +285,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             using (var stream = part.GetStream())
             {
-                stream.Write(Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8)), 0, (int)file.Length);
+                var buffer = Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8));
+                stream.Write(buffer, 0, buffer.Length);
             }
         }
     }
