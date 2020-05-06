@@ -40,7 +40,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             foreach (var variableName in variableNames)
             {
-                Console.WriteLine($"Adding sqlcmd variable {variableName}");
+                Console.WriteLine($"Adding SqlCmd variable {variableName}");
             }
 
             Model.AddSqlCmdVariables(variableNames);
