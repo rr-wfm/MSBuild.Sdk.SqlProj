@@ -21,13 +21,17 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
         }
 
 
-        public static void AddSqlCmdVariable(this TSqlModel model, string variableName)
+        public static void AddSqlCmdVariables(this TSqlModel model, string[] variableNames)
         {
             var dataSchemaModel = GetDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "SqlCmdVariables", "SqlCmdVariable");
-            var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-            setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
+
+            foreach (var variableName in variableNames)
+            {
+                var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
+                setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
+            }
 
             AddCustomData(dataSchemaModel, customData);
         }

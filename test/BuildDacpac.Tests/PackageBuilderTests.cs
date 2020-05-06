@@ -94,8 +94,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddSqlCmdVariable(first);
-            packageBuilder.AddSqlCmdVariable(second);
+            packageBuilder.AddSqlCmdVariables(new string[] { first, second });
 
             // Assert
             packageBuilder.ValidateModel();
