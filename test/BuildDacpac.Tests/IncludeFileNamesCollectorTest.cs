@@ -52,8 +52,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             parseErrors.Any().ShouldBeFalse(string.Join(Environment.NewLine, parseErrors));
 
             var includedFiles = result.ToList();
-            includedFiles[0].EndsWith("SCRIPT1.SQL").ShouldBeTrue();   // Full paths are returned in uppercase
-            includedFiles[1].EndsWith("SCRIPT2.SQL").ShouldBeTrue();
+            includedFiles[0].EndsWith("SCRIPT1.SQL", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
+            includedFiles[1].EndsWith("SCRIPT2.SQL", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
         }
     }
 }
