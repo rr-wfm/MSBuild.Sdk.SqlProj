@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
+    <PreDeploy Include="Pre-Deployment\Script.PreDeployment.sql" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
