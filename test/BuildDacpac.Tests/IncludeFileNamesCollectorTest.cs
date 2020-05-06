@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Diagnostics;
 
 namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 {
@@ -51,7 +52,8 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             result.Any().ShouldBeTrue();
             if (parseErrors.Any())
             {
-                Console.WriteLine(string.Join(Environment.NewLine, parseErrors));
+                Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
+                Trace.WriteLine(string.Join(Environment.NewLine, parseErrors));
             }
 
             parseErrors.Any().ShouldBeFalse();
