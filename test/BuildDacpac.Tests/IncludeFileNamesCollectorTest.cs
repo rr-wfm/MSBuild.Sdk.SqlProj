@@ -49,13 +49,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
             var parseErrors = instance.GetParseErrors();
 
             // Assert
-            result.Any().ShouldBeTrue();
-            if (parseErrors.Any())
-            {
-                Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-                Trace.WriteLine(string.Join(Environment.NewLine, parseErrors));
-            }
-
+            result.Any().ShouldBeTrue(string.Join(Environment.NewLine, parseErrors));
             parseErrors.Any().ShouldBeFalse();
 
             var includedFiles = result.ToList();
