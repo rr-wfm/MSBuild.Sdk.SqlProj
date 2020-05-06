@@ -49,7 +49,12 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 
             // Assert
             result.Any().ShouldBeTrue();
-            parseErrors.Any().ShouldBeFalse(string.Join(Environment.NewLine, parseErrors));
+            if (parseErrors.Any())
+            {
+                Console.WriteLine(string.Join(Environment.NewLine, parseErrors));
+            }
+
+            parseErrors.Any().ShouldBeFalse();
 
             var includedFiles = result.ToList();
             includedFiles[0].EndsWith("SCRIPT1.SQL", StringComparison.OrdinalIgnoreCase).ShouldBeTrue();
