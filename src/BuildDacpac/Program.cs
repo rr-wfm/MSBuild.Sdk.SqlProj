@@ -61,10 +61,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             // Add SqlCmdVariables to the package (if defined)
             if (options.SqlCmdVar != null)
             {
-                foreach (var sqlcmdVariable in options.SqlCmdVar)
-                {
-                    packageBuilder.AddSqlCmdVariable(sqlcmdVariable);
-                }
+                packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
             }
 
             // Add input files

@@ -33,13 +33,17 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             Model.AddReference(referenceFile.FullName);
         }
 
-        public void AddSqlCmdVariable(string variableName)
+        public void AddSqlCmdVariables(string[] variableNames)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            Console.WriteLine($"Adding sqlcmd variable {variableName}");
-            Model.AddSqlCmdVariable(variableName);
+            foreach (var variableName in variableNames)
+            {
+                Console.WriteLine($"Adding sqlcmd variable {variableName}");
+            }
+
+            Model.AddSqlCmdVariables(variableNames);
         }
 
         public void AddInputFile(FileInfo inputFile)
@@ -285,7 +289,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
 
             using (var stream = part.GetStream())
             {
-                var buffer = Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8));
+                var buffer = Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8) + Environment.NewLine + "GO" + Environment.NewLine);
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
