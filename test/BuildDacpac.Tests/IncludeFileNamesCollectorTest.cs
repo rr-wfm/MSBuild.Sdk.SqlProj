@@ -2,6 +2,7 @@ using Shouldly;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 {
@@ -28,7 +29,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 
             // Assert
             result.Any().ShouldBeFalse();
-            parseErrors.Any().ShouldBeFalse();
+            parseErrors.Any().ShouldBeFalse(string.Join(Environment.NewLine, parseErrors));
         }
 
         /// <summary>
@@ -48,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
 
             // Assert
             result.Any().ShouldBeTrue();
-            parseErrors.Any().ShouldBeFalse();
+            parseErrors.Any().ShouldBeFalse(string.Join(Environment.NewLine, parseErrors));
 
             var includedFiles = result.ToList();
             includedFiles[0].EndsWith("SCRIPT1.SQL").ShouldBeTrue();   // Full paths are returned in uppercase
