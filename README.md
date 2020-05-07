@@ -29,6 +29,7 @@ There are a lot of properties that can be set on the model in the resulting `.da
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
+        <SqlServerVersion>SqlAzure</SqlServerVersion>
     </PropertyGroup>
 </Project>
 ```
