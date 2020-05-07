@@ -12,7 +12,7 @@ An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application p
 The simplest usage is to create a new project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -25,7 +25,7 @@ Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netst
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -38,17 +38,59 @@ Refer to the [documentation](https://docs.microsoft.com/en-us/dotnet/api/microso
 
 **Note:** If you are replacing an existing `.sqlproj` be sure to copy over any of these properties into the new project file.
 
+## Pre- and post deployment scripts
+Support for pre- and post deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
+
+> LIMITATION: Currently there is no support for including other scripts from the pre- or post deployment script using the `:r OtherScript.sql` syntax. See [this issue](issues/23) for more details.
+
+To include these scripts into your `.dacpac` add the following to your `.csproj`:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+    <PropertyGroup>
+        ...
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
+    <PreDeploy Include="Pre-Deployment\Script.PreDeployment.sql" />
+  </ItemGroup>
+</Project>
+```
+
+## SQLCMD variables
+Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+    <PropertyGroup>
+        ...
+    </PropertyGroup>
+
+  <ItemGroup>
+    <SqlCmdVariable Include="MySqlCmdVariable">
+      <DefaultValue>DefaultValue</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="MySqlCmdVariable2">
+      <DefaultValue>DefaultValue</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+</Project>
+```
+
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MyDatabasePackage" Version="1.0.0" />
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" />
     </ItemGroup>
 </Project>
 ```
@@ -86,7 +128,7 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.0.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
   <PropertyGroup>
     ...
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
