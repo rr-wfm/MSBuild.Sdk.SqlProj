@@ -1,2 +1,2 @@
-:r Script1.sql
-:r Script2.sql
+:r ./Script1.sql
+:r ./Script2.sql
