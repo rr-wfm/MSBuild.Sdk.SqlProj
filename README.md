@@ -138,6 +138,18 @@ Additionally you'll need to set the `PackageProjectUrl` property inside of the `
 
 Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
 
+## Workaround for parser errors (SQL46010)
+This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
+
+1. Exclude the file from the build entirely by changing its build action to None.
+1. Move the offending script to the pre- and/or post-deployment scripts.
+1. Use dynamic SQL instead, like this:
+
+```sql
+DECLARE @Query NVARCHAR(MAX) = '<your-script>'
+EXEC (@Query)
+```
+
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
 
