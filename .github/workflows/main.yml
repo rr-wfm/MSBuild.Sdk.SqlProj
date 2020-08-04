@@ -122,14 +122,21 @@ jobs:
 
     # Build the project
     - name: build project
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl
 
-    # Upload artifact
+    # Upload dacpac
     - name: upload
       uses: actions/upload-artifact@v1
       with:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}
+        path: ./msbuild.binlog
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container
   deploy:
