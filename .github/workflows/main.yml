@@ -51,16 +51,27 @@ jobs:
     - name: dotnet build TestProject
       run: dotnet build ./test/TestProject/TestProject.csproj -c Release
     
-    # Package
-    - name: dotnet pack
+    # Package SDK
+    - name: dotnet pack SDK
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
-    # Upload package
-    - name: upload
+    # Upload SDK package
+    - name: upload SDK
       uses: actions/upload-artifact@v1
       with:
         name: nuget-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
+    
+    # Package TestProject
+    - name: dotnet pack TestProject
+      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj
+
+    # Upload TestProject package
+    - name: upload TestProject
+      uses: actions/upload-artifact@v1
+      with:
+        name: nuget-package
+        path: ./test/TestProject/bin/Release/
 
   # Run tests in parallel
   test:
@@ -153,6 +164,7 @@ jobs:
         ~/sqlpackage/sqlpackage
         /Action:Publish
         /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
+        /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:JdMsKZPBBA8kVFXVrj8d

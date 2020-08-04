@@ -97,6 +97,19 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 
 It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored.
 
+When deploying a dacpac with references to other dacpacs, if you want the contents of all dacpacs to be deployed to a single database you will need to specify the `IncludeCompositeObjects` property. For example:
+
+```bash
+sqlpackage
+    /Action:Publish \
+    /SourceFile:MyDatabase.dacpac \
+    /TargetServerName:localhost \
+    /TargetDatabaseName:MyDatabase \
+    /TargetUser:sa \
+    /TargetPassword: MyP@ssword \
+    /Properties:IncludeCompositeObjects=True
+```
+
 ## Packaging support
 `MSBuild.Sdk.SqlProj` supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command. In order for this to work, you'll need to add a `.nuspec` file next to your project file with the same name. For example, if your `.csproj` is called `TestProject.csproj` you'll need to add a `TestProject.nuspec` file in the same folder. Fill this file with the following contents and replace the placeholder with the appropriate value:
 

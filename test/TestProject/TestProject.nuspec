@@ -15,6 +15,6 @@
     <repository type="git" url="https://github.com/jmezach/MSBuild.Sdk.SqlProj/" />
   </metadata>
   <files>
-    <file src="bin\$configuration$\$tfm$\$id$.dacpac" target="tools/" />
+    <file src="bin/$configuration$/$tfm$/$id$.dacpac" target="tools/" />
   </files>
 </package>
