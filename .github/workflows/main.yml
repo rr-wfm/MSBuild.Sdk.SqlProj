@@ -59,7 +59,7 @@ jobs:
     - name: upload SDK
       uses: actions/upload-artifact@v1
       with:
-        name: nuget-package
+        name: nuget-packages
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
     # Package TestProject
@@ -70,7 +70,7 @@ jobs:
     - name: upload TestProject
       uses: actions/upload-artifact@v1
       with:
-        name: nuget-package
+        name: nuget-packages
         path: ./test/TestProject/bin/Release/
 
   # Run tests in parallel
@@ -113,8 +113,8 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v1
       with:
-        name: nuget-package
-        path: test/TestProjectWithSDKRef/nuget-package
+        name: nuget-packages
+        path: test/TestProjectWithSDKRef/nuget-packages
 
     # Restore packages
     - name: dotnet restore
@@ -197,10 +197,10 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v1
       with:
-        name: nuget-package
-        path: ~/nuget-package
+        name: nuget-packages
+        path: ~/nuget-packages
 
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
-      working-directory: ~/nuget-package/
+      working-directory: ~/nuget-packages/
