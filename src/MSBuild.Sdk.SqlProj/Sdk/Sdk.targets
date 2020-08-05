@@ -14,7 +14,7 @@
     command-line just fine.
   -->
   <PropertyGroup>
-    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
+    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)/Microsoft.Common.targets</LanguageTargets>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetPath>$(TargetDir)\$(MSBuildProjectName).dacpac</TargetPath>
+    <TargetPath>$(TargetDir)/$(MSBuildProjectName).dacpac</TargetPath>
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
@@ -112,14 +112,14 @@
     <ItemGroup> 
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
-        <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)\%(PackageReference.Version)</PhysicalLocation>
+        <DacpacFile>$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())/tools/%(Identity).dacpac</DacpacFile>
       </_ResolvedPackageReference>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
-      <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists('%(PhysicalLocation)\tools\%(Identity).dacpac')" />
+      <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
-  
-    <Message Importance="normal" Text="Resolved package reference %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.PhysicalLocation)" />
+
+    <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.DacpacFile)" />
     <Message Importance="normal" Text="Resolved database package references: @(DacpacReference)" />
   </Target>
 
@@ -132,14 +132,14 @@
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
         <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
       </PropertyNames>
-      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(PhysicalLocation)\tools\%(Identity).dacpac')" />
+      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n $(MSBuildProjectName) -v $(PackageVersion)</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
-      <ReferenceArguments>@(DacpacReference->'-r &quot;%(PhysicalLocation)\tools\%(Identity).dacpac&quot;', ' ')</ReferenceArguments>
+      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
