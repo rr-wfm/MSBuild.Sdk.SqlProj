@@ -115,7 +115,7 @@
         <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)</PhysicalLocation>
       </_ResolvedPackageReference>
       <_ResolvedDacpacFile Include="@(_ResolvedPackageReference)">
-        <DacpacFile>$([System.String]::new('%(PhysicalLocation)/tools/%(Identity).dacpac').ToLower())</DacpacFile>
+        <DacpacFile>$([System.String]::new('%(PhysicalLocation)/tools/').ToLower())%(Identity).dacpac</DacpacFile>
       </_ResolvedDacpacFile>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
