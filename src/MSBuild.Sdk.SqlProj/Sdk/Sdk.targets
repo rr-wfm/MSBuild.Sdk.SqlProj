@@ -112,19 +112,15 @@
     <ItemGroup> 
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
-        <PhysicalLocation>$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)</PhysicalLocation>
+        <DacpacFile>$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())/tools/%(Identity).dacpac</DacpacFile>
       </_ResolvedPackageReference>
-      <_ResolvedDacpacFile Include="@(_ResolvedPackageReference)">
-        <DacpacFile>$([System.String]::new('%(PhysicalLocation)/tools/').ToLower())%(Identity).dacpac</DacpacFile>
-      </_ResolvedDacpacFile>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
-      <DacpacReference Include="@(_ResolvedDacpacFile)" Condition="Exists(%(DacpacFile))" />
+      <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
 
-    <Message Importance="High" Text="Resolved package reference %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.PhysicalLocation)" />
-    <Message Importance="High" Text="Resolved dacpac file from package %(_ResolvedDacpacFile.Identity) to %(_ResolvedDacpacFile.DacpacFile)" />
-    <Message Importance="High" Text="Resolved database package references: @(DacpacReference)" />
+    <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.DacpacFile)" />
+    <Message Importance="normal" Text="Resolved database package references: @(DacpacReference)" />
   </Target>
 
   <!--
