@@ -116,16 +116,15 @@
       </_ResolvedPackageReference>
       <_ResolvedDacpacFile Include="@(_ResolvedPackageReference)">
         <DacpacFile>$([System.String]::new('%(PhysicalLocation)/tools/%(Identity).dacpac').ToLower())</DacpacFile>
-        <IdentityLower>$([System.String]::new('%(Identity)').ToLower())</IdentityLower>
       </_ResolvedDacpacFile>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
       <DacpacReference Include="@(_ResolvedDacpacFile)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
 
-    <Message Importance="normal" Text="Resolved package reference %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.PhysicalLocation)" />
-    <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedDacpacFile.Identity) to %(_ResolvedDacpacFile.DacpacFile)" />
-    <Message Importance="normal" Text="Resolved database package references: @(DacpacReference)" />
+    <Message Importance="High" Text="Resolved package reference %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.PhysicalLocation)" />
+    <Message Importance="High" Text="Resolved dacpac file from package %(_ResolvedDacpacFile.Identity) to %(_ResolvedDacpacFile.DacpacFile)" />
+    <Message Importance="High" Text="Resolved database package references: @(DacpacReference)" />
   </Target>
 
   <!--
@@ -137,14 +136,14 @@
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
         <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
       </PropertyNames>
-      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(PhysicalLocation)/tools/%(IdentityLower).dacpac')" />
+      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n $(MSBuildProjectName) -v $(PackageVersion)</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
-      <ReferenceArguments>@(DacpacReference->'-r &quot;%(PhysicalLocation)/tools/%(IdentityLower).dacpac&quot;', ' ')</ReferenceArguments>
+      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
