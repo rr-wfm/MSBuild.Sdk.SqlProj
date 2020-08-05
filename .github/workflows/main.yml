@@ -51,16 +51,27 @@ jobs:
     - name: dotnet build TestProject
       run: dotnet build ./test/TestProject/TestProject.csproj -c Release
     
-    # Package
-    - name: dotnet pack
+    # Package SDK
+    - name: dotnet pack SDK
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
-    # Upload package
-    - name: upload
+    # Upload SDK package
+    - name: upload SDK
       uses: actions/upload-artifact@v1
       with:
-        name: nuget-package
+        name: nuget-packages
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
+    
+    # Package TestProject
+    - name: dotnet pack TestProject
+      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj
+
+    # Upload TestProject package
+    - name: upload TestProject
+      uses: actions/upload-artifact@v1
+      with:
+        name: nuget-packages
+        path: ./test/TestProject/bin/Release/
 
   # Run tests in parallel
   test:
@@ -102,8 +113,8 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v1
       with:
-        name: nuget-package
-        path: test/TestProjectWithSDKRef/nuget-package
+        name: nuget-packages
+        path: test/TestProjectWithSDKRef/nuget-packages
 
     # Restore packages
     - name: dotnet restore
@@ -111,14 +122,21 @@ jobs:
 
     # Build the project
     - name: build project
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl
 
-    # Upload artifact
+    # Upload dacpac
     - name: upload
       uses: actions/upload-artifact@v1
       with:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}
+        path: ./msbuild.binlog
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container
   deploy:
@@ -153,6 +171,7 @@ jobs:
         ~/sqlpackage/sqlpackage
         /Action:Publish
         /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
+        /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:JdMsKZPBBA8kVFXVrj8d
@@ -178,10 +197,10 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v1
       with:
-        name: nuget-package
-        path: ~/nuget-package
+        name: nuget-packages
+        path: ~/nuget-packages
 
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push *.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
-      working-directory: ~/nuget-package/
+      working-directory: ~/nuget-packages/
