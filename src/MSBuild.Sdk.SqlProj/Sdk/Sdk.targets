@@ -156,11 +156,23 @@
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
   </Target>
 
+  <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
   <Target Name="Publish" DependsOnTargets="Build">
+    <ItemGroup>
+      <_DeployPropertyNames Include="$(KnownDeployProperties)" />
+      <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
+        <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
+      </DeployPropertyNames>
+    </ItemGroup>
     <PropertyGroup>
-      <DacpacToolCommand>dotnet $(DacpacToolExe) deploy</DacpacToolCommand>
+      <InputArgument>-i $(TargetPath)</InputArgument>
+      <TargetServerArgument>-ts $(TargetServer)</TargetServerArgument>
+      <TargetDatabaseNameArgument>-td $(TargetDatabaseName)</TargetDatabaseNameArgument>
+      <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
+      <UsernameArgument Condition="'$(TargetServerUsername)'!=''">-u $(TargetServerUsername)</UsernameArgument>
+      <DacpacToolCommand>dotnet $(DacpacToolExe) deploy $(InputArgument) $(TargetServerArgument) $(TargetDatabaseNameArgument) $(PropertyArguments) $(UsernameArgument)</DacpacToolCommand>
     </PropertyGroup>
-    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
+    <Message Importance="High" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
   

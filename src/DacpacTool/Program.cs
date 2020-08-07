@@ -1,7 +1,10 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -27,7 +30,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var deployCommand = new Command("deploy")
             {
-                new Option<string>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
+                new Option<FileInfo>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
+                new Option<string>(new string[] { "--targetServer", "-ts" }, "Name of the server to deploy the package to"),
+                new Option<string>(new string[] { "--targetDatabaseName", "-td" }, "Name of the database to deploy the package to"),
+                new Option<string>(new string[] { "--username", "-u" }, "Username used to connect to the target server"),
+                new Option<string[]>(new string[] { "--property", "-p" }, "Properties used to control the deployment")
             };
             deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
 
@@ -96,9 +103,32 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return 0;
         }
 
-        private static int DeployDacpac(DeployOptions deployOptions)
+        private static int DeployDacpac(DeployOptions options)
         {
-            System.Console.WriteLine("Deploying dacpac...");
+            using var deployer = new PackageDeployer();
+            deployer.LoadPackage(options.Input);
+
+            if (options.Property != null)
+            {
+                foreach (var propertyValue in options.Property)
+                {
+                    string[] keyValuePair = propertyValue.Split('=', 2);
+                    deployer.SetProperty(keyValuePair[0], keyValuePair[1]);
+                }
+            }
+
+            deployer.UseTargetServer(options.TargetServer);
+            
+            if (!string.IsNullOrWhiteSpace(options.Username))
+            {
+                deployer.UseSqlAuthentication(options.Username);
+            }
+            else
+            {
+                deployer.UseWindowsAuthentication();
+            }
+
+            deployer.Deploy(options.TargetDatabaseName);
             return 0;
         }
     }
