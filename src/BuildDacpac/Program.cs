@@ -10,7 +10,7 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
     {
         static async Task<int> Main(string[] args)
         {
-            var rootCommand = new RootCommand
+            var buildCommand = new Command("build")
             {
                 new Option<string>(new string[] { "--name", "-n" }, "Name of the package"),
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
@@ -23,9 +23,16 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
             };
+            buildCommand.Handler = CommandHandler.Create<PackageBuilderOptions>(BuildDacpac);
 
+            var deployCommand = new Command("deploy")
+            {
+                new Option<string>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
+            };
+            deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
+
+            var rootCommand = new RootCommand { buildCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
-            rootCommand.Handler = CommandHandler.Create<PackageBuilderOptions>(BuildDacpac);
 
             return await rootCommand.InvokeAsync(args);
         }
@@ -89,5 +96,10 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             return 0;
         }
 
+        private static int DeployDacpac(DeployOptions deployOptions)
+        {
+            System.Console.WriteLine("Deploying dacpac...");
+            return 0;
+        }
     }
 }

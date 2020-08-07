@@ -31,7 +31,7 @@
 
   <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
     <PropertyGroup>
-      <_BuildDacpacSupportedTfms>netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</_BuildDacpacSupportedTfms>
+      <_BuildDacpacSupportedTfms>netcoreapp2.1;netcoreapp3.1</_BuildDacpacSupportedTfms>
     </PropertyGroup>
     <ItemGroup>
       <BuildDacpacSupportedTfms Include="$(_BuildDacpacSupportedTfms)" />

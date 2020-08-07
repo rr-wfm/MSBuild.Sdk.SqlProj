@@ -146,7 +146,7 @@
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <BuildDacpacTfm>netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</BuildDacpacTfm>
-      <BuildDacpacCommand>dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument)</BuildDacpacCommand>
+      <BuildDacpacCommand>dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument)</BuildDacpacCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(BuildDacpacCommand)" />
@@ -155,6 +155,15 @@
 
     <!-- Copy any referenced .dacpac packages to the output folder -->
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
+  </Target>
+
+  <Target Name="Publish" DependsOnTargets="Build">
+    <PropertyGroup>
+      <DacpacToolTfm>netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
+      <DacpacToolCommand>dotnet $(MSBuildThisFileDirectory)../tools/$(BuildDacpacTfm)/BuildDacpac.dll deploy</DacpacToolCommand>
+    </PropertyGroup>
+    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
+    <Exec Command="$(DacpacToolCommand)" />
   </Target>
   
 </Project>
