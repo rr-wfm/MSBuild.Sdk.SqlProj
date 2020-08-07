@@ -191,7 +191,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.102'
+        dotnet-version: '3.1.302'
 
     # Download artifacts
     - name: download-artifact
