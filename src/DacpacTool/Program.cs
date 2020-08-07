@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     class Program
     {

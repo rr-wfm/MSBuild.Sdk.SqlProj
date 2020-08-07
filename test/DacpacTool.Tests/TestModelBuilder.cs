@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
     internal class TestModelBuilder
     {

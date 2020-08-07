@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
     /// <summary>
     /// Contains tests for the <see cref="Extensions" /> class.

@@ -37,11 +37,11 @@ jobs:
 
     # Build command line tool
     - name: dotnet build
-      run: dotnet build ./src/BuildDacpac/BuildDacpac.csproj -c Release
+      run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
     # Run tests for command line tool
     - name: dotnet test
-      run: dotnet test ./test/BuildDacpac.Tests/BuildDacpac.Tests.csproj -c Release
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
 
     # Run build for SDK package
     - name: dotnet build

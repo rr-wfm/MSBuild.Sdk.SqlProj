@@ -1,4 +1,4 @@
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public class DeployOptions
     {

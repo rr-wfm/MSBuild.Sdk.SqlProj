@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests.DacpacHeaderParser
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
 {
     public class CustomData
     {

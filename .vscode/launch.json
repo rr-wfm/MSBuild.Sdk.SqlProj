@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/src/BuildDacpac/bin/Debug/netcoreapp3.1/BuildDacpac.dll",
+            "program": "${workspaceFolder}/src/Dacpactool/bin/Debug/netcoreapp3.1/Dacpactool.dll",
             "args": [
                 "-n",
                 "MyPackage",
@@ -24,7 +24,7 @@
                 "-p",
                 "AnsiNullsOn=true"
             ],
-            "cwd": "${workspaceFolder}/src/BuildDacpac",
+            "cwd": "${workspaceFolder}/src/Dacpactool",
             "console": "internalConsole",
             "stopAtEntry": false
         },

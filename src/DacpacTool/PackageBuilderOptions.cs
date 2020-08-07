@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public class PackageBuilderOptions
     {

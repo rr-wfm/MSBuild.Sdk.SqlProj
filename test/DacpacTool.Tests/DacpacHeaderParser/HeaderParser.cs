@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests.DacpacHeaderParser
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
 {
     public class HeaderParser
     {
