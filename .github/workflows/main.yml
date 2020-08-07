@@ -150,6 +150,12 @@ jobs:
           SA_PASSWORD: JdMsKZPBBA8kVFXVrj8d
         ports:
           - 1433:1433
+        options: >-
+          --health-cmd /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 10
+          --health-start-period 10s
     steps:
     # Download artifacts
     - name: download-artifact
