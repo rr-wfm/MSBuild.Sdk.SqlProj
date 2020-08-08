@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
@@ -8,42 +9,71 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class PackageDeployer : IDisposable
     {
-        private readonly SqlConnectionStringBuilder _builder = new SqlConnectionStringBuilder();
-        private readonly DacDeployOptions _deployOptions = new DacDeployOptions();
-        private DacPackage _package;
+        private readonly IConsole _console;
+
+        public PackageDeployer(IConsole console)
+        {
+            _console = console ?? throw new ArgumentNullException(nameof(console));
+        }
+
+        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
+        public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
+        public DacPackage Package { get; private set; }
 
         public void LoadPackage(FileInfo dacpacPackage)
         {
-            Console.WriteLine($"Loading package from '{dacpacPackage.FullName}'");
-            _package = DacPackage.Load(dacpacPackage.FullName);
+            if (!dacpacPackage.Exists)
+            {
+                throw new ArgumentException($"File {dacpacPackage.FullName} does not exist.", nameof(dacpacPackage));
+            }
+
+            Package = DacPackage.Load(dacpacPackage.FullName);
+            _console.WriteLine($"Loaded package '{Package.Name}' version '{Package.Version}' from '{dacpacPackage.FullName}'");
         }
 
         public void UseTargetServer(string targetServer)
         {
-            Console.WriteLine($"Using target server '{targetServer}'");
-            _builder.DataSource = targetServer;
+            EnsurePackageLoaded();
+
+            _console.WriteLine($"Using target server '{targetServer}'");
+            ConnectionStringBuilder.DataSource = targetServer;
         }
 
-        public void UseSqlAuthentication(string username)
+        public void UseSqlAuthentication(string username, string password)
         {
-            Console.WriteLine("Enter password:");
-            _builder.UserID = username;
-            _builder.Password = Console.ReadLine();
-            Console.WriteLine("Using SQL Server Authentication");
+            EnsurePackageLoaded();
+
+            ConnectionStringBuilder.UserID = username;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                _console.WriteLine("Enter password:");
+                ConnectionStringBuilder.Password = _console.ReadLine();
+            }
+            else
+            {
+                ConnectionStringBuilder.Password = password;
+            }
+
+            _console.WriteLine("Using SQL Server Authentication");
         }
 
         public void UseWindowsAuthentication()
         {
-            _builder.IntegratedSecurity = true;
-            Console.WriteLine("Using Windows Authentication");
+            EnsurePackageLoaded();
+
+            ConnectionStringBuilder.IntegratedSecurity = true;
+            _console.WriteLine("Using Windows Authentication");
         }
 
         public void Deploy(string targetDatabaseName)
         {
-            Console.WriteLine($"Deploying to database '{targetDatabaseName}'");
-            var services = new DacServices(_builder.ConnectionString);
-            services.Deploy(_package, targetDatabaseName, true, _deployOptions);
-            Console.WriteLine($"Succesfully deployed database '{targetDatabaseName}'");
+            EnsurePackageLoaded();
+            EnsureConnectionStringComplete();
+
+            _console.WriteLine($"Deploying to database '{targetDatabaseName}'");
+            var services = new DacServices(ConnectionStringBuilder.ConnectionString);
+            services.Deploy(Package, targetDatabaseName, true, DeployOptions);
+            _console.WriteLine($"Succesfully deployed database '{targetDatabaseName}'");
         }
 
         public void SetProperty(string key, string value)
@@ -67,12 +97,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "CompareUsingTargetCollation" => bool.Parse(value),
                     "CreateNewDatabase" => bool.Parse(value),
                     "DatabaseLockTimeout" => int.Parse(value),
-                    "DatabaseSpecification" => throw new NotSupportedException(),
+                    "DatabaseSpecification" => ParseDatabaseSpecification(value),
                     "DeployDatabaseInSingleUserMode" => bool.Parse(value),
                     "DisableAndReenableDdlTriggers" => bool.Parse(value),
                     "DoNotAlterChangeDataCaptureObjects" => bool.Parse(value),
                     "DoNotAlterReplicatedObjects" => bool.Parse(value),
-                    "DoNotDropObjectTypes" => throw new NotSupportedException(),
+                    "DoNotDropObjectTypes" => ParseObjectTypes(value),
                     "DropConstraintsNotInSource" => bool.Parse(value),
                     "DropDmlTriggersNotInSource" => bool.Parse(value),
                     "DropExtendedPropertiesNotInSource" => bool.Parse(value),
@@ -81,7 +111,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "DropPermissionsNotInSource" => bool.Parse(value),
                     "DropRoleMembersNotInSource" => bool.Parse(value),
                     "DropStatisticsNotInSource" => bool.Parse(value),
-                    "ExcludeObjectTypes" => throw new NotSupportedException(),
+                    "ExcludeObjectTypes" => ParseObjectTypes(value),
                     "GenerateSmartDefaults" => bool.Parse(value),
                     "IgnoreAnsiNulls" => bool.Parse(value),
                     "IgnoreAuthorizer" => bool.Parse(value),
@@ -144,9 +174,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 };
 
                 PropertyInfo property = typeof(DacDeployOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
-                property.SetValue(_deployOptions, propertyValue);
+                property.SetValue(DeployOptions, propertyValue);
 
-                Console.WriteLine($"Setting property {key} to value {value}");
+                _console.WriteLine($"Setting property {key} to value {value}");
             }
             catch (FormatException)
             {
@@ -156,16 +186,73 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void Dispose()
         {
-            _package?.Dispose();
-            _package = null;
+            Package?.Dispose();
+            Package = null;
         }
 
         private void EnsurePackageLoaded()
         {
-            if (_package == null)
+            if (Package == null)
             {
                 throw new InvalidOperationException("Package has not been loaded. Call LoadPackage first.");
             }
+        }
+
+        private void EnsureConnectionStringComplete()
+        {
+            if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.DataSource))
+            {
+                throw new InvalidOperationException("A target server has not been set. Call UseTargetServer first.");
+            }
+            
+            if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.UserID) && ConnectionStringBuilder.IntegratedSecurity == false)
+            {
+                throw new InvalidOperationException("No authentication information has been set. Call UseSqlServerAuthentication or UseWindowsAuthentication first.");
+            }
+        }
+
+        private ObjectType[] ParseObjectTypes(string value)
+        {
+            var objectTypes = value.Split(';');
+            var result = new ObjectType[objectTypes.Length];
+
+            for (int i = 0; i < objectTypes.Length; i++)
+            {
+                if (!Enum.TryParse<ObjectType>(objectTypes[i], false, out ObjectType objectType))
+                {
+                    throw new ArgumentException($"Unknown object type {objectTypes[i]} specified.", nameof(value));
+                }
+
+                result[i] = objectType;
+            }
+
+            return result;
+        }
+
+        private DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
+        {
+            var specification = value.Split(";", 3);
+            if (specification.Length != 3)
+            {
+                throw new ArgumentException("Expected at least 3 parameters for DatabaseSpecification; Edition, MaximumSize and ServiceObjective", nameof(value));
+            }
+
+            if (!Enum.TryParse<DacAzureEdition>(specification[0], false, out DacAzureEdition edition))
+            {
+                throw new ArgumentException($"Unknown edition '{specification[0]}' specified.", nameof(value));
+            }
+
+            if (!int.TryParse(specification[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int maximumSize))
+            {
+                throw new ArgumentException($"Unable to parse maximum size '{specification[1]}' as an integer.", nameof(value));
+            }
+
+            return new DacAzureDatabaseSpecification
+            {
+                Edition = edition,
+                MaximumSize = maximumSize,
+                ServiceObjective = specification[2]
+            };
         }
     }
 }

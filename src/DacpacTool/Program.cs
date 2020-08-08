@@ -102,7 +102,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static int DeployDacpac(DeployOptions options)
         {
-            using var deployer = new PackageDeployer();
+            using var deployer = new PackageDeployer(new ActualConsole());
             deployer.LoadPackage(options.Input);
 
             if (options.Property != null)
@@ -118,7 +118,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             
             if (!string.IsNullOrWhiteSpace(options.Username))
             {
-                deployer.UseSqlAuthentication(options.Username);
+                deployer.UseSqlAuthentication(options.Username, null);
             }
             else
             {
