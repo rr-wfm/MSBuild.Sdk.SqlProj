@@ -25,6 +25,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
     # Install .NET Core SDK
+    # TOOO: Remove this workaround once https://github.com/actions/setup-dotnet/issues/25 gets fixed
     - name: Setup .NET Core
       uses: coderpatros/setup-dotnet@sxs
       with:
