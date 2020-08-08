@@ -1,10 +1,7 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -26,7 +23,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
             };
-            buildCommand.Handler = CommandHandler.Create<PackageBuilderOptions>(BuildDacpac);
+            buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
             var deployCommand = new Command("deploy")
             {
@@ -44,7 +41,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return await rootCommand.InvokeAsync(args);
         }
 
-        private static int BuildDacpac(PackageBuilderOptions options)
+        private static int BuildDacpac(BuildOptions options)
         {
             // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
