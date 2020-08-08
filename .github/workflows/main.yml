@@ -84,7 +84,7 @@ jobs:
     - name: set framework variable
       id: set_framework_variable
       run: |
-        if [$DOTNET == '2.1.808']
+        if ['$DOTNET' == '2.1.808']
         then
             echo "::set-output name=framework::netcoreapp2.1"
         else
