@@ -39,10 +39,6 @@ jobs:
     - name: dotnet build
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
-    # Run tests for command line tool
-    - name: dotnet test
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
-
     # Run build for SDK package
     - name: dotnet build
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
@@ -81,6 +77,7 @@ jobs:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
         dotnet: [ '2.1.808', '3.1.302' ]
+        framework: [ 'netcoreapp2.1', 'netcoreapp3.1' ]
       fail-fast: false
 
     steps:
@@ -102,6 +99,10 @@ jobs:
     - name: set version
       run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
       id: nbgv
+
+    # Run tests for command line tool
+    - name: dotnet test
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f ${{ matrix.framework }}
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
