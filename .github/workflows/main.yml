@@ -43,6 +43,10 @@ jobs:
     - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
+    # Run tests for command line tool
+    - name: dotnet test
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
+
     # Ensure that test project builds
     - name: dotnet build TestProject
       run: dotnet build ./test/TestProject/TestProject.csproj -c Release
@@ -80,14 +84,6 @@ jobs:
       fail-fast: false
 
     steps:
-    # Set framework variable
-    - uses: haya14busa/action-cond@v1
-      id: framework
-      with:
-        cond: ${{ matrix.dotnet == '2.1.808' }}
-        if_true: "netcoreapp2.1"
-        if_false: "netcoreapp3.1"
-
     # Fetch sources
     - uses: actions/checkout@v2
       with:
@@ -106,10 +102,6 @@ jobs:
     - name: set version
       run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
       id: nbgv
-
-    # Run tests for command line tool
-    - name: dotnet test
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f ${{ steps.framework.outputs.value }}
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
