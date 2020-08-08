@@ -43,13 +43,13 @@ jobs:
     - name: dotnet build DacpacTool
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
-    # Run build for SDK package
-    - name: dotnet build SDK
-      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
-
     # Run tests for command line tool
     - name: dotnet test
       run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
+
+    # Run build for SDK package
+    - name: dotnet build SDK
+      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
     # Ensure that test project builds
     - name: dotnet build TestProject
