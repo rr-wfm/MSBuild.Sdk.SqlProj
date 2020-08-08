@@ -36,11 +36,11 @@ jobs:
       run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
 
     # Build command line tool
-    - name: dotnet build
+    - name: dotnet build DacpacTool
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
     # Run build for SDK package
-    - name: dotnet build
+    - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
     # Ensure that test project builds
@@ -81,17 +81,12 @@ jobs:
 
     steps:
     # Set framework variable
-    - name: set framework variable
-      id: set_framework_variable
-      run: |
-        if ['$DOTNET' == '2.1.808']
-        then
-            echo "::set-output name=framework::netcoreapp2.1"
-        else
-            echo "::set-output name=framework::netcoreapp3.1"
-        fi
-      env:
-        DOTNET: ${{ matrix.dotnet }}
+    - uses: haya14busa/action-cond@v1
+      id: framework
+      with:
+        cond: ${{ matrix.dotnet == '2.1.808' }}
+        if_true: "netcoreapp2.1"
+        if_false: "netcoreapp3.1"
 
     # Fetch sources
     - uses: actions/checkout@v2
@@ -114,7 +109,7 @@ jobs:
 
     # Run tests for command line tool
     - name: dotnet test
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f ${{ steps.set_framework_variable.outputs.framework }}
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f ${{ steps.framework.outputs.value }}
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
