@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SqlCmdVariable Include="MySqlCmdVariable">
+      <DefaultValue>DefaultValue</DefaultValue>
+      <Value>SomeValue</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="TestProject" Version="1.2.0-beta.9.gf2d69b1c16" />
   </ItemGroup>
 

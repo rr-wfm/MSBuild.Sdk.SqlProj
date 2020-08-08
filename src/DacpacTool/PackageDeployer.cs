@@ -65,15 +65,40 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine("Using Windows Authentication");
         }
 
+        public void SetSqlCmdVariable(string key, string value)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Key must have a value.", nameof(key));
+            }
+            else if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException($"SQLCMD variable '{key}' has no value. Specify a value in the project file or on the command line.", nameof(value));
+            }
+
+            EnsurePackageLoaded();
+
+            DeployOptions.SqlCommandVariableValues.Add(key, value);
+            _console.WriteLine($"Adding SQLCMD variable '{key}' with value '{value}'");
+        }
+
         public void Deploy(string targetDatabaseName)
         {
             EnsurePackageLoaded();
             EnsureConnectionStringComplete();
 
             _console.WriteLine($"Deploying to database '{targetDatabaseName}'");
-            var services = new DacServices(ConnectionStringBuilder.ConnectionString);
-            services.Deploy(Package, targetDatabaseName, true, DeployOptions);
-            _console.WriteLine($"Succesfully deployed database '{targetDatabaseName}'");
+
+            try
+            {
+                var services = new DacServices(ConnectionStringBuilder.ConnectionString);
+                services.Deploy(Package, targetDatabaseName, true, DeployOptions);
+                _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
+            }
+            catch (Exception ex)
+            {
+                _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.Message}");
+            }
         }
 
         public void SetProperty(string key, string value)
@@ -165,7 +190,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "ScriptFileSize" => bool.Parse(value),
                     "ScriptNewConstraintValidation" => bool.Parse(value),
                     "ScriptRefreshModule" => bool.Parse(value),
-                    "SqlCommandVariableValues" => throw new NotSupportedException(),
+                    "SqlCommandVariableValues" => throw new ArgumentException("SQLCMD variables should be set using the --sqlcmdvar command line argument and not as a property."),
                     "TreatVerificationErrorsAsWarnings" => bool.Parse(value),
                     "UnmodifiableObjectWarnings" => bool.Parse(value),
                     "VerifyCollationCompatibility" => bool.Parse(value),

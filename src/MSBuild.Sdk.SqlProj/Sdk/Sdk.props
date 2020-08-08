@@ -208,7 +208,7 @@
 
   <PropertyGroup>
     <!-- Define some useful defaults for deployment -->
-    <TargetServer>localhost</TargetServer>
+    <TargetServerName>localhost</TargetServerName>
     <TargetDatabaseName>$(MSBuildProjectName)</TargetDatabaseName>
     <IncludeCompositeObjects>true</IncludeCompositeObjects>
   </PropertyGroup>

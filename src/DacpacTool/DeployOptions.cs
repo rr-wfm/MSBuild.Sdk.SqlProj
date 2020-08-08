@@ -5,9 +5,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public class DeployOptions
     {
         public FileInfo Input { get; set; }
-        public string TargetServer { get; set; }
+        public string TargetServerName { get; set; }
         public string TargetDatabaseName { get; set; }
-        public string Username { get; set; }
+        public string TargetUser { get; set; }
+        public string TargetPassword { get; set; }
         public string[] Property { get; set; }
+        public string[] SqlCmdVar { get; set; }
     }
 }

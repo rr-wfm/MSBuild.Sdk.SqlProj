@@ -153,6 +153,37 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void SetSqlCmdVariable()
+        {
+            // Arrange
+            using var packageDeployer = new PackageDeployer(_console);
+            var packagePath = BuildSimpleModel();
+
+            // Act
+            packageDeployer.LoadPackage(packagePath);
+            packageDeployer.SetSqlCmdVariable("MySqlCmdVariable", "SomeValue");
+
+            // Assert
+            packageDeployer.DeployOptions.SqlCommandVariableValues.ContainsKey("MySqlCmdVariable").ShouldBeTrue();
+            packageDeployer.DeployOptions.SqlCommandVariableValues["MySqlCmdVariable"].ShouldBe("SomeValue");
+        }
+
+        [TestMethod]
+        public void SetSqlCmdVariableNoValue()
+        {
+            // Arrange
+            using var packageDeployer = new PackageDeployer(_console);
+            var packagePath = BuildSimpleModel();
+
+            // Act
+            packageDeployer.LoadPackage(packagePath);
+            Should.Throw<ArgumentException>(() => packageDeployer.SetSqlCmdVariable("MySqlCmdVariable", string.Empty));
+
+            // Assert
+            packageDeployer.DeployOptions.SqlCommandVariableValues.ContainsKey("MySqlCmdVariable").ShouldBeFalse();
+        }
+
+        [TestMethod]
         public void DeployNoPackageLoaded()
         {
             // Arrange

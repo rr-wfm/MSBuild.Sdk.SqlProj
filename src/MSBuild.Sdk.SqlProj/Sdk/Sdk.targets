@@ -166,11 +166,13 @@
     </ItemGroup>
     <PropertyGroup>
       <InputArgument>-i $(TargetPath)</InputArgument>
-      <TargetServerArgument>-ts $(TargetServer)</TargetServerArgument>
-      <TargetDatabaseNameArgument>-td $(TargetDatabaseName)</TargetDatabaseNameArgument>
+      <TargetServerNameArgument>-tsn $(TargetServerName)</TargetServerNameArgument>
+      <TargetDatabaseNameArgument>-tdn $(TargetDatabaseName)</TargetDatabaseNameArgument>
+      <TargetUserArgument Condition="'$(TargetUser)'!=''">-tu $(TargetUser)</TargetUserArgument>
+      <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp $(TargetPassword)</TargetPasswordArgument>
       <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
-      <UsernameArgument Condition="'$(TargetServerUsername)'!=''">-u $(TargetServerUsername)</UsernameArgument>
-      <DacpacToolCommand>dotnet $(DacpacToolExe) deploy $(InputArgument) $(TargetServerArgument) $(TargetDatabaseNameArgument) $(PropertyArguments) $(UsernameArgument)</DacpacToolCommand>
+      <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
+      <DacpacToolCommand>dotnet $(DacpacToolExe) deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments)</DacpacToolCommand>
     </PropertyGroup>
     <Message Importance="High" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />
