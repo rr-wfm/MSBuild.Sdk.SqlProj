@@ -245,7 +245,7 @@ jobs:
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /p:TargetServerName=sqlserver /bl
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl
 
     # Upload binary log
     - name: upload
