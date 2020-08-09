@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public static class Extensions
     {

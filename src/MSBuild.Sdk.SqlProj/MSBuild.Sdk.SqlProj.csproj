@@ -29,14 +29,14 @@
     <Copy SourceFiles="../../LICENSE" DestinationFiles="LICENSE.txt" />
   </Target>
 
-  <Target Name="IncludeBuildDacpacTool" AfterTargets="Build">
+  <Target Name="IncludeDacpacTool" AfterTargets="Build">
     <PropertyGroup>
-      <_BuildDacpacSupportedTfms>netcoreapp2.1;netcoreapp2.2;netcoreapp3.1</_BuildDacpacSupportedTfms>
+      <_DacpacToolSupportedTfms>netcoreapp2.1;netcoreapp3.1</_DacpacToolSupportedTfms>
     </PropertyGroup>
     <ItemGroup>
-      <BuildDacpacSupportedTfms Include="$(_BuildDacpacSupportedTfms)" />
+      <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
     </ItemGroup>
-    <Exec Command="dotnet publish -c $(Configuration) -f %(BuildDacpacSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(BuildDacpacSupportedTfms.Identity)"
-          WorkingDirectory="../BuildDacpac" />
+    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)"
+          WorkingDirectory="../DacpacTool" />
   </Target>
 </Project>

@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.Data.Tools.Schema.Sql.Packaging;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac.Tests.DacpacHeaderParser
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
 {
     public class DacPacXml : IDisposable
     {

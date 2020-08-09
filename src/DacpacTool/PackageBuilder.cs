@@ -6,7 +6,7 @@ using Microsoft.Data.Tools.Schema.Sql.Packaging;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class PackageBuilder : IDisposable
     {

@@ -6,13 +6,13 @@
 
 ## Introduction
 
-An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application package (.dacpac) from a set of SQL scripts that can be subsequently deployed using SqlPackage.exe. It provides much of the same functionality as the SQL Server Data Tools .sqlproj project format, but is build on top of the new SDK-style projects that were first introduced in Visual Studio 2017.
+An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application package (.dacpac) from a set of SQL scripts that can be subsequently deployed using either `SqlPackage.exe` or `dotnet publish`. It provides much of the same functionality as the SQL Server Data Tools .sqlproj project format, but is built on top of the new SDK-style projects that were first introduced in Visual Studio 2017.
 
 ## Usage
 The simplest usage is to create a new project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -25,7 +25,7 @@ Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netst
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -46,7 +46,7 @@ Support for pre- and post deployment scripts has been added in version 1.1.0. Th
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -62,7 +62,7 @@ To include these scripts into your `.dacpac` add the following to your `.csproj`
 Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -84,7 +84,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -141,7 +141,7 @@ sqlpackage
 Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.1.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
   <PropertyGroup>
     ...
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
@@ -150,6 +150,47 @@ Additionally you'll need to set the `PackageProjectUrl` property inside of the `
 ```
 
 Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
+
+### Publishing support
+Starting with version 1.2.0 of MSBuild.Sdk.SqlProj there is support for publishing a project to a SQL Server using the `dotnet publish` command. There are a couple of properties that control the deployment process which have some defaults to make the experience as smooth as possible for local development. For example, on Windows if you have a default SQL Server instance running on your local machine running `dotnet publish` creates a database with the same name as the project. Unfortunately on Mac and Linux we cannot use Windows authentication, so you'll need to specify a username and password:
+
+```
+dotnet publish /p:TargetUser=<username> /p:TargetPassword=<password>
+```
+
+To further customize the deployment process, you can use the following properties which can either be set in the project file or specified on the command line (using the `/p:<property>=<value>` syntax shown above).
+
+| Property | Default Value | Description |
+| --- | --- | --- |
+| TargetServerName | (local) | Controls the name of the server to which the project is published |
+| TargetDatabaseName | Name of the project | Controls the name of the database that is created |
+| TargetUser |  | Username used to connect to the server. If empty, Windows authentication is used |
+| TargetPassword | | Password used to connect to the server. If empty, but TargetUser is set you will be prompted for the password |
+| IncludeCompositeObjects | True | Controls whether objects from referenced packages are deployed to the same database |
+
+> IMPORTANT: Although you can set the username and password in your project file we don't recommend doing so since you'll be committing credentials to version control. Instead you should specify these at the command line when needed.
+
+In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions?view=sql-dacfx-150) deployment options. These are typically set in the project file, for example:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+    <PropertyGroup>
+        ...
+        <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
+        <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+        ...
+    </PropertyGroup>
+</Project>
+```
+
+Most of those properties are simple values (like booleans, strings and integers), but there are a couple of properties that require more complex values:
+
+| Property | Example value | Description |
+| --- | --- | --- |
+| DatabaseSpecification | Hyperscale;1024;P15 | This property is specified in the format [Edition](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazureedition?view=sql-dacfx-150);[Maximum Size](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.maximumsize?view=sql-dacfx-150);[Service Objective](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.serviceobjective?view=sql-dacfx-150) |
+| DoNotDropObjectTypes | Aggregates;Assemblies | A semi-colon separated list of [Object Types](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.objecttype?view=sql-dacfx-150) that should not be dropped as part of the deployment |
+| ExcludeObjectTypes | Contracts;Endpoints | A semi-colon separated list of [Object Types](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.objecttype?view=sql-dacfx-150) that should not be part of the deployment |
+| SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [here](#SQLCMD-Variables)
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:

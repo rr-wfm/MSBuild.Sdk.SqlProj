@@ -1,16 +1,17 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Dac.Model;
 
-namespace MSBuild.Sdk.SqlProj.BuildDacpac
+namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     class Program
     {
         static async Task<int> Main(string[] args)
         {
-            var rootCommand = new RootCommand
+            var buildCommand = new Command("build")
             {
                 new Option<string>(new string[] { "--name", "-n" }, "Name of the package"),
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
@@ -23,14 +24,27 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
             };
+            buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
+            var deployCommand = new Command("deploy")
+            {
+                new Option<FileInfo>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
+                new Option<string>(new string[] { "--targetServerName", "-tsn" }, "Name of the server to deploy the package to"),
+                new Option<string>(new string[] { "--targetDatabaseName", "-tdn" }, "Name of the database to deploy the package to"),
+                new Option<string>(new string[] { "--targetUser", "-tu" }, "Username used to connect to the target server, using SQL Server authentication"),
+                new Option<string>(new string[] { "--targetPassword", "-tp" }, "Password used to connect to the target server, using SQL Server authentication"),
+                new Option<string[]>(new string[] { "--property", "-p" }, "Properties used to control the deployment"),
+                new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) and their associated values, separated by an equals sign.")
+            };
+            deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
+
+            var rootCommand = new RootCommand { buildCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
-            rootCommand.Handler = CommandHandler.Create<PackageBuilderOptions>(BuildDacpac);
 
             return await rootCommand.InvokeAsync(args);
         }
 
-        private static int BuildDacpac(PackageBuilderOptions options)
+        private static int BuildDacpac(BuildOptions options)
         {
             // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
@@ -89,5 +103,55 @@ namespace MSBuild.Sdk.SqlProj.BuildDacpac
             return 0;
         }
 
+        private static int DeployDacpac(DeployOptions options)
+        {
+            try
+            {
+                using var deployer = new PackageDeployer(new ActualConsole());
+                deployer.LoadPackage(options.Input);
+
+                if (options.Property != null)
+                {
+                    foreach (var propertyValue in options.Property)
+                    {
+                        string[] keyValuePair = propertyValue.Split('=', 2);
+                        deployer.SetProperty(keyValuePair[0], keyValuePair[1]);
+                    }
+                }
+
+                if (options.SqlCmdVar != null)
+                {
+                    foreach (var sqlCmdVar in options.SqlCmdVar)
+                    {
+                        string[] keyValuePair = sqlCmdVar.Split('=', 2);
+                        deployer.SetSqlCmdVariable(keyValuePair[0], keyValuePair[1]);
+                    }
+                }
+
+                deployer.UseTargetServer(options.TargetServerName);
+                
+                if (!string.IsNullOrWhiteSpace(options.TargetUser))
+                {
+                    deployer.UseSqlAuthentication(options.TargetUser, options.TargetPassword);
+                }
+                else
+                {
+                    deployer.UseWindowsAuthentication();
+                }
+
+                deployer.Deploy(options.TargetDatabaseName);
+                return 0;
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"ERROR: An error occured while validating arguments: {ex.Message}");
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
+                return 1;
+            }
+        }
     }
 }
