@@ -142,8 +142,8 @@ jobs:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}
         path: ./msbuild.binlog
 
-  # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container
-  deploy:
+  # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
+  deploy-sqlpackage:
     runs-on: ubuntu-18.04
     needs: test
     services:
@@ -186,6 +186,66 @@ jobs:
         /TargetUser:sa
         /TargetPassword:JdMsKZPBBA8kVFXVrj8d
         /TargetDatabaseName:TestProjectWithSDKRef
+
+    # Dump logs of the container if something failed
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v1
+
+  # Attempt to deploy a project to a SQL Server instance running in a container using dotnet publish
+  deploy-publish:
+    runs-on: ubuntu-18.04
+    needs: test
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: JdMsKZPBBA8kVFXVrj8d
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 3s
+          --health-retries 10
+          --health-start-period 10s
+    steps:
+    # Fetch sources
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+ 
+    # Setup .NET SDK
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.302'
+
+    # Install Nerdbank.GitVersioning
+    - name: install nbgv
+      run: dotnet tool install --tool-path . nbgv
+
+    # Set version
+    - name: set version
+      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
+      id: nbgv
+
+    # Replace tokens 
+    - uses: cschleiden/replace-tokens@v1
+      name: replace tokens
+      with:
+        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+
+    # Publish the project
+    - name: publish project
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /p:TargetServerName=sqlserver /bl
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-log-publish
+        path: ./msbuild.binlog
 
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
