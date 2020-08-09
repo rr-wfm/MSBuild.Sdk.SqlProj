@@ -137,7 +137,7 @@
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
-      <MetadataArguments>-n $(MSBuildProjectName) -v $(PackageVersion)</MetadataArguments>
+      <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
@@ -165,16 +165,16 @@
       </DeployPropertyNames>
     </ItemGroup>
     <PropertyGroup>
-      <InputArgument>-i $(TargetPath)</InputArgument>
-      <TargetServerNameArgument>-tsn $(TargetServerName)</TargetServerNameArgument>
-      <TargetDatabaseNameArgument>-tdn $(TargetDatabaseName)</TargetDatabaseNameArgument>
-      <TargetUserArgument Condition="'$(TargetUser)'!=''">-tu $(TargetUser)</TargetUserArgument>
-      <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp $(TargetPassword)</TargetPasswordArgument>
+      <InputArgument>-i &quot;$(TargetPath)&quot;</InputArgument>
+      <TargetServerNameArgument>-tsn &quot;$(TargetServerName)&quot;</TargetServerNameArgument>
+      <TargetDatabaseNameArgument>-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
+      <TargetUserArgument Condition="'$(TargetUser)'!=''">-tu &quot;$(TargetUser)&quot;</TargetUserArgument>
+      <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp &quot;$(TargetPassword)&quot;</TargetPasswordArgument>
       <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
       <DacpacToolCommand>dotnet $(DacpacToolExe) deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments)</DacpacToolCommand>
     </PropertyGroup>
-    <Message Importance="High" Text="Running command: $(DacpacToolCommand)" />
+    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
   
