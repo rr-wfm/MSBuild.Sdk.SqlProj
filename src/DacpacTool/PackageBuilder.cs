@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Data.Tools.Schema.Sql.Packaging;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlTools.ServiceLayer.BatchParser;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
