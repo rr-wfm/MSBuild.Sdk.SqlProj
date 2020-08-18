@@ -9,6 +9,9 @@
 
 An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application package (.dacpac) from a set of SQL scripts that can be subsequently deployed using either `SqlPackage.exe` or `dotnet publish`. It provides much of the same functionality as the SQL Server Data Tools .sqlproj project format, but is built on top of the new SDK-style projects that were first introduced in Visual Studio 2017.
 
+## Code of conduct
+Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_CONDUCT.md) for this repository.
+
 ## Usage
 The simplest usage is to create a new project file with the following contents:
 
