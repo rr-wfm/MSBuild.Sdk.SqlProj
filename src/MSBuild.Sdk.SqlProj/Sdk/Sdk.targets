@@ -112,7 +112,17 @@
     <ItemGroup> 
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
-        <DacpacFile>$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())/tools/%(Identity).dacpac</DacpacFile>
+        <!-- Determine technical name of package (ie. DeVries.WMS.Database -> DeVries_WMS_Database) -->
+        <PackageName>@(PackageReference->'%(Identity)'->Replace('.', '_'))</PackageName>
+        <!-- Prepend Pkg to technical name from above and resolve variable (ie. PkgDeVries_WMS_Database -> %home%\.nuget\packages\devries.wms.database\<version> -->
+        <PhysicalLocation>$(Pkg%(_ResolvedPackageReference.PackageName))</PhysicalLocation>
+        <!-- 
+          If no Pkg<package-id> property is available, fall back to deriving the physical location from several other properties.
+          This isn't guaranteed to be correct, particularly when floating versions are used, but will successfully resolve most of the time.
+        -->
+        <PhysicalLocation Condition="'%(_ResolvedPackageReference.PhysicalLocation)'==''">$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())</PhysicalLocation>
+
+        <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
       </_ResolvedPackageReference>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
