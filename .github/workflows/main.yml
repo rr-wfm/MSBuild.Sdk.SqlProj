@@ -109,9 +109,19 @@ jobs:
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
-      name: replace tokens
+      if: ${{ matrix.dotnet == '2.1.808' }}
+      name: replace tokens (dotnet 2)
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+      env:
+        DependencyVersion: '#{NBGV_Version}#-*'
+
+    - uses: cschleiden/replace-tokens@v1
+      name: replace tokens (all)
+      with:
+        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+      env:
+        DependencyVersion: '1.*-*'
 
     # Download artifact
     - name: download-artifact
@@ -242,6 +252,8 @@ jobs:
       name: replace tokens
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+      env:
+        DependencyVersion: '1.*-*'
 
     # Publish the project
     - name: publish project
