@@ -98,7 +98,7 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet }}
 
-    # Install Nerdbank.GitVersioning
+    # Install Nerdbank.GitVersioning (NBGV)
     - name: install nbgv
       run: dotnet tool install --tool-path . nbgv
 
@@ -109,19 +109,9 @@ jobs:
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
-      if: ${{ matrix.dotnet == '2.1.808' }}
-      name: replace tokens (dotnet 2)
+      name: replace tokens
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
-      env:
-        DependencyVersion: '#{NBGV_Version}#-*'
-
-    - uses: cschleiden/replace-tokens@v1
-      name: replace tokens (all)
-      with:
-        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
-      env:
-        DependencyVersion: '1.*-*'
 
     # Download artifact
     - name: download-artifact
@@ -134,9 +124,32 @@ jobs:
     - name: dotnet restore
       run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
 
-    # Build the project
-    - name: build project
+    # Build the project using exact version number
+    - name: build project (dotnet 2 / exact version)
+      if: ${{ matrix.dotnet == '2.1.808' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl
+
+    # Build the project using fallback method of resolving version via path
+    - name: build project (dotnet 3 / exact version)
+      if: ${{ matrix.dotnet == '3.1.302' }}
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:PkgTestProject=""
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
+        path: ./msbuild.binlog
+
+    # Build the project using single wildcard (i.e. 1.x.x-*)
+    - name: build project (dotnet 2 / single floating version)
+      if: ${{ matrix.dotnet == '2.1.808' }}
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Single"
+
+    # Build the project using double wildcard (i.e. 1.*-*)
+    - name: build project (dotnet 3 / double floating version)
+      if: ${{ matrix.dotnet == '3.1.302' }}
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Double"
 
     # Upload dacpac
     - name: upload
@@ -149,7 +162,7 @@ jobs:
     - name: upload
       uses: actions/upload-artifact@v1
       with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
