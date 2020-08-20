@@ -127,12 +127,12 @@ jobs:
     # Build the project using exact version number
     - name: build project (dotnet 2 / exact version)
       if: ${{ matrix.dotnet == '2.1.808' }}
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /warnaserror:SQL71502
 
     # Build the project using fallback method of resolving version via path
     - name: build project (dotnet 3 / exact version)
       if: ${{ matrix.dotnet == '3.1.302' }}
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:PkgTestProject=""
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:PkgTestProject="" /warnaserror:SQL71502
 
     # Upload binary log
     - name: upload
@@ -144,12 +144,12 @@ jobs:
     # Build the project using single wildcard (i.e. 1.x.x-*)
     - name: build project (dotnet 2 / single floating version)
       if: ${{ matrix.dotnet == '2.1.808' }}
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Single"
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Single" /warnaserror:SQL71502
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (dotnet 3 / double floating version)
       if: ${{ matrix.dotnet == '3.1.302' }}
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Double"
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TestWildcard="Double" /warnaserror:SQL71502
 
     # Upload dacpac
     - name: upload
