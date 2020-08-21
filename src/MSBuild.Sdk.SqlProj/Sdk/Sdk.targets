@@ -127,7 +127,7 @@
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences" Inputs="@(Content)" Outputs="$(TargetPath)">
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences" Inputs="@(Content);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <_PropertyNames Include="$(KnownModelProperties)" />
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
