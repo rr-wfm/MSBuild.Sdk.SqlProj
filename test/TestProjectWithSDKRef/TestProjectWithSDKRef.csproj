@@ -9,8 +9,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="TestProject" Condition="'$(TestWildcard)'=='Double'" Version="1.*-*" />
-        <PackageReference Include="TestProject" Condition="'$(TestWildcard)'=='Single'" Version="#{NBGV_Version}#-*" />
-        <PackageReference Include="TestProject" Condition="'$(TestWildcard)'==''" Version="#{NBGV_NuGetPackageVersion}#" />
+        <PackageReference Include="TestProject" Version="$(DependencyVersion)" />
     </ItemGroup>
 </Project>
