@@ -33,7 +33,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetPath>$(TargetDir)/$(MSBuildProjectName).dacpac</TargetPath>
+    <TargetExt>.dacpac</TargetExt>
+    <TargetPath>$(TargetDir)/$(MSBuildProjectName)$(TargetExt)</TargetPath>
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
