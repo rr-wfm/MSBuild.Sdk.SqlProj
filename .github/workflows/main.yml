@@ -126,23 +126,13 @@ jobs:
 
     # Build the project using exact version number
     - name: build project (dotnet 2 [Windows] / exact version)
-      #if: ${{ matrix.dotnet == '2.1.808' && matrix.os == 'windows-2019' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
-    #- name: build project (dotnet 2 [*nix] / exact version)
-    #  if: ${{ matrix.dotnet == '2.1.808' && matrix.os != 'windows-2019' }}
-    #  run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${NBGV_NuGetPackageVersion}" /warnaserror:SQL71502
-
     # Build the project using fallback method of resolving version via path
     - name: build project (dotnet 3 [Windows] / exact version)
-      #if: ${{ matrix.dotnet == '3.1.302' && matrix.os == 'windows-2019' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
       shell: pwsh
-
-    #- name: build project (dotnet 3 [*nix] / exact version)
-    #  if: ${{ matrix.dotnet == '3.1.302' && matrix.os != 'windows-2019' }}
-    #  run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${NBGV_NuGetPackageVersion}" /p:PkgTestProject="" /warnaserror:SQL71502
 
     # Upload binary log
     - name: upload
@@ -153,13 +143,8 @@ jobs:
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
     - name: build project (dotnet 2 [Windows] / single floating version)
-      #if: ${{ matrix.dotnet == '2.1.808' && matrix.os == 'windows-2019' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_Version}-*" /warnaserror:SQL71502
       shell: pwsh
-
-    #- name: build project (dotnet 2 [*nix] / single floating version)
-    #  if: ${{ matrix.dotnet == '2.1.808' && matrix.os != 'windows-2019' }}
-    #  run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${NBGV_Version}-*" /warnaserror:SQL71502
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (dotnet 3 / double floating version)
