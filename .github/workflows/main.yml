@@ -29,7 +29,7 @@ jobs:
     - name: Setup .NET Core
       uses: coderpatros/setup-dotnet@sxs
       with:
-        dotnet-version: 2.1.808,3.1.302
+        dotnet-version: 2.1.808, 3.1.302
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
