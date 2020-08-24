@@ -160,7 +160,7 @@ jobs:
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
     - name: build project (single floating version)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_Version}-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using double wildcard (i.e. 1.*-*)
