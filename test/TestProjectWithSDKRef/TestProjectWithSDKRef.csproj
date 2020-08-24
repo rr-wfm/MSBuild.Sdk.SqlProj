@@ -9,6 +9,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="TestProject" Version="#{NBGV_NuGetPackageVersion}#" />
+        <PackageReference Include="TestProject" Version="$(DependencyVersion)" />
     </ItemGroup>
 </Project>

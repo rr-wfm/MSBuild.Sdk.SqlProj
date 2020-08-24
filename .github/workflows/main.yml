@@ -124,9 +124,33 @@ jobs:
     - name: dotnet restore
       run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
 
-    # Build the project
-    - name: build project
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl
+    # Build the project using exact version number
+    - name: build project (exact version / MSBuild resolution)
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
+      shell: pwsh
+
+    # Build the project using fallback method of resolving version via path
+    - name: build project (exact version / path resolution)
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
+      shell: pwsh
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
+        path: ./msbuild.binlog
+
+    # Build the project using single wildcard (i.e. 1.x.x-*)
+    - name: build project (single floating version)
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_Version}-*" /warnaserror:SQL71502
+      shell: pwsh
+
+    # Build the project using double wildcard (i.e. 1.*-*)
+    - name: build project (double floating version / dotnet 3)
+      if: ${{ matrix.dotnet == '3.1.302' }}
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
+      shell: pwsh
 
     # Upload dacpac
     - name: upload
@@ -139,7 +163,7 @@ jobs:
     - name: upload
       uses: actions/upload-artifact@v1
       with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
@@ -242,10 +266,12 @@ jobs:
       name: replace tokens
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+      env:
+        DependencyVersion: '1.*-*'
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
 
     # Upload binary log
     - name: upload
