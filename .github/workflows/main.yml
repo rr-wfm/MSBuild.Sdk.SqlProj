@@ -98,7 +98,7 @@ jobs:
       with:
         dotnet-version: ${{ matrix.dotnet }}
 
-    # Install Nerdbank.GitVersioning (NBGV)
+    # Install Nerdbank.GitVersioning
     - name: install nbgv
       run: dotnet tool install --tool-path . nbgv
 
@@ -125,12 +125,12 @@ jobs:
       run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
 
     # Build the project using exact version number
-    - name: build project (dotnet 2 [Windows] / exact version)
+    - name: build project (exact version / MSBuild resolution)
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using fallback method of resolving version via path
-    - name: build project (dotnet 3 [Windows] / exact version)
+    - name: build project (exact version / path resolution)
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
       shell: pwsh
 
@@ -142,12 +142,12 @@ jobs:
         path: ./msbuild.binlog
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
-    - name: build project (dotnet 2 [Windows] / single floating version)
+    - name: build project (single floating version)
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_Version}-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using double wildcard (i.e. 1.*-*)
-    - name: build project (dotnet 3 / double floating version)
+    - name: build project (double floating version / dotnet 3)
       if: ${{ matrix.dotnet == '3.1.302' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
       shell: pwsh
