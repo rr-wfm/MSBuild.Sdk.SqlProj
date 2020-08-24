@@ -16,7 +16,7 @@ Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_
 The simplest usage is to create a new project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -29,7 +29,7 @@ Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netst
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -50,7 +50,7 @@ Support for pre- and post deployment scripts has been added in version 1.1.0. Th
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -66,7 +66,7 @@ To include these scripts into your `.dacpac` add the following to your `.csproj`
 Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -88,7 +88,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -145,7 +145,7 @@ sqlpackage
 Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
   <PropertyGroup>
     ...
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
@@ -177,7 +177,7 @@ To further customize the deployment process, you can use the following propertie
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions?view=sql-dacfx-150) deployment options. These are typically set in the project file, for example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         ...
         <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
