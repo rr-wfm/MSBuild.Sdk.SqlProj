@@ -13,7 +13,7 @@ An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application p
 Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_CONDUCT.md) for this repository.
 
 ## Usage
-The simplest usage is to create a new project file with the following contents:
+The simplest usage is to create a new .csproj project file with the following contents:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
