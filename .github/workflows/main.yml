@@ -85,7 +85,7 @@ jobs:
 
     # Package templates
     - name: dotnet pack templates
-      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.csproj
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.csproj
 
     # Upload templates package
     - name: upload templates
