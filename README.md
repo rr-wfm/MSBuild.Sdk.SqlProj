@@ -44,7 +44,7 @@ You should now have a project file with the following contents:
 Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netstandard2.0` folder. By default all `.sql` files will be added to the package, except for those in the `Pre-Deployment` and `Post-Deployment` folders. To create database objects you can use the following item templates:
 
 | Template | Command | Description |
-|+++|+++|+++|
+| --- | --- | --- |
 | table | `dotnet new table -n <name>` | Creates a new database table with the provided name |
 | view | `dotnet new view -n <name>` | Creates a new database view with the provided name |
 | sproc | `dotnet new sproc -n <name>` | Creates a new stored procedure with the provided name |
