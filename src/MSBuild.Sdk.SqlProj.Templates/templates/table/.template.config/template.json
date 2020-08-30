@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer", "Table" ],
+    "identity": "MSBuild.Sdk.SqlProj.Table",
+    "name": "Database table",
+    "shortName": "table",
+    "tags": {
+      "language": "SQL",
+      "type": "item"
+    },
+    "sourceName": "Table1"
+  }

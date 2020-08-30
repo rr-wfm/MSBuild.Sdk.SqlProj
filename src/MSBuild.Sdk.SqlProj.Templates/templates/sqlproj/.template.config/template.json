@@ -6,7 +6,7 @@
     "name": "SQL Server Database Project",
     "shortName": "sqlproj",
     "tags": {
-      "language": "C#",
+      "language": "SQL",
       "type": "project"
     },
     "sourceName": "sqlproj",

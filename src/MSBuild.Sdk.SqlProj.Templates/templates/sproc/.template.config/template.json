@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer", "StoredProcedure" ],
+    "identity": "MSBuild.Sdk.SqlProj.StoredProcedure",
+    "name": "Stored procedure",
+    "shortName": "sproc",
+    "tags": {
+      "language": "SQL",
+      "type": "item"
+    },
+    "sourceName": "Procedure1"
+  }

@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer", "ScalarFunction" ],
+    "identity": "MSBuild.Sdk.SqlProj.ScalarFunction",
+    "name": "Scalar Function",
+    "shortName": "scalarfunc",
+    "tags": {
+      "language": "SQL",
+      "type": "item"
+    },
+    "sourceName": "Function1"
+  }
