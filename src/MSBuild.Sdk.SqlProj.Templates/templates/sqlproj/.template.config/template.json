@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer" ],
+    "identity": "MSBuild.Sdk.SqlProj",
+    "name": "SQL Server Database Project",
+    "shortName": "sqlproj",
+    "tags": {
+      "language": "C#",
+      "type": "project"
+    },
+    "sourceName": "sqlproj",
+    "preferNameDirectory": true,
+    "symbols": {
+      "sqlServerVersion": {
+        "type": "parameter",
+        "defaultValue": "Sql150",
+        "replaces": "#{SqlServerVersion}",
+        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql90", "SqlAzure", "SqlDw" ],
+        "description": "Version of SQL Server being targetted"
+      }
+    }
+  }
