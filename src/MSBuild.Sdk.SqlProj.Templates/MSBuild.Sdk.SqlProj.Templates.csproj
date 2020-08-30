@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>1.0</PackageVersion>
     <PackageId>MSBuild.Sdk.SqlProj.Templates</PackageId>
     <Title>MSBuild.Sdk.SqlProj templates</Title>
     <Authors>MSBuild.Sdk.SqlProj</Authors>

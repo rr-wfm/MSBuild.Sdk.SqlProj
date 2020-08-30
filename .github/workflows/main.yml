@@ -77,6 +77,23 @@ jobs:
         name: nuget-packages
         path: ./test/TestProject/bin/Release/
 
+    # Replace tokens 
+    - uses: cschleiden/replace-tokens@v1
+      name: replace tokens
+      with:
+        files: 'src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.csproj'
+
+    # Package templates
+    - name: dotnet pack templates
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.csproj
+
+    # Upload templates package
+    - name: upload templates
+      uses: actions/upload-artifact@v1
+      with:
+        name: nuget-packages
+        path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
+
   # Run tests in parallel
   test:
     runs-on: ${{ matrix.os }}
