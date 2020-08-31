@@ -4,6 +4,7 @@
     "classifications": [ "Database", "SqlServer" ],
     "identity": "MSBuild.Sdk.SqlProj",
     "name": "SQL Server Database Project",
+    "description": "A project that builds and publishes a SQL Server Data-Tier Application package (.dacpac)",
     "shortName": "sqlproj",
     "tags": {
       "language": "SQL",
