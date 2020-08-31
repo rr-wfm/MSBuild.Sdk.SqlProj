@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer", "InlineFunction" ],
+    "identity": "MSBuild.Sdk.SqlProj.InlineFunction",
+    "name": "Inline function",
+    "shortName": "inlinefunc",
+    "tags": {
+      "language": "SQL",
+      "type": "item"
+    },
+    "sourceName": "Function1"
+  }

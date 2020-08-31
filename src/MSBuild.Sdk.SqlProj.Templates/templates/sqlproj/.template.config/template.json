@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer" ],
+    "identity": "MSBuild.Sdk.SqlProj",
+    "name": "SQL Server Database Project",
+    "description": "A project that builds and publishes a SQL Server Data-Tier Application package (.dacpac)",
+    "shortName": "sqlproj",
+    "tags": {
+      "language": "SQL",
+      "type": "project"
+    },
+    "sourceName": "sqlproj",
+    "preferNameDirectory": true,
+    "symbols": {
+      "sqlServerVersion": {
+        "type": "parameter",
+        "defaultValue": "Sql150",
+        "replaces": "#{SqlServerVersion}",
+        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql90", "SqlAzure", "SqlDw" ],
+        "description": "Version of SQL Server being targetted"
+      }
+    }
+  }

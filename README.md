@@ -13,17 +13,46 @@ An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application p
 Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_CONDUCT.md) for this repository.
 
 ## Usage
-The simplest usage is to create a new .csproj project file with the following contents:
+The simplest way to get started is to install our templates with `dotnet new` using:
+
+```
+dotnet new install MSBuild.Sdk.SqlProj.Templates
+```
+
+You can then create a new project file using the following command. If you don't want to target the latest version of SQL Server you can specify a version to target using the `-s Sql<version>` switch. Please refer to [this document](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) for the available versions.
+
+```
+dotnet new sqlproj [-s Sql150]
+```
+
+You should now have a project file with the following contents:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>Sql150</SqlServerVersion>
+        <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
     </PropertyGroup>
 </Project>
 ```
 
-Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netstandard2.0` folder. By default all `.sql` files will be added to the package, except for those in the `Pre-Deployment` and `Post-Deployment` folders.
+Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netstandard2.0` folder. By default all `.sql` files will be added to the package, except for those in the `Pre-Deployment` and `Post-Deployment` folders. To create database objects you can use the following item templates:
+
+| Template | Command | Description |
+| --- | --- | --- |
+| table | `dotnet new table -n <name>` | Creates a new database table with the provided name |
+| view | `dotnet new view -n <name>` | Creates a new database view with the provided name |
+| sproc | `dotnet new sproc -n <name>` | Creates a new stored procedure with the provided name |
+| inlinefunc | `dotnet new inlinefunc -n <name>` | Creates a new inline function with the provided name |
+| tablefunc | `dotnet new tablefunc -n <name>` | Creates a new table-valued function with the provided name |
+| scalarfunc | `dotnet new scalarfunc -n <name>` | Creates a new scalar function with the provided name |
+
+> Note: In a future update of Visual Studio you should be able to use both the project template and the item templates directly from Visual Studio. This feature is currently in preview and some of our early testing has revealed that it doesn't work as expected. Stay tuned for updates on this.
 
 If you already have a SSDT (.sqlproj) project in your solution, you can keep that as a "companion" project in order to enjoy the Visual Studio designer experience, as described in [this blog post](https://erikej.github.io/efcore/2020/05/11/ssdt-dacpac-netcore.html).
 
