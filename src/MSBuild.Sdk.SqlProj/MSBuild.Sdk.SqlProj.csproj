@@ -5,7 +5,7 @@
     <TargetFramework>netstandard1.1</TargetFramework>
     <Description>Provides targets for projects that result into a data-tier application package (DACPAC).</Description>
     <PackageTags>MSBuild MSBuildSdk sql dacpac</PackageTags>
-    <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup>

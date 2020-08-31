@@ -16,8 +16,7 @@
     <repository type="git" url="https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/" />
   </metadata>
   <files>
-    <file src="Sdk\**" target="Sdk" />
-    <file src="tools\**" target="tools" />
+    <file src="templates\**\*" target="content" />
     <file src="LICENSE.txt" target="LICENSE.txt" />
   </files>
 </package>

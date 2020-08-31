@@ -6,17 +6,36 @@
     <Title>MSBuild.Sdk.SqlProj templates</Title>
     <Authors>MSBuild.Sdk.SqlProj</Authors>
     <Description>Templates that can be used to scaffold new MSBuild.Sdk.SqlProj projects.</Description>
-    <PackageTags>dotnet-new;templates;MSBuild;MSBuildSdk;sql;dacpac</PackageTags>
+    <PackageTags>dotnet-new templates MSBuild MSBuildSdk sql dacpac</PackageTags>
+    <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
 
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NuspecFile>MSBuild.Sdk.SqlProj.Templates.nuspec</NuspecFile>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        description=$(PackageDescription);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        copyright=$(Copyright);
+        projecturl=$(PackageProjectUrl);
+        tags=$(PackageTags);
+        packagetype=$(PackageType)
+      </NuspecProperties>
+    </PropertyGroup>
+    <Copy SourceFiles="../../LICENSE" DestinationFiles="LICENSE.txt" />
+  </Target>
+
   <ItemGroup>
-    <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
