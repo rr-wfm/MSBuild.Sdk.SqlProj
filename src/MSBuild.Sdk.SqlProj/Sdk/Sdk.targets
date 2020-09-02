@@ -8,7 +8,7 @@
   <!--
     Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
     https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
-
+    
     We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
     it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
     command-line just fine.
@@ -21,7 +21,7 @@
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
-
+  
   <ItemGroup>
     <!-- Override primary output path to be a .dacpac -->
     <_IntermediateAssembly Include="@(IntermediateAssembly)" />
@@ -125,7 +125,7 @@
 
         <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
       </_ResolvedPackageReference>
-
+    
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
       <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
@@ -189,5 +189,5 @@
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
-
+  
 </Project>
