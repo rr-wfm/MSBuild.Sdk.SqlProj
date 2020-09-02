@@ -156,7 +156,8 @@
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
-      <DacpacToolCommand>dotnet $(DacpacToolExe) build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument)</DacpacToolCommand>
+      <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
+      <DacpacToolCommand>dotnet $(DacpacToolExe) build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

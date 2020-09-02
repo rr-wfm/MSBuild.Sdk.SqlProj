@@ -14,6 +14,7 @@
   <ItemGroup>
     <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
     <PreDeploy Include="Pre-Deployment\Script.PreDeployment.sql" />
+    <RefactorLog Include="RefactorLog\TestProjectWithPrePost.refactorlog" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
