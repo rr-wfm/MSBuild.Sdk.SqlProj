@@ -60,7 +60,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
+            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
         }
 
         [TestMethod]
@@ -78,7 +78,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
-
             // Cleanup
             reference.Delete();
         }
@@ -101,7 +100,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(tempFile);
             var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
-
             headerParser.GetCustomData()
                 .Where(d => d.Category == "SqlCmdVariables"
                     && d.Type == "SqlCmdVariable")
@@ -185,7 +183,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
                 .FirstOrDefault()
@@ -455,7 +452,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             tempFile.Delete();
         }
 
-        private class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
+        class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
         {
             public IEnumerable<object[]> GetData(MethodInfo methodInfo)
             {
