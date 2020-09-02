@@ -108,6 +108,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             EnsureModelCreated();
             EnsureModelValidated();
             EnsureMetadataCreated();
+
             // Check if the file already exists
             if (outputFile.Exists)
             {

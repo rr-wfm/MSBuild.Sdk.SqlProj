@@ -132,7 +132,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 deployer.UseTargetServer(options.TargetServerName);
 
-
                 if (!string.IsNullOrWhiteSpace(options.TargetUser))
                 {
                     deployer.UseSqlAuthentication(options.TargetUser, options.TargetPassword);

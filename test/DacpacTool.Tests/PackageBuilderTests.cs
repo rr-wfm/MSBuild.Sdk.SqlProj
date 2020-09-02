@@ -78,6 +78,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
+
             // Cleanup
             reference.Delete();
         }
@@ -100,6 +101,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(tempFile);
             var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
+
             headerParser.GetCustomData()
                 .Where(d => d.Category == "SqlCmdVariables"
                     && d.Type == "SqlCmdVariable")
@@ -183,6 +185,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
+
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
                 .FirstOrDefault()
@@ -262,6 +265,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
+
             // Act & Assert
             Should.Throw<InvalidOperationException>(() => packageBuilder.AddPreDeploymentScript(null, tempFile));
         }
@@ -274,6 +278,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder();
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
 
             // Act & Assert
             Should.Throw<InvalidOperationException>(() => packageBuilder.AddPostDeploymentScript(null, tempFile));
