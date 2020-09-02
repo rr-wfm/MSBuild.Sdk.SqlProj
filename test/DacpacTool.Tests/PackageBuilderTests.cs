@@ -146,7 +146,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));
+            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));            
             var postPart = package.GetPart(new Uri("/postdeploy.sql", UriKind.Relative));
             var refactorPart = package.GetPart(new Uri("/refactor.xml", UriKind.Relative));
 
