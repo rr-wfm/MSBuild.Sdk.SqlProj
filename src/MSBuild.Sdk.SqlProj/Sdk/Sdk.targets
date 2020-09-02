@@ -8,7 +8,7 @@
   <!--
     Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
     https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
-    
+
     We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
     it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
     command-line just fine.
@@ -21,7 +21,7 @@
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
-  
+
   <ItemGroup>
     <!-- Override primary output path to be a .dacpac -->
     <_IntermediateAssembly Include="@(IntermediateAssembly)" />
@@ -73,9 +73,8 @@
   <Target Name="ComputeIntermediateSatelliteAssemblies" />
 
   <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets"
           Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
-
 
   <!--
     The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
@@ -84,7 +83,7 @@
 
   <Import Project="$(CustomAfterNoTargets)" Condition="'$(CustomAfterNoTargets)' != '' and Exists('$(CustomAfterNoTargets)')" />
 
-  <!-- 
+  <!--
     Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
     So import it when the managed targets do not get imported.
   -->
@@ -110,14 +109,14 @@
     location of the package and then checking if a that package contains a .dacpac file inside of the tools folder.
   -->
   <Target Name="ResolveDatabasePackageReferences">
-    <ItemGroup> 
+    <ItemGroup>
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
         <!-- Determine technical name of package (ie. Foo.Bar.Database -> Foo_Bar_Database) -->
         <PackageName>@(PackageReference->'%(Identity)'->Replace('.', '_'))</PackageName>
         <!-- Prepend Pkg to technical name from above and resolve variable (ie. Foo_Bar_Database -> %home%\.nuget\packages\foo.bar.database\<version> -->
         <PhysicalLocation>$(Pkg%(_ResolvedPackageReference.PackageName))</PhysicalLocation>
-        <!-- 
+        <!--
           If no Pkg<package-id> property is available, fall back to deriving the physical location from several other properties.
           This isn't guaranteed to be correct, particularly when floating versions are used, but will successfully resolve most of the time.
         -->
@@ -125,7 +124,7 @@
 
         <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
       </_ResolvedPackageReference>
-    
+
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
       <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
@@ -156,12 +155,13 @@
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
-      <DacpacToolCommand>dotnet $(DacpacToolExe) build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument)</DacpacToolCommand>
+      <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
+      <DacpacToolCommand>dotnet $(DacpacToolExe) build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)"
-          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
+          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'" />
 
     <!-- Copy any referenced .dacpac packages to the output folder -->
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
@@ -188,5 +188,5 @@
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
-  
+
 </Project>

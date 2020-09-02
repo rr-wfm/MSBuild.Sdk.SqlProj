@@ -15,5 +15,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string[] SqlCmdVar { get; set; }
         public FileInfo PreDeploy { get; set; }
         public FileInfo PostDeploy { get; set; }
+        public FileInfo RefactorLog { get; set; }
     }
 }

@@ -102,13 +102,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return _modelValid.Value;
         }
 
-        public void SaveToDisk(FileInfo outputFile)
+        public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
         {
             // Ensure that the model has been created and metadata has been set
             EnsureModelCreated();
             EnsureModelValidated();
             EnsureMetadataCreated();
-            
+
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -118,7 +118,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             Console.WriteLine($"Writing model to {outputFile.FullName}");
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
         public void SetMetadata(string name, string version)

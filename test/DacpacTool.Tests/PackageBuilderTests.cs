@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Data.Tools.Schema.Sql.Packaging;
+using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -59,7 +60,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
+            Should.Throw<ArgumentException>(() => packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
         }
 
         [TestMethod]
@@ -77,7 +78,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
-            
+
             // Cleanup
             reference.Delete();
         }
@@ -100,7 +101,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(tempFile);
             var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
-            
+
             headerParser.GetCustomData()
                 .Where(d => d.Category == "SqlCmdVariables"
                     && d.Type == "SqlCmdVariable")
@@ -130,10 +131,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
-            packageBuilder.SaveToDisk(tempFile);
+            var packageOptions = new PackageOptions() { RefactorLogPath = "../../../../TestProjectWithPrePost/RefactorLog/TestProjectWithPrePost.refactorlog" };
 
             // Act
-            packageBuilder.AddPreDeploymentScript(                
+            packageBuilder.SaveToDisk(tempFile, packageOptions);
+
+            packageBuilder.AddPreDeploymentScript(
                 new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
                 tempFile);
 
@@ -143,8 +146,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));            
+            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));
             var postPart = package.GetPart(new Uri("/postdeploy.sql", UriKind.Relative));
+            var refactorPart = package.GetPart(new Uri("/refactor.xml", UriKind.Relative));
 
             prePart.ShouldNotBeNull();
             prePart.ContentType.ShouldBe("text/plain");
@@ -153,6 +157,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             postPart.ShouldNotBeNull();
             postPart.ContentType.ShouldBe("text/plain");
             postPart.GetStream().ShouldNotBeNull();
+
+            refactorPart.ShouldNotBeNull();
+            refactorPart.ContentType.ShouldBe("text/xml");
+            refactorPart.GetStream().ShouldNotBeNull();
 
             // Cleanup
             package.Close();
@@ -177,7 +185,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            
+
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
                 .FirstOrDefault()
@@ -222,6 +230,31 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             tempFile.Delete();
         }
 
+        [TestMethod]
+        public void AddRefactorLog_NoFilePresent()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile, new PackageOptions() { RefactorLogPath = null });
+
+            // Assert
+            var package = Package.Open(tempFile.FullName);
+
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/refactor.log", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
+
+            // Cleanup
+            package.Close();
+            tempFile.Delete();
+        }
 
         [TestMethod]
         public void AddPreDeployment_WrongOrder()
@@ -231,7 +264,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder();
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
-
 
             // Act & Assert
             Should.Throw<InvalidOperationException>(() => packageBuilder.AddPreDeploymentScript(null, tempFile));
@@ -245,7 +277,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder();
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
-
 
             // Act & Assert
             Should.Throw<InvalidOperationException>(() => packageBuilder.AddPostDeploymentScript(null, tempFile));
@@ -286,6 +317,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             Should.Throw<ArgumentException>(() => packageBuilder.AddPostDeploymentScript(
                 new FileInfo("NonExistingScript.PostDeployment.sql"),
                 tempFile));
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddRefactorLog_RefactorNotExists()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.ValidateModel();
+
+            // Act & Assert
+            Should.Throw<DacServicesException>(() => packageBuilder.SaveToDisk(tempFile, new PackageOptions() { RefactorLogPath = "NonExistingProject.refactorlog" }));
 
             // Cleanup
             tempFile.Delete();
@@ -407,7 +455,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             tempFile.Delete();
         }
 
-        class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
+        private class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
         {
             public IEnumerable<object[]> GetData(MethodInfo methodInfo)
             {
