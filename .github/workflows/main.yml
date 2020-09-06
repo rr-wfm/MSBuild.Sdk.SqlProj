@@ -268,7 +268,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.401'
+        dotnet-version: '5.0.100-preview.8.20417.9'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -314,7 +314,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.401'
+        dotnet-version: '5.0.100-preview.8.20417.9'
 
     # Download artifacts
     - name: download-artifact
