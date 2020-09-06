@@ -146,13 +146,19 @@
       </PropertyNames>
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
+    <!-- Write the list of input files to a file to be consumed by the dacpac tool -->
+    <Message Importance="Low" Text="Writing input files to $(IntermediateOutputPath)$(MSBuildProjectName)InputFiles.txt" />
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt"
+      Overwrite="true"
+      Lines="@(Content)" />
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(DatabaseVariableLiteralValue)&quot;', ' ')</ReferenceArguments>
-      <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
+      <InputFileArguments>-f &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
