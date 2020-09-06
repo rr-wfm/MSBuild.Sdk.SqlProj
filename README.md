@@ -30,7 +30,7 @@ dotnet new sqlproj [-s Sql150]
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <SqlServerVersion>Sql150</SqlServerVersion>
@@ -62,7 +62,7 @@ If you already have a SSDT (.sqlproj) project in your solution, you can keep tha
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -83,7 +83,7 @@ Support for pre- and post deployment scripts has been added in version 1.1.0. Th
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -99,7 +99,7 @@ To include these scripts into your `.dacpac` add the following to your `.csproj`
 Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -121,7 +121,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -132,7 +132,21 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
-It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored.
+It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DatabaseVariableLiteralValue="SomeOtherDatabase" />
+    </ItemGroup>
+</Project>
+```
+
+In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
 When deploying a dacpac with references to other dacpacs, if you want the contents of all dacpacs to be deployed to a single database you will need to specify the `IncludeCompositeObjects` property. For example:
 
@@ -178,7 +192,7 @@ sqlpackage
 Additionally you'll need to set the `PackageProjectUrl` property inside of the `.csproj` like this:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
   <PropertyGroup>
     ...
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
@@ -210,7 +224,7 @@ To further customize the deployment process, you can use the following propertie
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions?view=sql-dacfx-150) deployment options. These are typically set in the project file, for example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.6.0">
     <PropertyGroup>
         ...
         <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
