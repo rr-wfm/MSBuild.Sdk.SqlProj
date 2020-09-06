@@ -70,7 +70,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 foreach (var reference in options.Reference)
                 {
-                    string[] referenceDetails = reference.Split(';', 2);
+                    string[] referenceDetails = reference.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
                     if (referenceDetails.Length == 1)
                     {
                         packageBuilder.AddReference(referenceDetails[0]);

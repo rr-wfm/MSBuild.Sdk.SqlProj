@@ -124,6 +124,7 @@
         <PhysicalLocation Condition="'%(_ResolvedPackageReference.PhysicalLocation)'==''">$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())</PhysicalLocation>
 
         <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
+        <DatabaseVariableLiteralValue>%(PackageReference.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
       </_ResolvedPackageReference>
     
       <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
@@ -150,7 +151,7 @@
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
-      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile)&quot;', ' ')</ReferenceArguments>
+      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(DatabaseVariableLiteralValue)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>@(Content->'-i &quot;%(FullPath)&quot;', ' ')</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
