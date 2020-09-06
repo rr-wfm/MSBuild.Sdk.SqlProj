@@ -1,0 +1,15 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql110</SqlServerVersion>
+    <RestoreAdditionalProjectSources>../TestProject/bin/Debug</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TestProject" Version="1.2.0-beta.9.gf2d69b1c16" DatabaseVariableLiteralValue="SomeOtherDatabase" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets" />
+</Project>

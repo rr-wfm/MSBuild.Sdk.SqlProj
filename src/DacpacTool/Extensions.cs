@@ -2,12 +2,13 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public static class Extensions
     {
-        public static void AddReference(this TSqlModel model, string referencePath)
+        public static void AddReference(this TSqlModel model, string referencePath, string externalParts)
         {
             var dataSchemaModel = GetDataSchemaModel(model);
 
@@ -17,9 +18,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(referencePath) });
             setMetadataMethod.Invoke(customData, new object[] { "SuppressMissingDependenciesErrors", "False" });
 
+            if (!string.IsNullOrWhiteSpace(externalParts))
+            {
+                setMetadataMethod.Invoke(customData, new object[] { "ExternalParts", Identifier.EncodeIdentifier(externalParts) });
+            }
+
             AddCustomData(dataSchemaModel, customData);
         }
-
 
         public static void AddSqlCmdVariables(this TSqlModel model, string[] variableNames)
         {
