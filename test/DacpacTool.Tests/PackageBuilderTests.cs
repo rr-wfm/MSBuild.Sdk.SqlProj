@@ -60,16 +60,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(new FileInfo("NonExistentFile.dacpac")));
+            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference("NonExistentFile.dacpac"));
         }
 
         [TestMethod]
         public void AddReference_FileExists()
         {
             // Arrange
-            var reference = new FileInfo(new TestModelBuilder()
+            var reference = new TestModelBuilder()
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
-                .SaveAsPackage());
+                .SaveAsPackage();
             var packageBuilder = new PackageBuilder();
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
@@ -80,7 +80,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
             
             // Cleanup
-            reference.Delete();
+            File.Delete(reference);
+        }
+
+        [TestMethod]
+        public void AddReference_DifferentDatabase()
+        {
+            // Arrange
+            var reference = new TestModelBuilder()
+                .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
+                .SaveAsPackage();
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddExternalReference(reference, "SomeOtherDatabase");
+
+            // Assert
+            var referencingStoredProcedure = "CREATE PROCEDURE [MyOtherStoredProcedure] AS BEGIN EXEC [SomeOtherDatabase].[dbo].[MyStoredProcedure] END";
+            packageBuilder.Model.AddObjects(referencingStoredProcedure);
+            packageBuilder.Model.Validate().Any().ShouldBeFalse();
+
+            // Cleanup
+            File.Delete(reference);
         }
 
         [TestMethod]

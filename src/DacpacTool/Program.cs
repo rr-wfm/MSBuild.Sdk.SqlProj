@@ -19,7 +19,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"),
                 new Option<FileInfo[]>(new string[] { "--input", "-i" }, "Input file name(s)"),
-                new Option<FileInfo[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
+                new Option<string[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
                 new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
                 new Option<FileInfo>(new string[] { "--refactorlog" }, "Filename of optional refactor log script"),
@@ -68,9 +68,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Add references to the model
             if (options.Reference != null)
             {
-                foreach (var referenceFile in options.Reference)
+                foreach (var reference in options.Reference)
                 {
-                    packageBuilder.AddReference(referenceFile);
+                    string[] referenceDetails = reference.Split(';', 2);
+                    if (referenceDetails.Length == 1)
+                    {
+                        packageBuilder.AddReference(referenceDetails[0]);
+                    }
+                    else
+                    {
+                        packageBuilder.AddExternalReference(referenceDetails[0], referenceDetails[1]);
+                    }
                 }
             }
 

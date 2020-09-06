@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.Data.Tools.Schema.Sql.Packaging;
@@ -18,19 +21,34 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Console.WriteLine($"Using SQL Server version {version}");
         }
 
-        public void AddReference(FileInfo referenceFile)
+        public void AddReference(string referenceFile)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
 
             // Make sure the file exists
-            if (!referenceFile.Exists)
+            if (!File.Exists(referenceFile))
             {
                 throw new ArgumentException($"Unable to find reference file {referenceFile}", nameof(referenceFile));
             }
 
-            Console.WriteLine($"Adding reference to {referenceFile.FullName}");
-            Model.AddReference(referenceFile.FullName);
+            Console.WriteLine($"Adding reference to {referenceFile}");
+            Model.AddReference(referenceFile, null);
+        }
+
+        public void AddExternalReference(string referenceFile, string externalParts)
+        {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
+            // Make sure the file exists
+            if (!File.Exists(referenceFile))
+            {
+                throw new ArgumentException($"Unable to find reference file {referenceFile}", nameof(referenceFile));
+            }
+
+            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts}");
+            Model.AddReference(referenceFile, externalParts);
         }
 
         public void AddSqlCmdVariables(string[] variableNames)
@@ -78,8 +96,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             // Validate the model and write out validation messages
             int validationErrors = 0;
-            var messages = Model.Validate();
-            foreach (var message in messages)
+            var validationMessages = Model.Validate();
+            foreach (var message in validationMessages)
             {
                 if (message.MessageType == DacMessageType.Error)
                 {

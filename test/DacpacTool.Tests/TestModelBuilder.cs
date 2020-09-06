@@ -37,7 +37,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
         public TestModelBuilder AddReference(string path)
         {
-            sqlModel.AddReference(path);
+            sqlModel.AddReference(path, string.Empty);
             return this;
         }
 
