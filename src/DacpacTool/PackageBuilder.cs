@@ -104,7 +104,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     validationErrors++;
                 }
 
-                Console.WriteLine(message.ToString());
+                Console.WriteLine($"{message.MessageType}: {message.Prefix}{message.Number} {message.Message}");
             }
 
             if (validationErrors > 0)
