@@ -147,7 +147,7 @@
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
     <!-- Write the list of input files to a file to be consumed by the dacpac tool -->
-    <Message Importance="Low" Text="Writing input files to $(IntermediateOutputPath)$(MSBuildProjectName)InputFiles.txt" />
+    <Message Importance="Low" Text="Writing input files to $(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt" />
     <WriteLinesToFile
       File="$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt"
       Overwrite="true"
