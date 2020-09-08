@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"),
-                new Option<FileInfo[]>(new string[] { "--input", "-i" }, "Input file name(s)"),
+                new Option<FileInfo>(new string[] { "--inputfile", "-i" }, "Text file listing all input files"),
                 new Option<string[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
                 new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
@@ -88,12 +88,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
             }
 
-            // Add input files
-            if (options.Input != null)
+            // Add input files by iterating through $Project.InputFiles.txt
+            if (options.InputFile != null)
             {
-                foreach (var inputFile in options.Input)
+                if (options.InputFile.Exists)
                 {
-                    packageBuilder.AddInputFile(inputFile);
+                    foreach (var line in File.ReadLines(options.InputFile.FullName))
+                    {
+                        FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
+                        packageBuilder.AddInputFile(inputFile);
+                    }
+                }
+                else 
+                {
+                    throw new ArgumentException($"No input files found, missing {options.InputFile.Name}");
                 }
             }
 
