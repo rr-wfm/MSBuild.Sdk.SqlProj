@@ -158,7 +158,7 @@
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(DatabaseVariableLiteralValue)&quot;', ' ')</ReferenceArguments>
-      <InputFileArguments>-f &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
+      <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
