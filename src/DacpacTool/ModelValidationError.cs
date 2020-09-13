@@ -18,8 +18,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _sourceName = sourceName.Replace("MSSQL::", string.Empty);
         }
 
-        public string SourceName { get => _sourceName ?? _modelError.SourceName; }
-
         public ModelErrorSeverity Severity { get => _modelError.Severity; }
 
         public override string ToString()
