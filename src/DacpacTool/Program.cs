@@ -1,7 +1,9 @@
 ﻿using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
@@ -25,6 +27,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<FileInfo>(new string[] { "--refactorlog" }, "Filename of optional refactor log script"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
+#if DEBUG
+                new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
+#endif
             };
             buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
@@ -36,7 +41,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string>(new string[] { "--targetUser", "-tu" }, "Username used to connect to the target server, using SQL Server authentication"),
                 new Option<string>(new string[] { "--targetPassword", "-tp" }, "Password used to connect to the target server, using SQL Server authentication"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties used to control the deployment"),
-                new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) and their associated values, separated by an equals sign.")
+                new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) and their associated values, separated by an equals sign."),
+#if DEBUG
+                new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
+#endif
             };
             deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
 
@@ -48,6 +56,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static int BuildDacpac(BuildOptions options)
         {
+            // Wait for a debugger to attach
+            WaitForDebuggerToAttach(options.Debug);
+
             // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
             packageBuilder.SetMetadata(options.Name, options.Version);
@@ -115,6 +126,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static int DeployDacpac(DeployOptions options)
         {
+            // Wait for a debugger to attach
+            WaitForDebuggerToAttach(options.Debug);
+
             try
             {
                 using var deployer = new PackageDeployer(new ActualConsole());
@@ -161,6 +175,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
                 return 1;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        private static void WaitForDebuggerToAttach(bool waitForDebuggerToAttach)
+        {
+            if (waitForDebuggerToAttach)
+            {
+                Console.WriteLine("Waiting for debugger to attach");
+                while (!Debugger.IsAttached)
+                {
+                    Thread.Sleep(100);
+                }
+                Console.WriteLine("Debugger attached");
             }
         }
     }
