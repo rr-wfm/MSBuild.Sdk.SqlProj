@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [ "Database", "SqlServer", "UserDefinedDataType" ],
+    "identity": "MSBuild.Sdk.SqlProj.UserDefinedDataType",
+    "name": "User-defined data type",
+    "shortName": "uddt",
+    "tags": {
+      "language": "SQL",
+      "type": "item"
+    },
+    "sourceName": "UserDefinedDataType1",
+    "symbols": {
+      "schemaName": {
+        "type": "parameter",
+        "defaultValue": "dbo",
+        "replaces": "#{SchemaName}",
+        "description": "Name of the schema to place the user-defined data type in. Defaults to 'dbo'."
+      }
+    }
+  }
