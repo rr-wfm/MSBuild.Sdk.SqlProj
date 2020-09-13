@@ -30,7 +30,7 @@ In order to get started contributing code, make sure you have the following inst
 
 This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. When you make changes to the `DacpacTool` you'll want to run a `dotnet build` in the `src/MSBuild.Sdk.SqlProj` folder. This ensures you're using the latest bits when building any of the [test projects](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/test). There is a set of [unit tests](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/test/DacpacTool.Tests) for the command line tool as well. For new features it is recommended to add new test projects in the `test` folder to ensure that the functionality works as intended.
 
-If you want to debug the project locally we recommend making a change to the Main method in [Program.cs](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/src/DacpacTool/Program.cs) by adding `System.Diagnostics.Debugger.Launch()` as the first statement. This should provide you with the opportunity to attach a debugger to the tool so that you can step through.
+If you want to debug the `DacpacTool` locally you can run `dotnet build /p:MSBuildSdkSqlProjDebug=True` on a project that uses the SDK. This will trigger the `DacpacTool` to wait for a debugger to attach before doing any actual work. Note that this only works when the `DacpacTool` is compiled for the `Debug` configuration.
 
 When you're ready to make code changes, follow these steps:
 1. Create your own fork of the code
