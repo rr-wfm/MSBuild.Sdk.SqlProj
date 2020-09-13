@@ -9,5 +9,13 @@
       "language": "SQL",
       "type": "item"
     },
-    "sourceName": "View1"
+    "sourceName": "View1",
+    "symbols": {
+      "schemaName": {
+        "type": "parameter",
+        "defaultValue": "dbo",
+        "replaces": "#{SchemaName}",
+        "description": "Name of the schema to place the view in. Defaults to 'dbo'."
+      }
+    }
   }

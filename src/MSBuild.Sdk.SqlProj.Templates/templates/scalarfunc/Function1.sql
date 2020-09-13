@@ -1,4 +1,4 @@
-CREATE FUNCTION [dbo].[Function1]
+CREATE FUNCTION [#{SchemaName}].[Function1]
 (
 	@param1 int,
 	@param2 int
