@@ -35,6 +35,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
+        public TestModelBuilder AddStoredProcedureFromFile(string filename)
+        {
+            sqlModel.AddOrUpdateObjects(File.ReadAllText(filename), filename, new TSqlObjectOptions());
+            return this;
+        }
+
         public TestModelBuilder AddReference(string path)
         {
             sqlModel.AddReference(path, string.Empty);
