@@ -9,5 +9,13 @@
       "language": "SQL",
       "type": "item"
     },
-    "sourceName": "Function1"
+    "sourceName": "Function1",
+    "symbols": {
+      "schemaName": {
+        "type": "parameter",
+        "defaultValue": "dbo",
+        "replaces": "#{SchemaName}",
+        "description": "Name of the schema to place the table-valued function in. Defaults to 'dbo'."
+      }
+    }
   }

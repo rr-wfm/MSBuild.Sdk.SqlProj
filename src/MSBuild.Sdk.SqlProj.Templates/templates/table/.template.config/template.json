@@ -9,5 +9,13 @@
       "language": "SQL",
       "type": "item"
     },
-    "sourceName": "Table1"
+    "sourceName": "Table1",
+    "symbols": {
+      "schemaName": {
+        "type": "parameter",
+        "defaultValue": "dbo",
+        "replaces": "#{SchemaName}",
+        "description": "Name of the schema to place the table in. Defaults to 'dbo'."
+      }
+    }
   }

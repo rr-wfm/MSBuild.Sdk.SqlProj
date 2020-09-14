@@ -47,12 +47,14 @@ Then run a `dotnet build` and you'll find a .dacpac file in the `bin\Debug\netst
 
 | Template | Command | Description |
 | --- | --- | --- |
-| table | `dotnet new table -n <name>` | Creates a new database table with the provided name |
-| view | `dotnet new view -n <name>` | Creates a new database view with the provided name |
-| sproc | `dotnet new sproc -n <name>` | Creates a new stored procedure with the provided name |
-| inlinefunc | `dotnet new inlinefunc -n <name>` | Creates a new inline function with the provided name |
-| tablefunc | `dotnet new tablefunc -n <name>` | Creates a new table-valued function with the provided name |
-| scalarfunc | `dotnet new scalarfunc -n <name>` | Creates a new scalar function with the provided name |
+| table | `dotnet new table -n <name> [-s <schema-name>]` | Creates a new database table with the provided name |
+| view | `dotnet new view -n <name> [-s <schema-name>]` | Creates a new database view with the provided name |
+| sproc | `dotnet new sproc -n <name> [-s <schema-name>]` | Creates a new stored procedure with the provided name |
+| inlinefunc | `dotnet new inlinefunc -n <name> [-s <schema-name>]` | Creates a new inline function with the provided name |
+| tablefunc | `dotnet new tablefunc -n <name> [-s <schema-name>]` | Creates a new table-valued function with the provided name |
+| scalarfunc | `dotnet new scalarfunc -n <name> [-s <schema-name>]` | Creates a new scalar function with the provided name |
+| uddt | `dotnet new uddt -n <name> [-s <schema-name>]` | Creates a new user-defined data type with the provided name |
+| udtt | `dotnet new udtt -n <name> [-s <schema-name>]` | Creates a new user-defined table type with the provided name |
 
 > Note: In a future update of Visual Studio you should be able to use both the project template and the item templates directly from Visual Studio. This feature is currently in preview and some of our early testing has revealed that it doesn't work as expected. Stay tuned for updates on this.
 

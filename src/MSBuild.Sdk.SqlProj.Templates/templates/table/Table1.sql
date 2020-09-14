@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[Table1]
+CREATE TABLE [#{SchemaName}].[Table1]
 (
 	[Id] INT NOT NULL PRIMARY KEY
 )
