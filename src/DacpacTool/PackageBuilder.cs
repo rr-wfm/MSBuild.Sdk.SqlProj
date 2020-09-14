@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -76,7 +74,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             Console.WriteLine($"Adding {inputFile.FullName} to the model");
-            Model.AddObjects(File.ReadAllText(inputFile.FullName));
+            Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
         }
 
         public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
@@ -95,16 +93,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             EnsureModelCreated();
 
             // Validate the model and write out validation messages
+            var modelErrors = Model.GetModelValidationErrors(Enumerable.Empty<string>());
             int validationErrors = 0;
-            var validationMessages = Model.Validate();
-            foreach (var message in validationMessages)
+            foreach (var modelError in modelErrors)
             {
-                if (message.MessageType == DacMessageType.Error)
+                if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                 }
 
-                Console.WriteLine(message.ToString());
+                Console.WriteLine(modelError.ToString());
             }
 
             if (validationErrors > 0)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.SqlServer.Dac.Model;
@@ -39,6 +40,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             AddCustomData(dataSchemaModel, customData);
+        }
+
+        public static IEnumerable<ModelValidationError> GetModelValidationErrors(this TSqlModel model, IEnumerable<string> ignoreValidationErrrors)
+        {
+            var service = model.GetType().GetField("_service", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(model);
+            var getModelValidationErrorsMethod = service.GetType().GetMethod("GetModelValidationErrors", BindingFlags.NonPublic | BindingFlags.Instance);
+            var modelValidationErrors = getModelValidationErrorsMethod.Invoke(service, new object[] { ignoreValidationErrrors }) as IEnumerable<object>;
+
+            var createDacModelErrorMethod = service.GetType().GetMethod("CreateDacModelError", BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = new List<ModelValidationError>();
+            PropertyInfo documentProperty = null;
+            foreach (var modelValidationError in modelValidationErrors)
+            {
+                if (documentProperty == null)
+                {
+                    documentProperty = modelValidationError.GetType().GetProperty("Document", BindingFlags.Public | BindingFlags.Instance);
+                }
+
+                var dacModelError = createDacModelErrorMethod.Invoke(service, new object[] { modelValidationError }) as DacModelError;
+                result.Add(new ModelValidationError(dacModelError, documentProperty.GetValue(modelValidationError) as string));
+            }
+
+            return result;
         }
 
         private static object GetDataSchemaModel(TSqlModel model)

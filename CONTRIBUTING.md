@@ -28,9 +28,23 @@ In order to get started contributing code, make sure you have the following inst
 * .NET Core 3.1 SDK
 * Optionally: A local [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2019) (possibly as a [Docker container](https://hub.docker.com/_/microsoft-mssql-server))
 
-This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. When you make changes to the `DacpacTool` you'll want to run a `dotnet build` in the `src/MSBuild.Sdk.SqlProj` folder. This ensures you're using the latest bits when building any of the [test projects](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/test). There is a set of [unit tests](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/test/DacpacTool.Tests) for the command line tool as well. For new features it is recommended to add new test projects in the `test` folder to ensure that the functionality works as intended.
+This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.Tests` folder.
 
-If you want to debug the project locally we recommend making a change to the Main method in [Program.cs](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/src/DacpacTool/Program.cs) by adding `System.Diagnostics.Debugger.Launch()` as the first statement. This should provide you with the opportunity to attach a debugger to the tool so that you can step through.
+In order to test your changes on your development machine you should first run `dotnet build` from the `src/MSBuild.Sdk.SqlProj` folder. This will build the command line tool for the supported target frameworks (`netcoreapp2.1`, `netcoreapp3.1`, `netcoreapp5.0` as of this writing) and copy those outputs to the `src/MSBuild.Sdk.SqlProj/tools/<target-framework>` folders. You can then build any of the test projects in the `test` folder to try out your changes without having to build the SDK package and push it a NuGet package feed. This works because these projects reference the `Sdk.props` and `Sdk.targets` files directly like for example `TestProjectWithPackageReference.csproj`:
+
+```xml
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props" />
+
+    ...
+
+  <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets" />
+</Project>
+```
+
+> Note: The `TestProjectWithSDKRef.csproj` is an exception in that it references the SDK as a NuGet package. In order to test this project locally you will need to run `dotnet pack` in the `src/MSBuild.Sdk.SqlProj` folder and push the resulting NuGet package to a NuGet feed or place it in a directory on your system somewhere and add that folder as a NuGet package source.
+
+If you want to debug your local changes, you can pass the `MSBuildSdkSqlProjDebug` property with a value of `True` on the command line using `dotnet build /p:MSBuildSdkSqlProjDebug=True` when you build any of the test projects mentioned above. This will ensure that the command line tool will wait for a debugger to attach before it will do any actual work.
 
 When you're ready to make code changes, follow these steps:
 1. Create your own fork of the code
