@@ -1,0 +1,1 @@
+PRINT N'Script6.sql'

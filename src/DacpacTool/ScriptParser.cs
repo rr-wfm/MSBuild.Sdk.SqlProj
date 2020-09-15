@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class IncludedFileNamesCollector : ICommandHandler
+    public class ScriptParser : ICommandHandler
     {
         private readonly Parser _parser;
+        private bool _parsed;
         private readonly List<string> _includedFileNames = new List<string>();
+        private StringBuilder _scriptBuilder = new StringBuilder();
         private string _currentFilePath;
 
-        public IncludedFileNamesCollector(string sourceFile, IVariableResolver variableResolver)
+        public ScriptParser(string sourceFile, IVariableResolver variableResolver)
         {
             if (Path.IsPathRooted(sourceFile))
             {
@@ -26,14 +29,32 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _parser = new Parser(this, variableResolver, new StreamReader(sourceFile), null);
         }
 
-        public string[] CollectFileNames()
+        protected void Parse()
         {
-            _parser.Parse();
-            return _includedFileNames.ToArray();
+            if (! _parsed)
+            {
+                _parser.Parse();
+                _parsed = true;
+            }
+        }
+
+        public List<string> CollectFileNames()
+        {
+            Parse();
+            return _includedFileNames;
+        }
+
+        public string GenerateScript()
+        {
+            Parse();
+            return _scriptBuilder.ToString();
         }
 
         BatchParserAction ICommandHandler.Go(TextBlock batch, int repeatCount, SqlCmdCommand tokenType)
         {
+            batch.GetText(true, out string batchText, out LineInfo lineInfo);
+            _scriptBuilder.Append(batchText);
+            _scriptBuilder.Append("\nGO\n");
             return BatchParserAction.Continue;
         }
 
@@ -46,6 +67,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 includedFileName = Path.Combine(_currentFilePath, includedFileName);
             }
 
+            // TODO: is this the issue?
             _currentFilePath = Path.GetDirectoryName(includedFileName);
             _includedFileNames.Add(includedFileName);
 

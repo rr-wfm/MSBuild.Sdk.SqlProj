@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
-    <PreDeploy Include="Pre-Deployment\Script.PreDeployment.sql" />
+    <PreDeploy Include="Pre-Deployment\Script.PreDeployment.SimpleInclude.sql" />
     <RefactorLog Include="RefactorLog\TestProjectWithPrePost.refactorlog" />
   </ItemGroup>
 

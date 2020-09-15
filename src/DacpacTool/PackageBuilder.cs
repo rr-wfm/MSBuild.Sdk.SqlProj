@@ -306,7 +306,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             using (var stream = part.GetStream())
             {
-                var buffer = Encoding.UTF8.GetBytes(File.ReadAllText(file.FullName, Encoding.UTF8) + Environment.NewLine + "GO" + Environment.NewLine);
+                var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
+                var buffer = Encoding.UTF8.GetBytes(parser.GenerateScript());
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
