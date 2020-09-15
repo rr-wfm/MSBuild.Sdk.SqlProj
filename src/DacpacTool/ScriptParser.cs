@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
+using System.Reflection;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -26,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 _currentFilePath = Path.GetDirectoryName(sourceFile);
             }
 
-            _parser = new Parser(this, variableResolver, new StreamReader(sourceFile), null);
+            _parser = new Parser(this, variableResolver, new StreamReader(sourceFile), sourceFile);
         }
 
         protected void Parse()
@@ -58,17 +60,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return BatchParserAction.Continue;
         }
 
-        BatchParserAction ICommandHandler.Include(TextBlock filename, out TextReader stream, out string newFilename)
+        BatchParserAction ICommandHandler.Include(TextBlock includeBlock, out TextReader stream, out string newFilename)
         {
-            filename.GetText(true, out string includedFileName, out LineInfo lineInfo);
+            includeBlock.GetText(true, out string includedFileName, out LineInfo lineInfo);
+
+            // HACK: Work around access limitations to get access to the underlying tokens
+            var tokens = 
+                includeBlock.GetType()
+                            .GetField("tokens", BindingFlags.NonPublic | BindingFlags.Instance)
+                            .GetValue(includeBlock) as IEnumerable<Token>;
+            var token = tokens.FirstOrDefault();
+            if (token != null)
+            {
+                _currentFilePath = Path.GetDirectoryName(token.Filename);
+            }
 
             if (!Path.IsPathRooted(includedFileName))
             {
                 includedFileName = Path.Combine(_currentFilePath, includedFileName);
             }
 
-            // TODO: is this the issue?
-            _currentFilePath = Path.GetDirectoryName(includedFileName);
             _includedFileNames.Add(includedFileName);
 
             stream = new StreamReader(includedFileName);

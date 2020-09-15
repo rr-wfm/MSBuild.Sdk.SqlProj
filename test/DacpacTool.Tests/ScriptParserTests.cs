@@ -77,7 +77,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             result.Count.ShouldBe(3);
         }
 
-        [TestMethod][Ignore("TODO after refactoring")]
+        [TestMethod]
         public void CanParseFileWithNestedIncludesContainingRelativePaths()
         {
             // Arrange
@@ -147,7 +147,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             result.ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*PRINT N'Script3.sql'[\r\n]*PRINT N'Script2.sql'[\r\n]*GO[\r\n]*");
         }
 
-        [TestMethod][Ignore("TODO after refactoring")]
+        [TestMethod]
         public void CanGenerateScriptWithNestedIncludesContainingRelativePaths()
         {
             // Arrange
