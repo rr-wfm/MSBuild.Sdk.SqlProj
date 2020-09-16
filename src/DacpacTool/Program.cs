@@ -33,7 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
-            var inspectCommand = new Command("inspect")
+            var inspectCommand = new Command("collect-includes")
             {
                 new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
@@ -147,7 +147,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options.Debug);
 
-            var packageInspector = new PackageInspector();
+            var packageInspector = new ScriptInspector();
 
             // Add predeployment and postdeployment scripts
             if (options.PreDeploy != null) 

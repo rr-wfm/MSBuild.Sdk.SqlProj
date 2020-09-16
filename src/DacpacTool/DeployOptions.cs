@@ -2,7 +2,7 @@ using System.IO;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class DeployOptions
+    public class DeployOptions : BaseOptions
     {
         public FileInfo Input { get; set; }
         public string TargetServerName { get; set; }
@@ -11,6 +11,5 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string TargetPassword { get; set; }
         public string[] Property { get; set; }
         public string[] SqlCmdVar { get; set; }
-        public bool Debug { get; set; }
     }
 }

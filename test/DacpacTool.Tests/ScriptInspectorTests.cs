@@ -12,13 +12,13 @@ using Shouldly;
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
     [TestClass]
-    public class PackageInspectorTest
+    public class ScriptInspectorTests
     {
         [TestMethod]
         public void GetIncludedFiles_PredeploymentScript()
         {
             // Arrange
-            var packageInspector = new PackageInspector();
+            var packageInspector = new ScriptInspector();
 
             // Act
             packageInspector.AddPreDeploymentScript(
@@ -34,7 +34,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void GetIncludedFiles_NoIncludes()
         {
             // Arrange
-            var packageInspector = new PackageInspector();
+            var packageInspector = new ScriptInspector();
 
             // Act
             packageInspector.AddPreDeploymentScript(
@@ -48,7 +48,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void GetIncludedFiles_PostdeploymentScript()
         {
             // Arrange
-            var packageInspector = new PackageInspector();
+            var packageInspector = new ScriptInspector();
 
             // Act
             packageInspector.AddPostDeploymentScript(
@@ -64,7 +64,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void GetIncludedFiles_MultipleScripts()
         {
             // Arrange
-            var packageInspector = new PackageInspector();
+            var packageInspector = new ScriptInspector();
 
             // Act
             packageInspector.AddPreDeploymentScript(

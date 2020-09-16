@@ -3,7 +3,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class BuildOptions
+    public class BuildOptions : BaseOptions
     {
         public string Name { get; set; }
         public string Version { get; set; }
@@ -16,6 +16,5 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo PreDeploy { get; set; }
         public FileInfo PostDeploy { get; set; }
         public FileInfo RefactorLog { get; set; }
-        public bool Debug { get; set; }
     }
 }

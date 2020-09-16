@@ -2,10 +2,9 @@
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class InspectOptions
+    public class InspectOptions : BaseOptions
     {
         public FileInfo PreDeploy { get; set; }
         public FileInfo PostDeploy { get; set; }
-        public bool Debug { get; set; }
     }
 }

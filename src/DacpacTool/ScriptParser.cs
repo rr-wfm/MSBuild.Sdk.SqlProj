@@ -21,7 +21,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _parser = new Parser(this, variableResolver, new StreamReader(sourceFile), sourceFile);
         }
 
-        protected void Parse()
+        private void Parse()
         {
             if (! _parsed)
             {
@@ -69,7 +69,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         BatchParserAction ICommandHandler.OnError(Token token, OnErrorAction action)
         {
-            return BatchParserAction.Continue;
+            // Write error to console
+            Console.Error.WriteLine($"Error encountered in {token.Filename}, line {token.Begin.Line}");
+            if (token.TokenType == LexerTokenType.Text || token.TokenType == LexerTokenType.Include)
+            {
+                Console.Error.WriteLine(token.Text);
+            }
+
+            if (action == OnErrorAction.Ignore)
+            {
+                return BatchParserAction.Continue;
+            }
+            return BatchParserAction.Abort;
         }
     }
 }

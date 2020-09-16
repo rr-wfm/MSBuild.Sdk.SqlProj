@@ -145,7 +145,7 @@
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; inspect $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="low" Text="Running command: $(DacpacToolCommand)" />
