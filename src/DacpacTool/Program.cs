@@ -33,6 +33,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
+            var inspectCommand = new Command("inspect")
+            {
+                new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
+                new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
+#if DEBUG
+                new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
+#endif
+            };
+            inspectCommand.Handler = CommandHandler.Create<InspectOptions>(InspectIncludes);
+
             var deployCommand = new Command("deploy")
             {
                 new Option<FileInfo>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
@@ -48,7 +58,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
 
-            var rootCommand = new RootCommand { buildCommand, deployCommand };
+            var rootCommand = new RootCommand { buildCommand, inspectCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             return await rootCommand.InvokeAsync(args);
@@ -128,6 +138,33 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
             packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
             packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
+
+            return 0;
+        }
+
+        private static int InspectIncludes(InspectOptions options)
+        {
+            // Wait for a debugger to attach
+            WaitForDebuggerToAttach(options.Debug);
+
+            var packageInspector = new PackageInspector();
+
+            // Add predeployment and postdeployment scripts
+            if (options.PreDeploy != null) 
+            {
+                packageInspector.AddPreDeploymentScript(options.PreDeploy);
+            }
+            if (options.PostDeploy != null)
+            {
+                packageInspector.AddPostDeploymentScript(options.PostDeploy);
+            }
+
+            // Write all included files to stdout
+            var includedFiles = packageInspector.IncludedFiles;
+            foreach (var file in includedFiles)
+            {
+                Console.Out.WriteLine(file);
+            }
 
             return 0;
         }
