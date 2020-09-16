@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using System.Reflection;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
+using Microsoft.SqlTools.Extensibility;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -64,20 +65,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             includeBlock.GetText(true, out string includedFileName, out LineInfo lineInfo);
 
-            // HACK: Work around access limitations to get access to the underlying tokens
-            var tokens = 
-                includeBlock.GetType()
-                            .GetField("tokens", BindingFlags.NonPublic | BindingFlags.Instance)
-                            .GetValue(includeBlock) as IEnumerable<Token>;
-            var token = tokens.FirstOrDefault();
-            if (token != null)
-            {
-                _currentFilePath = Path.GetDirectoryName(token.Filename);
-            }
-
             if (!Path.IsPathRooted(includedFileName))
             {
-                includedFileName = Path.Combine(_currentFilePath, includedFileName);
+                var position = lineInfo.GetStreamPositionForOffset(0);
+                includedFileName = Path.Combine(Path.GetDirectoryName(position.Filename), includedFileName);
             }
 
             _includedFileNames.Add(includedFileName);
