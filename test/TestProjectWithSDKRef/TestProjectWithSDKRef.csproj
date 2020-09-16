@@ -5,7 +5,7 @@
 
     <ItemGroup>
         <Content Remove="Post-Deployment/*.sql" />
-        <PostDeploy Include="Post-Deployment/FillData.sql" />
+        <PostDeploy Include="Post-Deployment/Script.PostDeployment.sql" />
     </ItemGroup>
 
     <ItemGroup>
