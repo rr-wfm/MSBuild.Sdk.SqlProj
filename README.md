@@ -18,7 +18,7 @@ Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_
 The simplest way to get started is to install our templates with `dotnet new` using:
 
 ```
-dotnet new install MSBuild.Sdk.SqlProj.Templates
+dotnet new --install MSBuild.Sdk.SqlProj.Templates
 ```
 
 You can then create a new project file using the following command. If you don't want to target the latest version of SQL Server you can specify a version to target using the `-s Sql<version>` switch. Please refer to [this document](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) for the available versions.
