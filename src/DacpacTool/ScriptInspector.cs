@@ -7,7 +7,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class ScriptInspector
     {
         private readonly List<string> _includedFiles = new List<string>();
-        public List<string> IncludedFiles
+        public IEnumerable<string> IncludedFiles
         {
             get => _includedFiles;
         }

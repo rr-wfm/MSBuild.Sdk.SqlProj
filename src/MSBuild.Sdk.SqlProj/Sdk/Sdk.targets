@@ -41,7 +41,6 @@
       PreBuildEvent;
       ResolveReferences;
       GetTargetPath;
-      GetIncludedFiles;
       CoreCompile;
       PrepareForRun;
       IncrementalClean;
@@ -153,18 +152,14 @@
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
       <Output TaskParameter="ConsoleOutput" PropertyName="IncludedFiles" />
     </Exec>
-    <!-- Transform $(IncludedFiles) into an ItemGroup -->
-    <ItemGroup>
-      <IncludedFiles Include="$(IncludedFiles)" />
-    </ItemGroup>
-    <Message Importance="low" Text="Included Files: @(IncludedFiles)" />
+    <Message Importance="low" Text="Included Files: $(IncludedFiles)" />
   </Target>
 
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
   <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences;GetIncludedFiles" 
-          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);@(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
+          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <_PropertyNames Include="$(KnownModelProperties)" />
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">

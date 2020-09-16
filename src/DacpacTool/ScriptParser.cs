@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Linq;
-using System.Reflection;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
-using Microsoft.SqlTools.Extensibility;
+using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -14,7 +12,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly Parser _parser;
         private bool _parsed;
         private readonly List<string> _includedFileNames = new List<string>();
-        private StringBuilder _scriptBuilder = new StringBuilder();
+        private readonly StringBuilder _scriptBuilder = new StringBuilder();
+        private const string BATCH_SEPARATOR = "GO";
 
         public ScriptParser(string sourceFile, IVariableResolver variableResolver)
         {
@@ -30,7 +29,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public List<string> CollectFileNames()
+        public IEnumerable<string> CollectFileNames()
         {
             Parse();
             return _includedFileNames;
@@ -45,8 +44,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         BatchParserAction ICommandHandler.Go(TextBlock batch, int repeatCount, SqlCmdCommand tokenType)
         {
             batch.GetText(true, out string batchText, out LineInfo lineInfo);
-            _scriptBuilder.Append(batchText);
-            _scriptBuilder.Append("\nGO\n");
+            _scriptBuilder.AppendLine(batchText);
+            _scriptBuilder.AppendLine(BATCH_SEPARATOR);
             return BatchParserAction.Continue;
         }
 
@@ -69,18 +68,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         BatchParserAction ICommandHandler.OnError(Token token, OnErrorAction action)
         {
-            // Write error to console
-            Console.Error.WriteLine($"Error encountered in {token.Filename}, line {token.Begin.Line}");
-            if (token.TokenType == LexerTokenType.Text || token.TokenType == LexerTokenType.Include)
-            {
-                Console.Error.WriteLine(token.Text);
-            }
+            // Write error to console - based on ModelValidationError
+            // Error SQL9000001 is custom to this project, 
+            // not a known MSBuild error code
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(Path.GetFileNameWithoutExtension(token.Filename)); // SourceName
+            stringBuilder.Append('(');
+            stringBuilder.Append(token.Begin.Line); // Line
+            stringBuilder.Append(',');
+            stringBuilder.Append(token.Begin.Column); // Column
+            stringBuilder.Append("):");
+            stringBuilder.Append(ModelErrorType.ParserError); // ErrorType
+            stringBuilder.Append(' ');
+            stringBuilder.Append(ModelErrorSeverity.Error); // Severity
+            stringBuilder.Append(' ');
+            stringBuilder.Append("SQL"); // Prefix
+            stringBuilder.Append(9000001); // ErrorCode
+            stringBuilder.Append($": Parser error in {Path.GetFileName(token.Filename)}"); // Message
+            Console.Error.WriteLine(stringBuilder.ToString());
 
-            if (action == OnErrorAction.Ignore)
-            {
-                return BatchParserAction.Continue;
-            }
-            return BatchParserAction.Abort;
+            return action == OnErrorAction.Ignore ? BatchParserAction.Continue : BatchParserAction.Abort;
         }
     }
 }

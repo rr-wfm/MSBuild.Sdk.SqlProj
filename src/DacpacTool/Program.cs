@@ -67,7 +67,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static int BuildDacpac(BuildOptions options)
         {
             // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options.Debug);
+            WaitForDebuggerToAttach(options);
 
             // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
@@ -145,22 +145,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static int InspectIncludes(InspectOptions options)
         {
             // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options.Debug);
+            WaitForDebuggerToAttach(options);
 
-            var packageInspector = new ScriptInspector();
+            var scriptInspector = new ScriptInspector();
 
             // Add predeployment and postdeployment scripts
             if (options.PreDeploy != null) 
             {
-                packageInspector.AddPreDeploymentScript(options.PreDeploy);
+                scriptInspector.AddPreDeploymentScript(options.PreDeploy);
             }
             if (options.PostDeploy != null)
             {
-                packageInspector.AddPostDeploymentScript(options.PostDeploy);
+                scriptInspector.AddPostDeploymentScript(options.PostDeploy);
             }
 
             // Write all included files to stdout
-            var includedFiles = packageInspector.IncludedFiles;
+            var includedFiles = scriptInspector.IncludedFiles;
             foreach (var file in includedFiles)
             {
                 Console.Out.WriteLine(file);
@@ -172,7 +172,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static int DeployDacpac(DeployOptions options)
         {
             // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options.Debug);
+            WaitForDebuggerToAttach(options);
 
             try
             {
@@ -224,9 +224,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         [Conditional("DEBUG")]
-        private static void WaitForDebuggerToAttach(bool waitForDebuggerToAttach)
+        private static void WaitForDebuggerToAttach(BaseOptions options)
         {
-            if (waitForDebuggerToAttach)
+            if (options.Debug)
             {
                 Console.WriteLine("Waiting for debugger to attach");
                 while (!Debugger.IsAttached)

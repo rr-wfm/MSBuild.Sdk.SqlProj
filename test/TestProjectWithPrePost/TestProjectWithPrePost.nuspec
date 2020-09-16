@@ -12,7 +12,7 @@
     <packageTypes>
       <packageType name="$packagetype$" />
     </packageTypes>
-    <repository type="git" url="https://github.com/jmezach/MSBuild.Sdk.SqlProj/" />
+    <repository type="git" url="https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/" />
   </metadata>
   <files>
     <file src="bin/$configuration$/$tfm$/$id$.dacpac" target="tools/" />
