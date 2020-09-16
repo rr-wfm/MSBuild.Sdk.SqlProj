@@ -23,6 +23,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
+        submodules: 'true' # need to check out the SqlTools submodule to build successfully.
 
     # Install .NET Core SDK
     # TOOO: Remove this workaround once https://github.com/actions/setup-dotnet/issues/25 gets fixed
