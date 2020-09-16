@@ -15,20 +15,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private bool _parsed;
         private readonly List<string> _includedFileNames = new List<string>();
         private StringBuilder _scriptBuilder = new StringBuilder();
-        private string _currentFilePath;
 
         public ScriptParser(string sourceFile, IVariableResolver variableResolver)
         {
-            if (Path.IsPathRooted(sourceFile))
-            {
-                _currentFilePath = Path.GetDirectoryName(sourceFile);
-            }
-            else
-            {
-                sourceFile = Path.Combine(Environment.CurrentDirectory, sourceFile);
-                _currentFilePath = Path.GetDirectoryName(sourceFile);
-            }
-
             _parser = new Parser(this, variableResolver, new StreamReader(sourceFile), sourceFile);
         }
 
