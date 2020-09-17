@@ -33,6 +33,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
+            var collectIncludesCommand = new Command("collect-includes")
+            {
+                new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
+                new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
+#if DEBUG
+                new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
+#endif
+            };
+            collectIncludesCommand.Handler = CommandHandler.Create<InspectOptions>(InspectIncludes);
+
             var deployCommand = new Command("deploy")
             {
                 new Option<FileInfo>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
@@ -48,7 +58,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
 
-            var rootCommand = new RootCommand { buildCommand, deployCommand };
+            var rootCommand = new RootCommand { buildCommand, collectIncludesCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             return await rootCommand.InvokeAsync(args);
@@ -57,7 +67,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static int BuildDacpac(BuildOptions options)
         {
             // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options.Debug);
+            WaitForDebuggerToAttach(options);
 
             // Set metadata for the package
             using var packageBuilder = new PackageBuilder();
@@ -132,10 +142,37 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return 0;
         }
 
+        private static int InspectIncludes(InspectOptions options)
+        {
+            // Wait for a debugger to attach
+            WaitForDebuggerToAttach(options);
+
+            var scriptInspector = new ScriptInspector();
+
+            // Add predeployment and postdeployment scripts
+            if (options.PreDeploy != null) 
+            {
+                scriptInspector.AddPreDeploymentScript(options.PreDeploy);
+            }
+            if (options.PostDeploy != null)
+            {
+                scriptInspector.AddPostDeploymentScript(options.PostDeploy);
+            }
+
+            // Write all included files to stdout
+            var includedFiles = scriptInspector.IncludedFiles;
+            foreach (var file in includedFiles)
+            {
+                Console.Out.WriteLine(file);
+            }
+
+            return 0;
+        }
+
         private static int DeployDacpac(DeployOptions options)
         {
             // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options.Debug);
+            WaitForDebuggerToAttach(options);
 
             try
             {
@@ -187,9 +224,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         [Conditional("DEBUG")]
-        private static void WaitForDebuggerToAttach(bool waitForDebuggerToAttach)
+        private static void WaitForDebuggerToAttach(BaseOptions options)
         {
-            if (waitForDebuggerToAttach)
+            if (options.Debug)
             {
                 Console.WriteLine("Waiting for debugger to attach");
                 while (!Debugger.IsAttached)
