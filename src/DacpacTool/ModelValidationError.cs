@@ -20,7 +20,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public ModelValidationError(DacModelError modelError, string sourceName)
         {
-            if (modelError == null) throw new ArgumentNullException(nameof(modelError));
+            modelError = modelError ?? throw new ArgumentNullException(nameof(modelError));
             _sourceName = String.IsNullOrEmpty(sourceName) ? 
                             modelError.SourceName : 
                             sourceName.Replace("MSSQL::", string.Empty);

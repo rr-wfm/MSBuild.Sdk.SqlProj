@@ -70,7 +70,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             // Write error to console
             var error = new ModelValidationError(
-                sourceName: Path.GetFileNameWithoutExtension(token.Filename),
+                sourceName: Path.GetFileName(token.Filename),
                 line: token.Begin.Line,
                 column: token.Begin.Column,
                 errorType: ModelErrorType.ParserError,
