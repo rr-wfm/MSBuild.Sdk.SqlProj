@@ -68,24 +68,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         BatchParserAction ICommandHandler.OnError(Token token, OnErrorAction action)
         {
-            // Write error to console - based on ModelValidationError
-            // Error SQL9000001 is custom to this project, 
-            // not a known MSBuild error code
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(Path.GetFileNameWithoutExtension(token.Filename)); // SourceName
-            stringBuilder.Append('(');
-            stringBuilder.Append(token.Begin.Line); // Line
-            stringBuilder.Append(',');
-            stringBuilder.Append(token.Begin.Column); // Column
-            stringBuilder.Append("):");
-            stringBuilder.Append(ModelErrorType.ParserError); // ErrorType
-            stringBuilder.Append(' ');
-            stringBuilder.Append(ModelErrorSeverity.Error); // Severity
-            stringBuilder.Append(' ');
-            stringBuilder.Append("SQL"); // Prefix
-            stringBuilder.Append(9000001); // ErrorCode
-            stringBuilder.Append($": Parser error in {Path.GetFileName(token.Filename)}"); // Message
-            Console.Error.WriteLine(stringBuilder.ToString());
+            // Write error to console
+            var error = new ModelValidationError(
+                sourceName: Path.GetFileNameWithoutExtension(token.Filename),
+                line: token.Begin.Line,
+                column: token.Begin.Column,
+                errorType: ModelErrorType.ParserError,
+                severity: ModelErrorSeverity.Error,
+                prefix: "SQL",
+                errorCode: 9000001, // custom to this project, not a known MSBuild error code
+                message: $": Parser error in {Path.GetFileName(token.Filename)}"
+            );
+            Console.Error.WriteLine(error.ToString());
 
             return action == OnErrorAction.Ignore ? BatchParserAction.Continue : BatchParserAction.Abort;
         }
