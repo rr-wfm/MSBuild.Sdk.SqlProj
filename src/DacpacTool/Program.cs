@@ -33,7 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
 
-            var inspectCommand = new Command("collect-includes")
+            var collectIncludesCommand = new Command("collect-includes")
             {
                 new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
@@ -41,7 +41,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
             };
-            inspectCommand.Handler = CommandHandler.Create<InspectOptions>(InspectIncludes);
+            collectIncludesCommand.Handler = CommandHandler.Create<InspectOptions>(InspectIncludes);
 
             var deployCommand = new Command("deploy")
             {
@@ -58,7 +58,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
             deployCommand.Handler = CommandHandler.Create<DeployOptions>(DeployDacpac);
 
-            var rootCommand = new RootCommand { buildCommand, inspectCommand, deployCommand };
+            var rootCommand = new RootCommand { buildCommand, collectIncludesCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             return await rootCommand.InvokeAsync(args);

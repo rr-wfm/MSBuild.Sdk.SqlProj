@@ -6,14 +6,29 @@
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SqlToolsPath>../../sqltoolsservice/src</SqlToolsPath>
+    <ManagedBatchParserPath>../../sqltoolsservice/src/Microsoft.SqlTools.ManagedBatchParser</ManagedBatchParserPath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.DACFX" Version="150.4861.1-preview" />
+    <PackageReference Include="Microsoft.SqlServer.DACFX" Version="150.4826.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20427.1" />
     <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
   </ItemGroup>
 
+  <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
   <ItemGroup>
-    <ProjectReference Include="../../sqltoolsservice/src/Microsoft.SqlTools.ManagedBatchParser/Microsoft.SqlTools.ManagedBatchParser.csproj" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.41011.9" />
+    <ProjectReference Include="$(SqlToolsPath)/Microsoft.SqlTools.Hosting/Microsoft.SqlTools.Hosting.csproj" />
+    <Compile Include="$(ManagedBatchParserPath)/Localization/*.cs" />
+      <EmbeddedResource Include="$(ManagedBatchParserPath)/Localization/sr.resx" />
+      <None Include="$(ManagedBatchParserPath)/Localization/sr.strings" />
+    <Compile Include="$(ManagedBatchParserPath)/BatchParser/**/*.cs" />
+    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/ExecutionEngine.cs" />
+    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/Batch.cs" />
+    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/BatchParser*Args.cs" />
+    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/BatchParserWrapper.cs" />
   </ItemGroup>
 
 </Project>
