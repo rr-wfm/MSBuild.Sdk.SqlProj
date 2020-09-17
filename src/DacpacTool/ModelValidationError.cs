@@ -9,34 +9,62 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     public class ModelValidationError
     {
-        private readonly DacModelError _modelError;
         private readonly string _sourceName;
+        private readonly int _line;
+        private readonly int _column;
+        private readonly ModelErrorType _errorType;
+        private readonly ModelErrorSeverity _severity;
+        private readonly string _prefix;
+        private readonly int _errorCode;
+        private readonly string _message;
 
         public ModelValidationError(DacModelError modelError, string sourceName)
         {
-            _modelError = modelError ?? throw new ArgumentNullException(nameof(modelError));
-            _sourceName = sourceName.Replace("MSSQL::", string.Empty);
+            modelError = modelError ?? throw new ArgumentNullException(nameof(modelError));
+            _sourceName = String.IsNullOrEmpty(sourceName) ? 
+                            modelError.SourceName : 
+                            sourceName.Replace("MSSQL::", string.Empty);
+            _line = modelError.Line;
+            _column = modelError.Column;
+            _errorType = modelError.ErrorType;
+            _severity = modelError.Severity;
+            _prefix = modelError.Prefix;
+            _errorCode = modelError.ErrorCode;
+            _message = modelError.Message;
         }
 
-        public ModelErrorSeverity Severity { get => _modelError.Severity; }
+        public ModelValidationError(string sourceName, int line, int column, ModelErrorType errorType,
+            ModelErrorSeverity severity, string prefix, int errorCode, string message)
+        {
+            _sourceName = sourceName;
+            _line = line;
+            _column = column;
+            _errorType = errorType;
+            _severity = severity;
+            _prefix = prefix;
+            _errorCode = errorCode;
+            _message = message;
+        }
+
+        public ModelErrorSeverity Severity { get => _severity; }
 
         public override string ToString()
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append(_sourceName ?? _modelError.SourceName);
+            stringBuilder.Append(_sourceName);
             stringBuilder.Append('(');
-            stringBuilder.Append(_modelError.Line);
+            stringBuilder.Append(_line);
             stringBuilder.Append(',');
-            stringBuilder.Append(_modelError.Column);
+            stringBuilder.Append(_column);
             stringBuilder.Append("):");
-            stringBuilder.Append(_modelError.ErrorType);
+            stringBuilder.Append(_errorType);
             stringBuilder.Append(' ');
-            stringBuilder.Append(_modelError.Severity);
+            stringBuilder.Append(_severity);
             stringBuilder.Append(' ');
-            stringBuilder.Append(_modelError.Prefix);
-            stringBuilder.Append(_modelError.ErrorCode);
+            stringBuilder.Append(_prefix);
+            stringBuilder.Append(_errorCode);
             stringBuilder.Append(": ");
-            stringBuilder.Append(_modelError.Message);
+            stringBuilder.Append(_message);
 
             return stringBuilder.ToString();
         }

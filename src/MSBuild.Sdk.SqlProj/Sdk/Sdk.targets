@@ -136,9 +136,30 @@
   </Target>
 
   <!--
+    Gets a list of included files in the pre- and post-deploy scripts to include in the incremental build Inputs
+  -->
+  <Target Name="GetIncludedFiles" DependsOnTargets="ValidateEnvironment">
+    <!-- Build arguments for the command line tool  -->
+    <PropertyGroup>
+      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
+      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
+      <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
+    </PropertyGroup>
+    <!-- Run it, except during design-time builds -->
+    <Message Importance="low" Text="Running command: $(DacpacToolCommand)" />
+    <Exec Command="$(DacpacToolCommand)" ConsoleToMsBuild="true" EchoOff="true" StandardOutputImportance="Low"
+          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
+      <Output TaskParameter="ConsoleOutput" PropertyName="IncludedFiles" />
+    </Exec>
+    <Message Importance="low" Text="Included Files: $(IncludedFiles)" />
+  </Target>
+
+  <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences" Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(ProjectPath)" Outputs="$(TargetPath)">
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences;GetIncludedFiles" 
+          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <_PropertyNames Include="$(KnownModelProperties)" />
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
