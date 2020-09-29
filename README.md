@@ -216,10 +216,11 @@ To further customize the deployment process, you can use the following propertie
 | Property | Default Value | Description |
 | --- | --- | --- |
 | TargetServerName | (local) | Controls the name of the server to which the project is published |
-| TargetDatabaseName | Name of the project | Controls the name of the database that is created |
+| TargetDatabaseName | Project name | Controls the name of the database published by `dotnet publish` |
 | TargetUser |  | Username used to connect to the server. If empty, Windows authentication is used |
 | TargetPassword | | Password used to connect to the server. If empty, but TargetUser is set you will be prompted for the password |
 | IncludeCompositeObjects | True | Controls whether objects from referenced packages are deployed to the same database |
+| AssemblyName | Project name | Controls the name of the `.dacpac` created by `dotnet build`. The default name for the `.dacpac` file is the name of the project file, e.g. `MyProject.csproj` produces `MyProject.dacpac`. |
 
 > IMPORTANT: Although you can set the username and password in your project file we don't recommend doing so since you'll be committing credentials to version control. Instead you should specify these at the command line when needed.
 
