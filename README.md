@@ -204,7 +204,42 @@ Additionally you'll need to set the `PackageProjectUrl` property inside of the `
 
 Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
 
-### Publishing support
+### Packaging standalone dacpacs
+
+If you have an already-compiled `.dacpac` file without a corresponding `.csproj` that you need to reference as a `PackageReference`, you can use existing NuGet functionality to wrap the dacpac in a NuGet package. To do that, create a `.nuspec` file referencing your dacpac:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>your-dacpac-name</id>
+    <version>your-version-number</version>
+    <description>your-description</description>
+    <authors>your-author</authors>
+    <owners>your-owner</owners>
+    <packageTypes>
+      <packageType name="dacpac" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="fileName.dacpac" target="tools/" />
+  </files>
+</package>
+```
+
+To create the package, run: 
+```
+nuget package fileName.nuspec
+```
+
+Then push the package to your local NuGet repository: 
+```
+nuget push fileName.version.nupkg -Source /your/nuget/repo/path
+```
+
+You can now reference your dacpac as a `PackageReference`!
+
+## Publishing support
 Starting with version 1.2.0 of MSBuild.Sdk.SqlProj there is support for publishing a project to a SQL Server using the `dotnet publish` command. There are a couple of properties that control the deployment process which have some defaults to make the experience as smooth as possible for local development. For example, on Windows if you have a default SQL Server instance running on your local machine running `dotnet publish` creates a database with the same name as the project. Unfortunately on Mac and Linux we cannot use Windows authentication, so you'll need to specify a username and password:
 
 ```
