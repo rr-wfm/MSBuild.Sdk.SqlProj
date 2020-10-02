@@ -229,7 +229,7 @@ If you have an already-compiled `.dacpac` file without a corresponding `.csproj`
 
 To create the package, run: 
 ```
-nuget package fileName.nuspec
+nuget pack fileName.nuspec
 ```
 
 Then push the package to your local NuGet repository: 
