@@ -1,0 +1,19 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>Sql150</SqlServerVersion>
+        <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../TestProject/TestProject.csproj" DatabaseVariableLiteralValue="SomeOtherDatabase" />
+    </ItemGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
