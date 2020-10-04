@@ -107,6 +107,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.Message}");
                 }
             }
+            catch (Exception ex)
+            {
+                _console.WriteLine($"ERROR: An unknown error occurred while deploying database '{targetDatabaseName}': {ex.Message}");
+            }
         }
 
         private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
