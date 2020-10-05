@@ -76,12 +76,6 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
           Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
 
-
-  <!--
-    The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
-  -->
-  <Target Name="GetTargetPathWithTargetPlatformMoniker" />
-
   <Import Project="$(CustomAfterNoTargets)" Condition="'$(CustomAfterNoTargets)' != '' and Exists('$(CustomAfterNoTargets)')" />
 
   <!-- 
@@ -109,7 +103,7 @@
     Resolves package references to .dacpac packages by enumerating all package references, resolving their associated Pkg<package-id> property to get the physical
     location of the package and then checking if a that package contains a .dacpac file inside of the tools folder.
   -->
-  <Target Name="ResolveDatabasePackageReferences">
+  <Target Name="ResolveDatabaseReferences">
     <ItemGroup> 
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
@@ -126,9 +120,15 @@
         <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
         <DatabaseVariableLiteralValue>%(PackageReference.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
       </_ResolvedPackageReference>
+
+      <!-- Resolve all project references to their physical location -->
+      <_ResolvedProjectReference Include="%(_ResolvedProjectReferencePaths.Identity)">
+        <DacpacFile>%(_ResolvedProjectReferencePaths.Identity)</DacpacFile>
+        <DatabaseVariableLiteralValue>%(_ResolvedProjectReferencePaths.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
+      </_ResolvedProjectReference>
     
-      <!-- Build a list of package references that include a dacpac file matching the package identity in their tools folder -->
-      <DacpacReference Include="@(_ResolvedPackageReference)" Condition="Exists(%(DacpacFile))" />
+      <!-- Build a list of package/project references that include a dacpac file matching the package identity in their tools folder -->
+      <DacpacReference Include="@(_ResolvedPackageReference);@(_ResolvedProjectReference)" Condition="Exists(%(DacpacFile))" />
     </ItemGroup>
 
     <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.DacpacFile)" />
@@ -158,13 +158,16 @@
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabasePackageReferences;GetIncludedFiles" 
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles" 
           Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
+      <!-- Get the values for known model properties specified in the project file -->
       <_PropertyNames Include="$(KnownModelProperties)" />
       <PropertyNames Include="@(_PropertyNames)" Condition=" '$(%(Identity))' != '' ">
         <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
       </PropertyNames>
+      
+      <!-- Compile the list of references -->
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
     <!-- Write the list of input files to a file to be consumed by the dacpac tool -->
