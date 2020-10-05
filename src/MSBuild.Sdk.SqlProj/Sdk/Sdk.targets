@@ -35,6 +35,8 @@
   <PropertyGroup>
     <TargetExt>.dacpac</TargetExt>
     <TargetPath>$(TargetDir)/$(MSBuildProjectName)$(TargetExt)</TargetPath>
+    <!--We won't be generating debug symbols here -->
+    <_DebugSymbolsProduced>false</_DebugSymbolsProduced>
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
