@@ -30,7 +30,7 @@ jobs:
     - name: Setup .NET Core
       uses: coderpatros/setup-dotnet@sxs
       with:
-        dotnet-version: 2.1.809, 3.1.401, 5.0.100-preview.8.20417.9
+        dotnet-version: 2.1.809, 3.1.401, 5.0.100-rc.1.20452.10
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -102,7 +102,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
-        dotnet: [ '2.1.809', '3.1.401', '5.0.100-preview.8.20417.9' ]
+        dotnet: [ '2.1.809', '3.1.401', '5.0.100-rc.1.20452.10' ]
       fail-fast: false
 
     steps:
@@ -269,7 +269,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.100-preview.8.20417.9'
+        dotnet-version: '5.0.100-rc.1.20452.10'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -315,7 +315,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.100-preview.8.20417.9'
+        dotnet-version: '5.0.100-rc.1.20452.10'
 
     # Download artifacts
     - name: download-artifact
