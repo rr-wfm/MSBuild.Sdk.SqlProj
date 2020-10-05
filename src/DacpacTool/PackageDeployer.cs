@@ -92,12 +92,37 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             try
             {
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
+                services.Message += HandleDacServicesMessage;
                 services.Deploy(Package, targetDatabaseName, true, DeployOptions);
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
+            catch (DacServicesException ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.InnerException.Message}");
+                }
+                else
+                {
+                    _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.Message}");
+                }
+            }
             catch (Exception ex)
             {
-                _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.Message}");
+                _console.WriteLine($"ERROR: An unknown error occurred while deploying database '{targetDatabaseName}': {ex.Message}");
+            }
+        }
+
+        private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
+        {
+            var message = args.Message;
+            if (message.MessageType == DacMessageType.Message)
+            {
+                _console.WriteLine(message.Message);
+            }
+            else
+            {
+                _console.WriteLine($"{message.MessageType} {message.Prefix}{message.Number}: {message.Message}");
             }
         }
 
