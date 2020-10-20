@@ -84,8 +84,6 @@ Refer to the [documentation](https://docs.microsoft.com/en-us/dotnet/api/microso
 ## Pre- and post deployment scripts
 Support for pre- and post deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
 
-> LIMITATION: Currently there is no support for including other scripts from the pre- or post deployment script using the `:r OtherScript.sql` syntax. See [this issue](issues/23) for more details.
-
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
@@ -334,5 +332,3 @@ EXEC (@Query)
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
 
 The SQL Server Data Tools also includes a static code analysis feature. Currently this is not (yet) available when using this SDK.
-
-Project references, that is references between project within the same solution, are also currently not (yet) supported.
