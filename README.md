@@ -23,7 +23,7 @@ dotnet new --install MSBuild.Sdk.SqlProj.Templates
 
 You can then create a new project file using the following command. If you don't want to target the latest version of SQL Server you can specify a version to target using the `-s Sql<version>` switch. 
 
-See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2019` to `15.0`.
+See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2019` to `15.0`.
 
 See [SqlServerVersion Enum](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `15.0` to `Sql150`.
 
