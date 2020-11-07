@@ -47,7 +47,19 @@ Then run a `dotnet build` and you'll find a .dacpac file with the same name as y
 
 > Note: For PackageReferences this SDK currently assumes that the `.dacpac` file has the same name as the package. If you plan to create a NuGet package out of your project (see [below](#packaging-support)) then make sure that `<TargetName>` matches the ID of your package.
 
-By default all `.sql` files will be added to the package, except for those in the `Pre-Deployment` and `Post-Deployment` folders. To create database objects you can use the following item templates:
+## Editing the Project file
+The project file can have extension `.csproj` or `.fsproj`.
+
+All `.sql` files in the same directory as the project file, except for those in the `Pre-Deployment` and `Post-Deployment` folders, are added to the package by default.
+
+To exclude files from the package, add a `<Content Remove="Directory\File.sql" />`.
+
+If you are using Visual Studio, to make files excluded from the package appear in Solution Explorer (like scripts for Pre- and Post-Deployment), add `<None Include="Directory\File.sql" />`.
+
+Wilcards cards are supported for all nodes (`Content`, `None`, etc.). For example, `<None Include="Directory\**" />`.
+
+## Item templates
+To create database objects you can use the following item templates:
 
 | Template | Command | Description |
 | --- | --- | --- |
