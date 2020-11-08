@@ -77,7 +77,7 @@ There are a lot of properties that can be set on the model in the resulting `.da
 </Project>
 ```
 
-Refer to the [documentation](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.model.tsqlmodeloptions?view=sql-dacfx-140.3881.1) for more details on the available properties. The [SqlServerVersion](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) property is also  supported.
+Refer to the [documentation](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.tsqlmodeloptions) for more details on the available properties. The [SqlServerVersion](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) property is also  supported.
 
 **Note:** If you are replacing an existing `.sqlproj` be sure to copy over any of these properties into the new project file.
 
@@ -235,7 +235,7 @@ Additionally you'll need to set the `PackageProjectUrl` property inside of the `
 </Project>
 ```
 
-Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
+Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
 
 ### Packaging standalone dacpacs
 
@@ -272,7 +272,7 @@ nuget push fileName.version.nupkg -Source /your/nuget/repo/path
 
 You can now reference your dacpac as a `PackageReference`!
 
-> Note: To run these commands, you'll need to have the NuGet CLI tools installed. See [these installation instructions](https://docs.microsoft.com/en-us/nuget/install-nuget-client-tools#nugetexe-cli). If you use Chocolatey, you can also install by running `choco install nuget.commandline`. On a Mac with Homebrew installed, use `brew install nuget`.
+> Note: To run these commands, you'll need to have the NuGet CLI tools installed. See [these installation instructions](https://docs.microsoft.com/nuget/install-nuget-client-tools#nugetexe-cli). If you use Chocolatey, you can also install by running `choco install nuget.commandline`. On a Mac with Homebrew installed, use `brew install nuget`.
 
 ## Publishing support
 Starting with version 1.2.0 of MSBuild.Sdk.SqlProj there is support for publishing a project to a SQL Server using the `dotnet publish` command. There are a couple of properties that control the deployment process which have some defaults to make the experience as smooth as possible for local development. For example, on Windows if you have a default SQL Server instance running on your local machine running `dotnet publish` creates a database with the same name as the project. Unfortunately on Mac and Linux we cannot use Windows authentication, so you'll need to specify a username and password:
@@ -294,7 +294,7 @@ To further customize the deployment process, you can use the following propertie
 
 > IMPORTANT: Although you can set the username and password in your project file we don't recommend doing so since you'll be committing credentials to version control. Instead you should specify these at the command line when needed.
 
-In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions?view=sql-dacfx-150) deployment options. These are typically set in the project file, for example:
+In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions) deployment options. These are typically set in the project file, for example:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.9.0">
@@ -311,9 +311,9 @@ Most of those properties are simple values (like booleans, strings and integers)
 
 | Property | Example value | Description |
 | --- | --- | --- |
-| DatabaseSpecification | Hyperscale;1024;P15 | This property is specified in the format [Edition](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazureedition?view=sql-dacfx-150);[Maximum Size](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.maximumsize?view=sql-dacfx-150);[Service Objective](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.serviceobjective?view=sql-dacfx-150) |
-| DoNotDropObjectTypes | Aggregates;Assemblies | A semi-colon separated list of [Object Types](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.objecttype?view=sql-dacfx-150) that should not be dropped as part of the deployment |
-| ExcludeObjectTypes | Contracts;Endpoints | A semi-colon separated list of [Object Types](https://docs.microsoft.com/en-us/dotnet/api/microsoft.sqlserver.dac.objecttype?view=sql-dacfx-150) that should not be part of the deployment |
+| DatabaseSpecification | Hyperscale;1024;P15 | This property is specified in the format [Edition](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazureedition);[Maximum Size](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.maximumsize);[Service Objective](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.serviceobjective) |
+| DoNotDropObjectTypes | Aggregates;Assemblies | A semi-colon separated list of [Object Types](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.objecttype) that should not be dropped as part of the deployment |
+| ExcludeObjectTypes | Contracts;Endpoints | A semi-colon separated list of [Object Types](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.objecttype) that should not be part of the deployment |
 | SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [here](#SQLCMD-Variables)
 
 ## Workaround for parser errors (SQL46010)
