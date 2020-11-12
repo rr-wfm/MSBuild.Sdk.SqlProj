@@ -21,10 +21,19 @@ The simplest way to get started is to install our templates with `dotnet new` us
 dotnet new --install MSBuild.Sdk.SqlProj.Templates
 ```
 
-You can then create a new project file using the following command. If you don't want to target the latest version of SQL Server you can specify a version to target using the `-s Sql<version>` switch. Please refer to [this document](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) for the available versions.
+You can then create a new project file using the following command:
+```
+dotnet new sqlproj
+```
+
+If you don't want to target the latest version of SQL Server, you can specify a version to target using the `-s Sql<version>` switch. 
+
+See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2016` to `13.0`.
+
+See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `13.0` to `Sql130`.
 
 ```
-dotnet new sqlproj [-s Sql150]
+dotnet new sqlproj -s Sql130
 ```
 
 You should now have a project file with the following contents:
@@ -33,7 +42,7 @@ You should now have a project file with the following contents:
 <Project Sdk="MSBuild.Sdk.SqlProj/1.9.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <SqlServerVersion>Sql150</SqlServerVersion>
+        <SqlServerVersion>Sql130</SqlServerVersion>
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
     </PropertyGroup>
 
