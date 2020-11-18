@@ -57,6 +57,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void UseTargetServerAndPort()
+        {
+            // Arrange
+            using var packageDeployer = new PackageDeployer(_console);
+            var packagePath = BuildSimpleModel();
+
+            // Act
+            packageDeployer.LoadPackage(packagePath);
+            packageDeployer.UseTargetServerAndPort("localhost", 1432);
+
+            // Assert
+            packageDeployer.ConnectionStringBuilder.DataSource.ShouldNotBeNull();
+            packageDeployer.ConnectionStringBuilder.DataSource.ShouldBe("localhost,1432");
+        }
+
+        [TestMethod]
         public void UseTargetServerWithoutLoadPackage()
         {
             // Arrange

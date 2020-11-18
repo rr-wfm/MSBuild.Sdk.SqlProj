@@ -47,6 +47,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 new Option<FileInfo>(new string[] { "--input", "-i" }, "Path to the .dacpac package to deploy"),
                 new Option<string>(new string[] { "--targetServerName", "-tsn" }, "Name of the server to deploy the package to"),
+                new Option<string>(new string[] { "--targetPort", "-tprt" }, "Port number to connect on (leave blank for default)"),
                 new Option<string>(new string[] { "--targetDatabaseName", "-tdn" }, "Name of the database to deploy the package to"),
                 new Option<string>(new string[] { "--targetUser", "-tu" }, "Username used to connect to the target server, using SQL Server authentication"),
                 new Option<string>(new string[] { "--targetPassword", "-tp" }, "Password used to connect to the target server, using SQL Server authentication"),
@@ -197,7 +198,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     }
                 }
 
-                deployer.UseTargetServer(options.TargetServerName);
+                if (options.TargetPort != null && Int32.TryParse(options.TargetPort, out int targetPort))
+                {
+                    deployer.UseTargetServerAndPort(options.TargetServerName, targetPort);
+                }
+                else
+                {
+                    deployer.UseTargetServer(options.TargetServerName);
+                }
                 
                 if (!string.IsNullOrWhiteSpace(options.TargetUser))
                 {
