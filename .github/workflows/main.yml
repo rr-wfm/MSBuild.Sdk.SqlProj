@@ -181,7 +181,7 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '3.1.401' }}
+      if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '3.1.x' }}
       uses: actions/upload-artifact@v1
       with:
         name: dacpac-package
