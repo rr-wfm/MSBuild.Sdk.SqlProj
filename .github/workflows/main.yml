@@ -111,7 +111,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
-        dotnet: [ '2.1.809', '3.1.401', '5.0.100-rc.1.20452.10' ]
+        dotnet: [ '2.1.x', '3.1.x', '5.0.x' ]
       fail-fast: false
 
     steps:
@@ -278,7 +278,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.100-rc.1.20452.10'
+        dotnet-version: '5.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -324,7 +324,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.100-rc.1.20452.10'
+        dotnet-version: '5.0.x'
 
     # Download artifacts
     - name: download-artifact
