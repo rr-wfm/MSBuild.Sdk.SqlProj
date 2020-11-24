@@ -6,6 +6,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     {
         public FileInfo Input { get; set; }
         public string TargetServerName { get; set; }
+        public int? TargetPort { get; set; }
         public string TargetDatabaseName { get; set; }
         public string TargetUser { get; set; }
         public string TargetPassword { get; set; }

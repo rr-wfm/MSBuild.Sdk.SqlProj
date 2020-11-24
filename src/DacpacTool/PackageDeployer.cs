@@ -39,6 +39,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ConnectionStringBuilder.DataSource = targetServer;
         }
 
+        public void UseTargetServerAndPort(string targetServer, int targetPort)
+        {
+            EnsurePackageLoaded();
+
+            _console.WriteLine($"Using target server '{targetServer}' on port {targetPort}");
+            ConnectionStringBuilder.DataSource = $"{targetServer},{targetPort}";
+        }
+
         public void UseSqlAuthentication(string username, string password)
         {
             EnsurePackageLoaded();
