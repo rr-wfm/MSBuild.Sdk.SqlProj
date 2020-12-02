@@ -308,6 +308,7 @@ To further customize the deployment process, you can use the following propertie
 | --- | --- | --- |
 | TargetServerName | (local) | Controls the name of the server to which the project is published |
 | TargetDatabaseName | Project name | Controls the name of the database published by `dotnet publish` |
+| TargetPort |  | Specifies an alternate port for connecting to the target server (only necessary if using a non-standard port) |
 | TargetUser |  | Username used to connect to the server. If empty, Windows authentication is used |
 | TargetPassword | | Password used to connect to the server. If empty, but TargetUser is set you will be prompted for the password |
 | IncludeCompositeObjects | True | Controls whether objects from referenced packages are deployed to the same database |
