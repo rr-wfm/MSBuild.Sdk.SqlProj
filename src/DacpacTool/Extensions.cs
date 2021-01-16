@@ -47,8 +47,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             outputMessageBuilder.Append(args.Line);
             outputMessageBuilder.Append(',');
             outputMessageBuilder.Append(args.TextSpan.iStartIndex);
-            outputMessageBuilder.Append("):");
-            outputMessageBuilder.Append("error ");
+            outputMessageBuilder.Append("): ");
+            outputMessageBuilder.Append("error: ");
             
             if (args.Exception != null)
             {
@@ -63,8 +63,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else
             {
-                outputMessageBuilder.Append(args.MessageType);
-                outputMessageBuilder.Append(' ');
                 outputMessageBuilder.Append(args.Message);
                 outputMessageBuilder.Append(' ');
                 outputMessageBuilder.Append(args.Description);

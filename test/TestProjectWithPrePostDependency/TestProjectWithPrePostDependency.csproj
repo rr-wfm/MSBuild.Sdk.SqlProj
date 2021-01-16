@@ -11,5 +11,18 @@
         <ProjectReference Include="../TestProjectWithPrePost/TestProjectWithPrePost.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!--
+        <SqlCmdVariable Include="DbUserPassword">
+            <DefaultValue>dbuser-password</DefaultValue>
+            <Value>$(SqlCmdVar__1)</Value>
+        </SqlCmdVariable>
+        <SqlCmdVariable Include="DbReaderPassword">
+            <DefaultValue>dbreader-password</DefaultValue>
+            <Value>$(SqlCmdVar__2)</Value>
+        </SqlCmdVariable>
+        -->
+    </ItemGroup>
+
     <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>

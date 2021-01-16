@@ -131,6 +131,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString);
             if (!isPreDeploy)
             {
+                // Only set initial catalog for post-deployment script since database might not exist yet for pre-deployment
                 builder.InitialCatalog = targetDatabaseName;
             }
             
@@ -160,10 +161,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 _currentSource = $"{referencedPackage.Name}/{scriptPrefix}deploy.sql";
 
                 var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
+                AddSqlCmdVariables(scriptExecutionArgs, targetDatabaseName);
+                
                 engine.BatchParserExecutionError += (sender, args) => _console.WriteLine(args.Format(_currentSource));
                 engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
                     $"'{referencedPackage.Name}' version '{referencedPackage.Version}' with result: {args.ExecutionResult}");
                 engine.ExecuteScript(scriptExecutionArgs);
+            }
+        }
+
+        private void AddSqlCmdVariables(ScriptExecutionArgs args, string targetDatabaseName)
+        {
+            args.Variables.Add("DatabaseName", targetDatabaseName);
+            foreach (var variable in DeployOptions.SqlCommandVariableValues)
+            {
+                args.Variables.Add(variable.Key, variable.Value);
             }
         }
 
