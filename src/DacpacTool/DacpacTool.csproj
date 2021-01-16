@@ -25,10 +25,7 @@
     <EmbeddedResource Include="$(ManagedBatchParserPath)/Localization/sr.resx" LogicalName="Microsoft.SqlTools.ManagedBatchParser.Localization.SR.resources" />
     <None Include="$(ManagedBatchParserPath)/Localization/sr.strings" />
     <Compile Include="$(ManagedBatchParserPath)/BatchParser/**/*.cs" />
-    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/ExecutionEngine.cs" />
-    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/Batch.cs" />
-    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/ExecutionEngineCode/BatchParser*Args.cs" />
-    <Compile Remove="$(ManagedBatchParserPath)/BatchParser/BatchParserWrapper.cs" />
+    <Compile Include="$(ManagedBatchParserPath)/ReliableConnection/**/*.cs" />
   </ItemGroup>
 
 </Project>

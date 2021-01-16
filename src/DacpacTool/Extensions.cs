@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 
@@ -10,6 +11,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public static class Extensions
     {
+        public static string GetPreDeploymentScript(this DacPackage package)
+        {
+            var stream = package.PreDeploymentScript;
+            if (stream == null)
+            {
+                return null;
+            }
+
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+
+        public static string GetPostDeploymentScript(this DacPackage package)
+        {
+            var stream = package.PostDeploymentScript;
+            if (stream == null)
+            {
+                return null;
+            }
+
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+
         public static void AddReference(this TSqlModel model, string referencePath, string externalParts)
         {
             var dataSchemaModel = GetDataSchemaModel(model);

@@ -10,6 +10,8 @@ Post-Deployment Script Template
 --------------------------------------------------------------------------------------
 */
 
+INSERT INTO [dbo].[MyTable] VALUES ('SomeString', 1)
+
 if SERVERPROPERTY('EngineEdition') > 4
 begin
 

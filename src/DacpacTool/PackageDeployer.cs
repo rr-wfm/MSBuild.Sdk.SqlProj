@@ -1,15 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageDeployer
+    public sealed class PackageDeployer : IBatchEventsHandler
     {
         private readonly IConsole _console;
+        private string _currentSource;
 
         public PackageDeployer(IConsole console)
         {
@@ -82,9 +88,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             try
             {
+                using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
+
+                var references = model.GetReferencedDacPackages();
+                RunPrePostDeploymentForReferences(references, true);
+
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
                 services.Message += HandleDacServicesMessage;
                 services.Deploy(package, targetDatabaseName, true, DeployOptions);
+
+                RunPrePostDeploymentForReferences(references, false);
+
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
             catch (DacServicesException ex)
@@ -114,6 +128,43 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             else
             {
                 _console.WriteLine($"{message.MessageType} {message.Prefix}{message.Number}: {message.Message}");
+            }
+        }
+
+        private void RunPrePostDeploymentForReferences(IEnumerable<string> references, bool isPreDeploy)
+        {
+            if (!references.Any())
+            {
+                return;
+            }
+            
+            var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
+            using var engine = new ExecutionEngine();
+            using var connection = new SqlConnection(ConnectionStringBuilder.ConnectionString);
+            connection.Open();
+
+            foreach (var reference in references)
+            {
+                if (!File.Exists(reference))
+                {
+                    // TODO Format output to allow warning to show up in Error List
+                    _console.WriteLine($"warning: Unable to find referenced .dacpac at '{reference}'");
+                    continue;
+                }
+
+                using var referencedPackage = DacPackage.Load(reference);
+                var script = isPreDeploy ? referencedPackage.GetPreDeploymentScript() : referencedPackage.GetPostDeploymentScript();
+                if (string.IsNullOrEmpty(script))
+                {
+                    continue;
+                }
+
+                string scriptPrefix = isPreDeploy ? "pre" : "post";
+                _console.WriteLine($"Running {scriptPrefix}-deployment script for referenced package '{referencedPackage.Name}' version '{referencedPackage.Version}'");
+                _currentSource = $"{referencedPackage.Name}/{scriptPrefix}deploy.sql";
+
+                var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
+                engine.ExecuteScript(scriptExecutionArgs);
             }
         }
 
@@ -245,7 +296,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             for (int i = 0; i < objectTypes.Length; i++)
             {
-                if (!Enum.TryParse<ObjectType>(objectTypes[i], false, out ObjectType objectType))
+                if (!Enum.TryParse(objectTypes[i], false, out ObjectType objectType))
                 {
                     throw new ArgumentException($"Unknown object type {objectTypes[i]} specified.", nameof(value));
                 }
@@ -264,7 +315,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException("Expected at least 3 parameters for DatabaseSpecification; Edition, MaximumSize and ServiceObjective", nameof(value));
             }
 
-            if (!Enum.TryParse<DacAzureEdition>(specification[0], false, out DacAzureEdition edition))
+            if (!Enum.TryParse(specification[0], false, out DacAzureEdition edition))
             {
                 throw new ArgumentException($"Unknown edition '{specification[0]}' specified.", nameof(value));
             }
@@ -280,6 +331,52 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 MaximumSize = maximumSize,
                 ServiceObjective = specification[2]
             };
+        }
+
+        void IBatchEventsHandler.OnBatchCancelling(object sender, EventArgs args)
+        {
+            // Nothing to do here
+        }
+
+        void IBatchEventsHandler.OnBatchError(object sender, BatchErrorEventArgs args)
+        {
+            var outputMessageBuilder = new StringBuilder();
+            outputMessageBuilder.Append(_currentSource);
+            outputMessageBuilder.Append('(');
+            outputMessageBuilder.Append(args.Line);
+            outputMessageBuilder.Append(',');
+            outputMessageBuilder.Append(args.TextSpan.iStartIndex);
+            outputMessageBuilder.Append("):");
+            outputMessageBuilder.Append("error ");
+            
+            if (args.Exception != null)
+            {
+                outputMessageBuilder.Append(args.Message);
+            }
+            else
+            {
+                outputMessageBuilder.Append("SQL");
+                outputMessageBuilder.Append(args.Error.Number);
+                outputMessageBuilder.Append(": ");
+                outputMessageBuilder.Append(args.Error.Message);
+            }
+
+            _console.WriteLine(outputMessageBuilder.ToString());
+        }
+
+        void IBatchEventsHandler.OnBatchMessage(object sender, BatchMessageEventArgs args)
+        {
+            _console.WriteLine($"{_currentSource}: {args.Message}");
+        }
+
+        void IBatchEventsHandler.OnBatchResultSetFinished(object sender, EventArgs args)
+        {
+            // Nothing to do here
+        }
+
+        void IBatchEventsHandler.OnBatchResultSetProcessing(object sender, BatchResultSetEventArgs args)
+        {
+            // Nothing to do here
         }
     }
 }

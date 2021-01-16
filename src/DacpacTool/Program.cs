@@ -145,9 +145,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static int InspectIncludes(InspectOptions options)
         {
-            // Wait for a debugger to attach
-            WaitForDebuggerToAttach(options);
-
             var scriptInspector = new ScriptInspector();
 
             // Add predeployment and postdeployment scripts
