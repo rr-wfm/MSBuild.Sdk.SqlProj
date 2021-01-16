@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
@@ -91,13 +90,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
 
                 var references = model.GetReferencedDacPackages();
-                RunPrePostDeploymentForReferences(references, true);
+                RunPrePostDeploymentForReferences(references, targetDatabaseName, true);
 
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
                 services.Message += HandleDacServicesMessage;
                 services.Deploy(package, targetDatabaseName, true, DeployOptions);
 
-                RunPrePostDeploymentForReferences(references, false);
+                RunPrePostDeploymentForReferences(references, targetDatabaseName, false);
 
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
@@ -131,16 +130,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private void RunPrePostDeploymentForReferences(IEnumerable<string> references, bool isPreDeploy)
+        private void RunPrePostDeploymentForReferences(IEnumerable<string> references, string targetDatabaseName, bool isPreDeploy)
         {
             if (!references.Any())
             {
                 return;
             }
+
+            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString) { InitialCatalog = targetDatabaseName };
             
             var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
             using var engine = new ExecutionEngine();
-            using var connection = new SqlConnection(ConnectionStringBuilder.ConnectionString);
+            using var connection = new SqlConnection(builder.ConnectionString);
             connection.Open();
 
             foreach (var reference in references)
@@ -164,6 +165,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 _currentSource = $"{referencedPackage.Name}/{scriptPrefix}deploy.sql";
 
                 var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
+                engine.BatchParserExecutionError += (sender, args) => _console.WriteLine(args.Format(_currentSource));
+                engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
+                    $"'{referencedPackage.Name}' version '{referencedPackage.Version}' with result: {args.ExecutionResult}");
                 engine.ExecuteScript(scriptExecutionArgs);
             }
         }
@@ -340,28 +344,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         void IBatchEventsHandler.OnBatchError(object sender, BatchErrorEventArgs args)
         {
-            var outputMessageBuilder = new StringBuilder();
-            outputMessageBuilder.Append(_currentSource);
-            outputMessageBuilder.Append('(');
-            outputMessageBuilder.Append(args.Line);
-            outputMessageBuilder.Append(',');
-            outputMessageBuilder.Append(args.TextSpan.iStartIndex);
-            outputMessageBuilder.Append("):");
-            outputMessageBuilder.Append("error ");
-            
-            if (args.Exception != null)
-            {
-                outputMessageBuilder.Append(args.Message);
-            }
-            else
-            {
-                outputMessageBuilder.Append("SQL");
-                outputMessageBuilder.Append(args.Error.Number);
-                outputMessageBuilder.Append(": ");
-                outputMessageBuilder.Append(args.Error.Message);
-            }
-
-            _console.WriteLine(outputMessageBuilder.ToString());
+            _console.WriteLine(args.Format(_currentSource));
         }
 
         void IBatchEventsHandler.OnBatchMessage(object sender, BatchMessageEventArgs args)

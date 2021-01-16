@@ -232,7 +232,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (options.Debug)
             {
-                Console.WriteLine("Waiting for debugger to attach");
+                Console.WriteLine($"Waiting for debugger to attach ({System.Diagnostics.Process.GetCurrentProcess().Id})");
                 while (!Debugger.IsAttached)
                 {
                     Thread.Sleep(100);
