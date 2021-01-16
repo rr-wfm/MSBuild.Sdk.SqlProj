@@ -7,7 +7,7 @@ using Microsoft.SqlServer.Dac;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageDeployer : IDisposable
+    public sealed class PackageDeployer
     {
         private readonly IConsole _console;
 
@@ -18,39 +18,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
         public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
-        public DacPackage Package { get; private set; }
-
-        public void LoadPackage(FileInfo dacpacPackage)
-        {
-            if (!dacpacPackage.Exists)
-            {
-                throw new ArgumentException($"File {dacpacPackage.FullName} does not exist.", nameof(dacpacPackage));
-            }
-
-            Package = DacPackage.Load(dacpacPackage.FullName);
-            _console.WriteLine($"Loaded package '{Package.Name}' version '{Package.Version}' from '{dacpacPackage.FullName}'");
-        }
 
         public void UseTargetServer(string targetServer)
         {
-            EnsurePackageLoaded();
-
             _console.WriteLine($"Using target server '{targetServer}'");
             ConnectionStringBuilder.DataSource = targetServer;
         }
 
         public void UseTargetServerAndPort(string targetServer, int targetPort)
         {
-            EnsurePackageLoaded();
-
             _console.WriteLine($"Using target server '{targetServer}' on port {targetPort}");
             ConnectionStringBuilder.DataSource = $"{targetServer},{targetPort}";
         }
 
         public void UseSqlAuthentication(string username, string password)
         {
-            EnsurePackageLoaded();
-
             ConnectionStringBuilder.UserID = username;
             if (string.IsNullOrWhiteSpace(password))
             {
@@ -67,8 +49,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void UseWindowsAuthentication()
         {
-            EnsurePackageLoaded();
-
             ConnectionStringBuilder.IntegratedSecurity = true;
             _console.WriteLine("Using Windows Authentication");
         }
@@ -84,24 +64,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"SQLCMD variable '{key}' has no value. Specify a value in the project file or on the command line.", nameof(value));
             }
 
-            EnsurePackageLoaded();
-
             DeployOptions.SqlCommandVariableValues.Add(key, value);
             _console.WriteLine($"Adding SQLCMD variable '{key}' with value '{value}'");
         }
 
-        public void Deploy(string targetDatabaseName)
+        public void Deploy(FileInfo dacpacPackage, string targetDatabaseName)
         {
-            EnsurePackageLoaded();
             EnsureConnectionStringComplete();
 
-            _console.WriteLine($"Deploying to database '{targetDatabaseName}'");
+            if (!dacpacPackage.Exists)
+            {
+                throw new ArgumentException($"File {dacpacPackage.FullName} does not exist.", nameof(dacpacPackage));
+            }
+
+            using var package = DacPackage.Load(dacpacPackage.FullName);
+            _console.WriteLine($"Deploying package '{package.Name}' version '{package.Version}' to database '{targetDatabaseName}'");
 
             try
             {
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
                 services.Message += HandleDacServicesMessage;
-                services.Deploy(Package, targetDatabaseName, true, DeployOptions);
+                services.Deploy(package, targetDatabaseName, true, DeployOptions);
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
             catch (DacServicesException ex)
@@ -239,20 +222,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             catch (FormatException)
             {
                 throw new ArgumentException($"Unable to parse value for property with name {key}: {value}", nameof(value));
-            }
-        }
-
-        public void Dispose()
-        {
-            Package?.Dispose();
-            Package = null;
-        }
-
-        private void EnsurePackageLoaded()
-        {
-            if (Package == null)
-            {
-                throw new InvalidOperationException("Package has not been loaded. Call LoadPackage first.");
             }
         }
 

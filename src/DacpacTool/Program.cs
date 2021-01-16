@@ -177,8 +177,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             try
             {
-                using var deployer = new PackageDeployer(new ActualConsole());
-                deployer.LoadPackage(options.Input);
+                var deployer = new PackageDeployer(new ActualConsole());
 
                 if (options.Property != null)
                 {
@@ -216,7 +215,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     deployer.UseWindowsAuthentication();
                 }
 
-                deployer.Deploy(options.TargetDatabaseName);
+                deployer.Deploy(options.Input, options.TargetDatabaseName);
                 return 0;
             }
             catch (ArgumentException ex)

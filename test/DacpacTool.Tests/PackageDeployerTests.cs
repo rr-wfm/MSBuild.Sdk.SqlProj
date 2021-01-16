@@ -10,45 +10,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageDeployerTests
     {
-        private IConsole _console = Substitute.For<IConsole>();
-
-        [TestMethod]
-        public void LoadPackage()
-        {
-            // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
-
-            // Act
-            packageDeployer.LoadPackage(packagePath);
-
-            // Assert
-            packageDeployer.Package.ShouldNotBeNull();
-        }
-
-        [TestMethod]
-        public void LoadPackageFileDoesNotExist()
-        {
-            // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = "SomeDummyFile.dacpac";
-
-            // Act
-            Should.Throw<ArgumentException>(() => packageDeployer.LoadPackage(new FileInfo(packagePath)));
-
-            // Assert
-            packageDeployer.Package.ShouldBeNull();
-        }
+        private readonly IConsole _console = Substitute.For<IConsole>();
 
         [TestMethod]
         public void UseTargetServer()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseTargetServer("localhost");
 
             // Assert
@@ -60,11 +30,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void UseTargetServerAndPort()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseTargetServerAndPort("localhost", 1432);
 
             // Assert
@@ -73,28 +41,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void UseTargetServerWithoutLoadPackage()
-        {
-            // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
-
-            // Act
-            Should.Throw<InvalidOperationException>(() => packageDeployer.UseTargetServer("localhost"));
-
-            // Assert
-            packageDeployer.ConnectionStringBuilder.DataSource.ShouldBeEmpty();
-        }
-
-        [TestMethod]
         public void UseWindowsAuthentication()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseWindowsAuthentication();
 
             // Assert
@@ -102,28 +54,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void UseWindowsAuthenticationWithoutLoadPackage()
-        {
-            // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
-
-            // Act
-            Should.Throw<InvalidOperationException>(() => packageDeployer.UseWindowsAuthentication());
-
-            // Assert
-            packageDeployer.ConnectionStringBuilder.IntegratedSecurity.ShouldBeFalse();
-        }
-
-        [TestMethod]
         public void UseSqlServerAuthenticationNoPasswordPrompts()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseSqlAuthentication("testuser", null);
 
             // Assert
@@ -137,11 +73,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             _console.ReadLine().Returns("testpassword");
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseSqlAuthentication("testuser", null);
 
             // Assert
@@ -154,11 +88,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void UseSqlAuthenticationWithPasswordDoesNotPrompt()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.UseSqlAuthentication("testuser", "testpassword");
 
             // Assert
@@ -172,11 +104,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetSqlCmdVariable()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.SetSqlCmdVariable("MySqlCmdVariable", "SomeValue");
 
             // Assert
@@ -188,11 +118,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetSqlCmdVariableNoValue()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             Should.Throw<ArgumentException>(() => packageDeployer.SetSqlCmdVariable("MySqlCmdVariable", string.Empty));
 
             // Assert
@@ -200,40 +128,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void DeployNoPackageLoaded()
-        {
-            // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
-
-            // Act
-            Should.Throw<InvalidOperationException>(() => packageDeployer.Deploy("TestDatabase"));
-
-            // Assert
-            // Should throw
-        }
-
-        [TestMethod]
         public void DeployNoAuthentication()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
+            var packageDeployer = new PackageDeployer(_console);
             var packagePath = BuildSimpleModel();
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
-            Should.Throw<InvalidOperationException>(() => packageDeployer.Deploy("TestDatabase"));
+            Should.Throw<InvalidOperationException>(() => packageDeployer.Deploy(packagePath, "TestDatabase"));
+        }
+
+        [TestMethod]
+        public void DeployPackageDoesNotExist()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+            packageDeployer.UseTargetServer("localhost");
+            packageDeployer.UseWindowsAuthentication();
+
+            // Act
+            Should.Throw<ArgumentException>(() => packageDeployer.Deploy(new FileInfo("does-not-exist.dacpac"), "TestDatabase"));
         }
 
         [TestMethod]
         public void SetPropertySimpleValue()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.SetProperty("AllowDropBlockingAssemblies", "true");
 
             // Assert
@@ -244,11 +167,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyInvalidFormat()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("AllowDropBlockingAssemblies", "ARandomString"));
         }
 
@@ -256,11 +177,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyDoNotDropObjectTypes()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.SetProperty("DoNotDropObjectTypes", "Aggregates;Assemblies");
 
             // Assert
@@ -271,11 +190,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyExcludeObjectTypes()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.SetProperty("ExcludeObjectTypes", "Contracts;Endpoints");
 
             // Assert
@@ -286,11 +203,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyDatabaseSpecification()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             packageDeployer.SetProperty("DatabaseSpecification", "Hyperscale;1024;P15");
 
             // Assert
@@ -303,11 +218,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyDatabaseSpecificationInvalidEdition()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
+            var packageDeployer = new PackageDeployer(_console);
             var packagePath = BuildSimpleModel();
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "MyFancyEdition;1024;P15"));
 
             // Assert
@@ -320,11 +234,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyDatabaseSpecificationInvalidMaximumSize()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "hyperscale;NotAnInteger;P15"));
 
             // Assert
@@ -337,11 +249,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetPropertyDatabaseSpecificationTooFewParameters()
         {
             // Arrange
-            using var packageDeployer = new PackageDeployer(_console);
-            var packagePath = BuildSimpleModel();
+            var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.LoadPackage(packagePath);
             Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "hyperscale"));
 
             // Assert
@@ -350,7 +260,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageDeployer.DeployOptions.DatabaseSpecification.ServiceObjective.ShouldBeNull();
         }
 
-        private FileInfo BuildSimpleModel()
+        private static FileInfo BuildSimpleModel()
         {
             var packagePath = new TestModelBuilder()
                 .AddTable("TestTable", ("Column1", "nvarchar(100)"))
