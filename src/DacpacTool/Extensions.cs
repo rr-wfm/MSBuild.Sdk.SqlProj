@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -25,6 +26,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             AddCustomData(dataSchemaModel, customData);
+        }
+
+        public static IEnumerable<string> GetReferencedDacPackages(this TSqlModel model)
+        {
+            var result = new List<string>();
+            var dataSchemaModel = GetDataSchemaModel(model);
+
+            var getCustomDataMethod = dataSchemaModel.GetType().GetMethod("GetCustomData", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string), typeof(string) }, null);
+            var references = (IEnumerable) getCustomDataMethod.Invoke(dataSchemaModel, new object[] { "Reference", "SqlSchema" });
+
+            MethodInfo getMetadataMethod = null;
+            foreach (var reference in references)
+            {
+                if (getMetadataMethod == null)
+                {
+                    getMetadataMethod = reference.GetType().GetMethod("GetMetadata", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string) }, null);
+                }
+
+                var fileName = (string)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
+                result.Add(fileName);
+            }
+
+            return result;
         }
 
         public static void AddSqlCmdVariables(this TSqlModel model, string[] variableNames)
