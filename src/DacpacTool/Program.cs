@@ -53,6 +53,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string>(new string[] { "--targetPassword", "-tp" }, "Password used to connect to the target server, using SQL Server authentication"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties used to control the deployment"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) and their associated values, separated by an equals sign."),
+                new Option<bool>(new string[] { "--runScriptsFromReferences", "-sff" }, "Whether to run pre- and postdeployment scripts from references"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
@@ -212,7 +213,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     deployer.UseWindowsAuthentication();
                 }
 
+                if (options.RunScriptsFromReferences)
+                {
+                    deployer.RunPreDeploymentScriptFromReferences(options.Input, options.TargetDatabaseName);
+                }
+
                 deployer.Deploy(options.Input, options.TargetDatabaseName);
+
+                if (options.RunScriptsFromReferences)
+                {
+                    deployer.RunPostDeploymentScriptFromReferences(options.Input, options.TargetDatabaseName);
+                }
+
                 return 0;
             }
             catch (ArgumentException ex)

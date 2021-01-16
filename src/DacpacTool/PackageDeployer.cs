@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -73,6 +72,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Adding SQLCMD variable '{key}' with value '{value}'");
         }
 
+        public void RunPreDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
+        {
+            RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, true);
+        }
+
         public void Deploy(FileInfo dacpacPackage, string targetDatabaseName)
         {
             EnsureConnectionStringComplete();
@@ -87,17 +91,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             try
             {
-                using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
-
-                var references = model.GetReferencedDacPackages();
-                RunPrePostDeploymentForReferences(references, targetDatabaseName, true);
-
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
                 services.Message += HandleDacServicesMessage;
                 services.Deploy(package, targetDatabaseName, true, DeployOptions);
-
-                RunPrePostDeploymentForReferences(references, targetDatabaseName, false);
-
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
             catch (DacServicesException ex)
@@ -117,27 +113,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
+        public void RunPostDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
         {
-            var message = args.Message;
-            if (message.MessageType == DacMessageType.Message)
-            {
-                _console.WriteLine(message.Message);
-            }
-            else
-            {
-                _console.WriteLine($"{message.MessageType} {message.Prefix}{message.Number}: {message.Message}");
-            }
+            RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, false);
         }
 
-        private void RunPrePostDeploymentForReferences(IEnumerable<string> references, string targetDatabaseName, bool isPreDeploy)
+        private void RunDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName, bool isPreDeploy)
         {
+            using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
+            var references = model.GetReferencedDacPackages();
+
             if (!references.Any())
             {
                 return;
             }
 
-            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString) { InitialCatalog = targetDatabaseName };
+            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString);
+            if (!isPreDeploy)
+            {
+                builder.InitialCatalog = targetDatabaseName;
+            }
             
             var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
             using var engine = new ExecutionEngine();
@@ -169,6 +164,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
                     $"'{referencedPackage.Name}' version '{referencedPackage.Version}' with result: {args.ExecutionResult}");
                 engine.ExecuteScript(scriptExecutionArgs);
+            }
+        }
+
+        private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
+        {
+            var message = args.Message;
+            if (message.MessageType == DacMessageType.Message)
+            {
+                _console.WriteLine(message.Message);
+            }
+            else
+            {
+                _console.WriteLine($"{message.MessageType} {message.Prefix}{message.Number}: {message.Message}");
             }
         }
 

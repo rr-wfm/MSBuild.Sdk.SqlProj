@@ -217,8 +217,9 @@
       <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp &quot;$(TargetPassword)&quot;</TargetPasswordArgument>
       <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
+      <RunScriptsFromReferencesArgument Condition="'$(RunScriptsFromReferences)' == 'True'">-sff</RunScriptsFromReferencesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />

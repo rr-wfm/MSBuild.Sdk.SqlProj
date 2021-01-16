@@ -4,6 +4,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <SqlServerVersion>Sql150</SqlServerVersion>
+        <RunScriptsFromReferences>True</RunScriptsFromReferences>
     </PropertyGroup>
 
     <ItemGroup>
