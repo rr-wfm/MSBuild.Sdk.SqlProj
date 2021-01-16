@@ -207,6 +207,11 @@
       <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
         <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
       </DeployPropertyNames>
+      <!-- Resolve default values for SQLCMD variables -->
+      <_ResolvedSqlCmdVariable Include="@(SqlCmdVariable)">
+        <Value Condition="'%(SqlCmdVariable.Value)' != ''">%(SqlCmdVariable.Value)</Value>
+        <Value Condition="'%(SqlCmdVariable.Value)' == ''">%(SqlCmdVariable.DefaultValue)</Value>
+      </_ResolvedSqlCmdVariable>
     </ItemGroup>
     <PropertyGroup>
       <InputArgument>-i &quot;$(TargetPath)&quot;</InputArgument>
@@ -216,7 +221,7 @@
       <TargetUserArgument Condition="'$(TargetUser)'!=''">-tu &quot;$(TargetUser)&quot;</TargetUserArgument>
       <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp &quot;$(TargetPassword)&quot;</TargetPasswordArgument>
       <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
-      <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
+      <SqlCmdVariableArguments>@(_ResolvedSqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
       <RunScriptsFromReferencesArgument Condition="'$(RunScriptsFromReferences)' == 'True'">-sff</RunScriptsFromReferencesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
