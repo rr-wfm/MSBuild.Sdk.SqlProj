@@ -130,7 +130,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
 
                 var fileName = (string)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
-                result.Add(fileName);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    result.Add(fileName);
+                }
             }
 
             return result;
