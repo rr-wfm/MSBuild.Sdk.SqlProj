@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Microsoft.Data.Tools.Schema.Sql.Packaging;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
-using Microsoft.SqlTools.ServiceLayer.BatchParser;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {

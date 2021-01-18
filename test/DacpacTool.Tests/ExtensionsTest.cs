@@ -33,6 +33,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         /// <summary>
+        /// Tests that we can get references from a model.
+        /// </summary>
+        [TestMethod]
+        public void CanGetReferences()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage)
+                .Build();
+            
+            // Act
+            var references = model.GetReferencedDacPackages();
+
+            // Assert
+            references.Any().ShouldBeTrue();
+            references.First().ShouldBe(referencePackage);
+        }
+
+        /// <summary>
         /// Tests that we can get model validation errors from a model.
         /// </summary>
         [TestMethod]

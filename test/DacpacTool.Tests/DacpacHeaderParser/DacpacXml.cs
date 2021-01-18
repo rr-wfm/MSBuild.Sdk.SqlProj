@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Data.Tools.Schema.Sql.Packaging;
+using System.IO.Packaging;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
 {

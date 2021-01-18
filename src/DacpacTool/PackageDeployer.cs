@@ -1,15 +1,19 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageDeployer : IDisposable
+    public sealed class PackageDeployer : IBatchEventsHandler
     {
         private readonly IConsole _console;
+        private string _currentSource;
 
         public PackageDeployer(IConsole console)
         {
@@ -18,39 +22,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
         public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
-        public DacPackage Package { get; private set; }
-
-        public void LoadPackage(FileInfo dacpacPackage)
-        {
-            if (!dacpacPackage.Exists)
-            {
-                throw new ArgumentException($"File {dacpacPackage.FullName} does not exist.", nameof(dacpacPackage));
-            }
-
-            Package = DacPackage.Load(dacpacPackage.FullName);
-            _console.WriteLine($"Loaded package '{Package.Name}' version '{Package.Version}' from '{dacpacPackage.FullName}'");
-        }
 
         public void UseTargetServer(string targetServer)
         {
-            EnsurePackageLoaded();
-
             _console.WriteLine($"Using target server '{targetServer}'");
             ConnectionStringBuilder.DataSource = targetServer;
         }
 
         public void UseTargetServerAndPort(string targetServer, int targetPort)
         {
-            EnsurePackageLoaded();
-
             _console.WriteLine($"Using target server '{targetServer}' on port {targetPort}");
             ConnectionStringBuilder.DataSource = $"{targetServer},{targetPort}";
         }
 
         public void UseSqlAuthentication(string username, string password)
         {
-            EnsurePackageLoaded();
-
             ConnectionStringBuilder.UserID = username;
             if (string.IsNullOrWhiteSpace(password))
             {
@@ -67,8 +53,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void UseWindowsAuthentication()
         {
-            EnsurePackageLoaded();
-
             ConnectionStringBuilder.IntegratedSecurity = true;
             _console.WriteLine("Using Windows Authentication");
         }
@@ -84,24 +68,32 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"SQLCMD variable '{key}' has no value. Specify a value in the project file or on the command line.", nameof(value));
             }
 
-            EnsurePackageLoaded();
-
             DeployOptions.SqlCommandVariableValues.Add(key, value);
             _console.WriteLine($"Adding SQLCMD variable '{key}' with value '{value}'");
         }
 
-        public void Deploy(string targetDatabaseName)
+        public void RunPreDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
         {
-            EnsurePackageLoaded();
+            RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, true);
+        }
+
+        public void Deploy(FileInfo dacpacPackage, string targetDatabaseName)
+        {
             EnsureConnectionStringComplete();
 
-            _console.WriteLine($"Deploying to database '{targetDatabaseName}'");
+            if (!dacpacPackage.Exists)
+            {
+                throw new ArgumentException($"File {dacpacPackage.FullName} does not exist.", nameof(dacpacPackage));
+            }
+
+            using var package = DacPackage.Load(dacpacPackage.FullName);
+            _console.WriteLine($"Deploying package '{package.Name}' version '{package.Version}' to database '{targetDatabaseName}'");
 
             try
             {
                 var services = new DacServices(ConnectionStringBuilder.ConnectionString);
                 services.Message += HandleDacServicesMessage;
-                services.Deploy(Package, targetDatabaseName, true, DeployOptions);
+                services.Deploy(package, targetDatabaseName, true, DeployOptions);
                 _console.WriteLine($"Successfully deployed database '{targetDatabaseName}'");
             }
             catch (DacServicesException ex)
@@ -118,6 +110,72 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             catch (Exception ex)
             {
                 _console.WriteLine($"ERROR: An unknown error occurred while deploying database '{targetDatabaseName}': {ex.Message}");
+            }
+        }
+
+        public void RunPostDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
+        {
+            RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, false);
+        }
+
+        private void RunDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName, bool isPreDeploy)
+        {
+            using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
+            var references = model.GetReferencedDacPackages();
+
+            if (!references.Any())
+            {
+                return;
+            }
+
+            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString);
+            if (!isPreDeploy)
+            {
+                // Only set initial catalog for post-deployment script since database might not exist yet for pre-deployment
+                builder.InitialCatalog = targetDatabaseName;
+            }
+            
+            var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
+            using var engine = new ExecutionEngine();
+            using var connection = new SqlConnection(builder.ConnectionString);
+            connection.Open();
+
+            foreach (var reference in references)
+            {
+                if (!File.Exists(reference))
+                {
+                    // TODO Format output to allow warning to show up in Error List
+                    _console.WriteLine($"warning: Unable to find referenced .dacpac at '{reference}'");
+                    continue;
+                }
+
+                using var referencedPackage = DacPackage.Load(reference);
+                var script = isPreDeploy ? referencedPackage.GetPreDeploymentScript() : referencedPackage.GetPostDeploymentScript();
+                if (string.IsNullOrEmpty(script))
+                {
+                    continue;
+                }
+
+                string scriptPrefix = isPreDeploy ? "pre" : "post";
+                _console.WriteLine($"Running {scriptPrefix}-deployment script for referenced package '{referencedPackage.Name}' version '{referencedPackage.Version}'");
+                _currentSource = $"{referencedPackage.Name}/{scriptPrefix}deploy.sql";
+
+                var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
+                AddSqlCmdVariables(scriptExecutionArgs, targetDatabaseName);
+                
+                engine.BatchParserExecutionError += (sender, args) => _console.WriteLine(args.Format(_currentSource));
+                engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
+                    $"'{referencedPackage.Name}' version '{referencedPackage.Version}' with result: {args.ExecutionResult}");
+                engine.ExecuteScript(scriptExecutionArgs);
+            }
+        }
+
+        private void AddSqlCmdVariables(ScriptExecutionArgs args, string targetDatabaseName)
+        {
+            args.Variables.Add("DatabaseName", targetDatabaseName);
+            foreach (var variable in DeployOptions.SqlCommandVariableValues)
+            {
+                args.Variables.Add(variable.Key, variable.Value);
             }
         }
 
@@ -242,20 +300,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void Dispose()
-        {
-            Package?.Dispose();
-            Package = null;
-        }
-
-        private void EnsurePackageLoaded()
-        {
-            if (Package == null)
-            {
-                throw new InvalidOperationException("Package has not been loaded. Call LoadPackage first.");
-            }
-        }
-
         private void EnsureConnectionStringComplete()
         {
             if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.DataSource))
@@ -276,7 +320,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             for (int i = 0; i < objectTypes.Length; i++)
             {
-                if (!Enum.TryParse<ObjectType>(objectTypes[i], false, out ObjectType objectType))
+                if (!Enum.TryParse(objectTypes[i], false, out ObjectType objectType))
                 {
                     throw new ArgumentException($"Unknown object type {objectTypes[i]} specified.", nameof(value));
                 }
@@ -295,7 +339,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException("Expected at least 3 parameters for DatabaseSpecification; Edition, MaximumSize and ServiceObjective", nameof(value));
             }
 
-            if (!Enum.TryParse<DacAzureEdition>(specification[0], false, out DacAzureEdition edition))
+            if (!Enum.TryParse(specification[0], false, out DacAzureEdition edition))
             {
                 throw new ArgumentException($"Unknown edition '{specification[0]}' specified.", nameof(value));
             }
@@ -311,6 +355,31 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 MaximumSize = maximumSize,
                 ServiceObjective = specification[2]
             };
+        }
+
+        void IBatchEventsHandler.OnBatchCancelling(object sender, EventArgs args)
+        {
+            // Nothing to do here
+        }
+
+        void IBatchEventsHandler.OnBatchError(object sender, BatchErrorEventArgs args)
+        {
+            _console.WriteLine(args.Format(_currentSource));
+        }
+
+        void IBatchEventsHandler.OnBatchMessage(object sender, BatchMessageEventArgs args)
+        {
+            _console.WriteLine($"{_currentSource}: {args.Message}");
+        }
+
+        void IBatchEventsHandler.OnBatchResultSetFinished(object sender, EventArgs args)
+        {
+            // Nothing to do here
+        }
+
+        void IBatchEventsHandler.OnBatchResultSetProcessing(object sender, BatchResultSetEventArgs args)
+        {
+            // Nothing to do here
         }
     }
 }

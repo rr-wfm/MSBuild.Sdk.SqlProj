@@ -1,14 +1,100 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
+using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
+using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public static class Extensions
     {
+        public static string Format(this BatchErrorEventArgs args, string source)
+        {
+            var outputMessageBuilder = new StringBuilder();
+            outputMessageBuilder.Append(source);
+            outputMessageBuilder.Append('(');
+            outputMessageBuilder.Append(args.Line);
+            outputMessageBuilder.Append(',');
+            outputMessageBuilder.Append(args.TextSpan.iStartIndex);
+            outputMessageBuilder.Append("):");
+            outputMessageBuilder.Append("error ");
+            
+            if (args.Exception != null)
+            {
+                outputMessageBuilder.Append(args.Message);
+            }
+            else
+            {
+                outputMessageBuilder.Append("SQL");
+                outputMessageBuilder.Append(args.Error.Number);
+                outputMessageBuilder.Append(": ");
+                outputMessageBuilder.Append(args.Error.Message);
+            }
+            
+            return outputMessageBuilder.ToString();
+        }
+
+        public static string Format(this BatchParserExecutionErrorEventArgs args, string source)
+        {
+            var outputMessageBuilder = new StringBuilder();
+            outputMessageBuilder.Append(source);
+            outputMessageBuilder.Append('(');
+            outputMessageBuilder.Append(args.Line);
+            outputMessageBuilder.Append(',');
+            outputMessageBuilder.Append(args.TextSpan.iStartIndex);
+            outputMessageBuilder.Append("): ");
+            outputMessageBuilder.Append("error: ");
+            
+            if (args.Exception != null)
+            {
+                outputMessageBuilder.Append(args.Message);
+            }
+            else if (args.Error != null)
+            {
+                outputMessageBuilder.Append("SQL");
+                outputMessageBuilder.Append(args.Error.Number);
+                outputMessageBuilder.Append(": ");
+                outputMessageBuilder.Append(args.Error.Message);
+            }
+            else
+            {
+                outputMessageBuilder.Append(args.Message);
+                outputMessageBuilder.Append(' ');
+                outputMessageBuilder.Append(args.Description);
+            }
+            
+            return outputMessageBuilder.ToString();
+        }
+
+        public static string GetPreDeploymentScript(this DacPackage package)
+        {
+            var stream = package.PreDeploymentScript;
+            if (stream == null)
+            {
+                return null;
+            }
+
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+
+        public static string GetPostDeploymentScript(this DacPackage package)
+        {
+            var stream = package.PostDeploymentScript;
+            if (stream == null)
+            {
+                return null;
+            }
+
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+
         public static void AddReference(this TSqlModel model, string referencePath, string externalParts)
         {
             var dataSchemaModel = GetDataSchemaModel(model);
@@ -25,6 +111,32 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             AddCustomData(dataSchemaModel, customData);
+        }
+
+        public static IEnumerable<string> GetReferencedDacPackages(this TSqlModel model)
+        {
+            var result = new List<string>();
+            var dataSchemaModel = GetDataSchemaModel(model);
+
+            var getCustomDataMethod = dataSchemaModel.GetType().GetMethod("GetCustomData", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string), typeof(string) }, null);
+            var references = (IEnumerable) getCustomDataMethod.Invoke(dataSchemaModel, new object[] { "Reference", "SqlSchema" });
+
+            MethodInfo getMetadataMethod = null;
+            foreach (var reference in references)
+            {
+                if (getMetadataMethod == null)
+                {
+                    getMetadataMethod = reference.GetType().GetMethod("GetMetadata", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string) }, null);
+                }
+
+                var fileName = (string)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    result.Add(fileName);
+                }
+            }
+
+            return result;
         }
 
         public static void AddSqlCmdVariables(this TSqlModel model, string[] variableNames)

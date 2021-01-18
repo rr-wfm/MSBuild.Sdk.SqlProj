@@ -1,0 +1,26 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>Sql150</SqlServerVersion>
+        <RunScriptsFromReferences>True</RunScriptsFromReferences>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../TestProjectWithPrePost/TestProjectWithPrePost.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <SqlCmdVariable Include="DbUserPassword">
+            <DefaultValue>dbuser-password</DefaultValue>
+            <Value>$(DbUserPassword)</Value>
+        </SqlCmdVariable>
+        <SqlCmdVariable Include="DbReaderPassword">
+            <DefaultValue>dbreader-password</DefaultValue>
+            <Value>$(DbReaderPassword)</Value>
+        </SqlCmdVariable>
+    </ItemGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
