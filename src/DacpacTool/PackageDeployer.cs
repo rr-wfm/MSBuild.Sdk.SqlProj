@@ -292,7 +292,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 PropertyInfo property = typeof(DacDeployOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                 property.SetValue(DeployOptions, propertyValue);
 
-                _console.WriteLine($"Setting property {key} to value {value}");
+                var parsedValue = propertyValue switch
+                {
+                    ObjectType[] o => string.Join(',', o),
+                    DacAzureDatabaseSpecification s => $"{s.Edition},{s.MaximumSize},{s.ServiceObjective}",
+                    _ => propertyValue.ToString()
+                };
+
+                _console.WriteLine($"Setting property {key} to value {parsedValue}");
             }
             catch (FormatException)
             {
@@ -315,7 +322,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private ObjectType[] ParseObjectTypes(string value)
         {
-            var objectTypes = value.Split(';');
+            var objectTypes = value.Split(',');
             var result = new ObjectType[objectTypes.Length];
 
             for (int i = 0; i < objectTypes.Length; i++)
@@ -333,7 +340,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
         {
-            var specification = value.Split(";", 3);
+            var specification = value.Split(",", 3);
             if (specification.Length != 3)
             {
                 throw new ArgumentException("Expected at least 3 parameters for DatabaseSpecification; Edition, MaximumSize and ServiceObjective", nameof(value));
