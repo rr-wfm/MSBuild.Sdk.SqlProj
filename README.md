@@ -157,6 +157,8 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
+> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty we'll fall back to `DefaultValue`. 
+
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
