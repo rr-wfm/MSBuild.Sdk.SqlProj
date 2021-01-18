@@ -322,7 +322,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private ObjectType[] ParseObjectTypes(string value)
         {
-            if (value.Contains(';'))
+            if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected object types to be comma-seperated instead of semi-colon separated");
             }
@@ -345,7 +345,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
         {
-            if (value.Contains(';'))
+            if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected database specification to be comma-seperated instead of semi-colon separated");
             }
