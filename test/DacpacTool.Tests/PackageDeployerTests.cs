@@ -180,7 +180,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("DoNotDropObjectTypes", "Aggregates;Assemblies");
+            packageDeployer.SetProperty("DoNotDropObjectTypes", "Aggregates,Assemblies");
 
             // Assert
             packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Aggregates, ObjectType.Assemblies });
@@ -193,7 +193,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("ExcludeObjectTypes", "Contracts;Endpoints");
+            packageDeployer.SetProperty("ExcludeObjectTypes", "Contracts,Endpoints");
 
             // Assert
             packageDeployer.DeployOptions.ExcludeObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Contracts, ObjectType.Endpoints });
@@ -206,7 +206,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("DatabaseSpecification", "Hyperscale;1024;P15");
+            packageDeployer.SetProperty("DatabaseSpecification", "Hyperscale,1024,P15");
 
             // Assert
             packageDeployer.DeployOptions.DatabaseSpecification.Edition.ShouldBe(DacAzureEdition.Hyperscale);

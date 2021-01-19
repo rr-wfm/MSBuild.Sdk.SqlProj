@@ -11,5 +11,9 @@
     <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ExcludeObjectTypes>Users,Assemblies</ExcludeObjectTypes>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>
