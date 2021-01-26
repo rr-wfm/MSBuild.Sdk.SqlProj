@@ -62,6 +62,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             result.ShouldNotBeNull();
             result.Count().ShouldBe(2);
+            result.ToList().Take(2).Last().ShouldBe($"{TEST_PROJECT_PATH}/Pre-Deployment/./MoreScripts/Script2.sql");
         }
 
         [TestMethod]

@@ -37,11 +37,13 @@
   <Target Name="CompileDesignTime" />
 
   <ItemGroup>
-    <Content Include="**\*.sql">
+    <Content Include="**/*.sql">
       <Pack>False</Pack>
     </Content>
-    <Content Remove="Pre-Deployment\**\*.sql" />
-    <Content Remove="Post-Deployment\**\*.sql" />
+    <Content Remove="Pre-Deployment/**/*.sql" />
+    <Content Remove="Post-Deployment/**/*.sql" />
+    <Content Remove="bin/**/*.sql" />
+    <Content Remove="obj/**/*.sql" />
   </ItemGroup>
 
   <PropertyGroup>
