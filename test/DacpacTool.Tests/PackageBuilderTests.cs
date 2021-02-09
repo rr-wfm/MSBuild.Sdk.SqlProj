@@ -60,7 +60,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference("NonExistentFile.dacpac"));
+            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference("NonExistentFile.dacpac"))
+                    .Message.ShouldStartWith("Unable to find reference file NonExistentFile.dacpac");
+        }
+
+        [TestMethod]
+        public void AddReference_FileIsNotDacpac()
+        {
+            // Arrange
+            string reference = new TestModelBuilder()
+                .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
+                .SaveAsPackage(".dll");
+                
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act & Assert
+            Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(reference))
+                    .Message.ShouldStartWith("Invalid type .dll");
+            
+            // Cleanup
+            File.Delete(reference);
         }
 
         [TestMethod]

@@ -24,11 +24,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            // Make sure the file exists
-            if (!File.Exists(referenceFile))
-            {
-                throw new ArgumentException($"Unable to find reference file {referenceFile}", nameof(referenceFile));
-            }
+            ValidateReference(referenceFile);
 
             Console.WriteLine($"Adding reference to {referenceFile}");
             Model.AddReference(referenceFile, null);
@@ -39,14 +35,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
+            ValidateReference(referenceFile);
+
+            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts}");
+            Model.AddReference(referenceFile, externalParts);
+        }
+
+        private void ValidateReference(string referenceFile)
+        {
             // Make sure the file exists
             if (!File.Exists(referenceFile))
             {
                 throw new ArgumentException($"Unable to find reference file {referenceFile}", nameof(referenceFile));
             }
 
-            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts}");
-            Model.AddReference(referenceFile, externalParts);
+            // Make sure the file is a .dacpac file
+            var fileType = Path.GetExtension(referenceFile);
+            if (fileType != ".dacpac")
+            {
+                throw new ArgumentException($"Invalid type {fileType}, was excepting .dacpac", nameof(referenceFile));
+            }
         }
 
         public void AddSqlCmdVariables(string[] variableNames)
