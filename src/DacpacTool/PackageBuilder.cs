@@ -50,10 +50,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Make sure the file is a .dacpac file
-            var fileType = Path.GetExtension(referenceFile);
-            if (fileType != ".dacpac")
+            string fileType = Path.GetExtension(referenceFile);
+            if (fileType.ToLower() != ".dacpac")
             {
-                throw new ArgumentException($"Invalid type {fileType}, was excepting .dacpac", nameof(referenceFile));
+                throw new ArgumentException($"Invalid filetype {fileType}, was excepting .dacpac", nameof(referenceFile));
             }
         }
 

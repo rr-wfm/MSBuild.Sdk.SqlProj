@@ -77,7 +77,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act & Assert
             Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(reference))
-                    .Message.ShouldStartWith("Invalid type .dll");
+                    .Message.ShouldStartWith("Invalid filetype .dll");
             
             // Cleanup
             File.Delete(reference);
