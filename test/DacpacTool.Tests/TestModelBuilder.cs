@@ -52,9 +52,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return sqlModel;
         }
 
-        public string SaveAsPackage()
+        public string SaveAsPackage(string extension = ".dacpac")
         {
-            var filename = Path.GetTempFileName();
+            var tempfilename = Path.GetTempFileName();
+            var filename = Path.ChangeExtension(tempfilename, extension);
             DacPackageExtensions.BuildPackage(filename, sqlModel, new PackageMetadata());
             return filename;
         }
