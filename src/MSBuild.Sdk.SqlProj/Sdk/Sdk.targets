@@ -136,6 +136,18 @@
   </Target>
 
   <!--
+    Removes any referenced .dacpac from the _ResolvedProjectReferencePaths items to ensure that the .dacpac
+    isn't passed to the ResolveAssemblyReferences target since that would treat it as a .NET assembly.
+  -->
+  <Target Name="RemoveDatabaseReferencesFromAssemblyReferences"
+          DependsOnTargets="ResolveDatabaseReferences"
+          AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <_ResolvedProjectReferencePaths Remove="%(DacpacReference.Identity)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
     Gets a list of included files in the pre- and post-deploy scripts to include in the incremental build Inputs
   -->
   <Target Name="GetIncludedFiles" DependsOnTargets="ValidateEnvironment">
