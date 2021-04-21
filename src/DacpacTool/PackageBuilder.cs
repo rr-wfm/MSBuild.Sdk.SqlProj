@@ -14,6 +14,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     {
         private bool? _modelValid;
 
+        private List<int> _suppressedWarnings = new List<int>();
+
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
@@ -112,7 +114,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 else if (modelError.Severity == ModelErrorSeverity.Warning && TreatTSqlWarningsAsErrors)
                 {
-                    if (!suppressWarnings.Contains(modelError.ErrorCode))
+                    if (!_suppressedWarnings.Contains(modelError.ErrorCode))
                     {
                         validationErrors++;
                     }
@@ -326,20 +328,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
-
+        
         public bool TreatTSqlWarningsAsErrors { get; set; }
-
-        private List<int> suppressWarnings = new List<int>();
-
-        public void AddSuppressWarnings(string suppressList)
+        
+        public void AddWarningsToSuppress(string suppressionList)
         {
-            if (!string.IsNullOrEmpty(suppressList))
+            if (!string.IsNullOrEmpty(suppressionList))
             {
-                foreach (string str in suppressList.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string str in suppressionList.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (int.TryParse(str.Trim(), out var value))
                     {
-                        suppressWarnings.Add(value);
+                        _suppressedWarnings.Add(value);
                     }
                 }
             }

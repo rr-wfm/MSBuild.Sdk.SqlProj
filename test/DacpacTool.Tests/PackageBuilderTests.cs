@@ -477,6 +477,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             bool result = packageBuilder.ValidateModel();
 
             // Assert
+            // Because of setting TreatTSqlWarningsAsErrors to true, SQL71502 Warning would be treated as error
             result.ShouldBeFalse();
         }
 
@@ -487,7 +488,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder();
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.TreatTSqlWarningsAsErrors = true;
-            packageBuilder.AddSuppressWarnings("71502");
+            packageBuilder.AddWarningsToSuppress("71502");
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
 

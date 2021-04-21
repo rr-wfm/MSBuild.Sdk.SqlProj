@@ -135,7 +135,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             packageBuilder.TreatTSqlWarningsAsErrors = options.WarnAsError;
             if (options.Suppress != null)
             {
-                packageBuilder.AddSuppressWarnings(options.Suppress);
+                packageBuilder.AddWarningsToSuppress(options.Suppress);
             }
 
             // Validate the model
