@@ -333,7 +333,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddSuppressWarnings(string suppressList)
         {
-            suppressWarnings.AddRange(suppressList.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt32(x)));
+            if (!string.IsNullOrEmpty(suppressList))
+            {
+                foreach (string str in suppressList.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (int.TryParse(str.Trim(), out var value))
+                    {
+                        suppressWarnings.Add(value);
+                    }
+                }
+            }
         }
     }
 }
