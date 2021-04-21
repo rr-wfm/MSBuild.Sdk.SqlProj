@@ -201,7 +201,9 @@
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(DebugArgument)</DacpacToolCommand>
+      <TreatTSqlWarningsAsErrorsArgument  Condition="'$(TreatTSqlWarningsAsErrors)' == 'True'">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
+      <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">--suppress &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

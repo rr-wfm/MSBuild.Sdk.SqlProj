@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -108,6 +109,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
+                }
+                else if (modelError.Severity == ModelErrorSeverity.Warning && TreatTSqlWarningsAsErrors)
+                {
+                    if (!suppressWarnings.Contains(modelError.ErrorCode))
+                    {
+                        validationErrors++;
+                    }
                 }
 
                 Console.WriteLine(modelError.ToString());
@@ -317,6 +325,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var buffer = Encoding.UTF8.GetBytes(parser.GenerateScript());
                 stream.Write(buffer, 0, buffer.Length);
             }
+        }
+
+        public bool TreatTSqlWarningsAsErrors { get; set; }
+
+        private List<int> suppressWarnings = new List<int>();
+
+        public void AddSuppressWarnings(string suppressList)
+        {
+            suppressWarnings.AddRange(suppressList.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => Convert.ToInt32(x)));
         }
     }
 }

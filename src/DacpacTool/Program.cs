@@ -27,6 +27,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<FileInfo>(new string[] { "--refactorlog" }, "Filename of optional refactor log script"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
+
+                new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
+                new Option<string>(new string[] { "--suppress", "-sp" }, "Warning(s) to suppress"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
@@ -126,6 +129,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     throw new ArgumentException($"No input files found, missing {options.InputFile.Name}");
                 }
+            }
+
+            //Add Warnings options
+            packageBuilder.TreatTSqlWarningsAsErrors = options.WarnAsError;
+            if (options.Suppress != null)
+            {
+                packageBuilder.AddSuppressWarnings(options.Suppress);
             }
 
             // Validate the model

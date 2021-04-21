@@ -9,6 +9,8 @@
     <UsingMSBuildSdkSqlProj>true</UsingMSBuildSdkSqlProj>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <SqlServerVersion>Sql150</SqlServerVersion>
+    <TreatTSqlWarningsAsErrors>False</TreatTSqlWarningsAsErrors>
+    <SuppressTSqlWarnings></SuppressTSqlWarnings>
     <TargetExt>.dacpac</TargetExt>
   </PropertyGroup>
 

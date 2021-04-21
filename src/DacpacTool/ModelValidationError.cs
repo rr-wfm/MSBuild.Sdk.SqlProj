@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using Microsoft.SqlServer.Dac.Model;
 
@@ -47,6 +47,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         public ModelErrorSeverity Severity { get => _severity; }
+
+        public int ErrorCode { get => _errorCode; }
 
         public override string ToString()
         {
