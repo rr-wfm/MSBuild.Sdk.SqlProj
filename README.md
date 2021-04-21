@@ -105,6 +105,32 @@ Refer to the [documentation](https://docs.microsoft.com/dotnet/api/microsoft.sql
 
 **Note:** If you are replacing an existing `.sqlproj` be sure to copy over any of these properties into the new project file.
 
+## Model compiler options
+Like an `.sqlproj` projects  `MSBuild.Sdk.SqlProj` supports special `msbuild` options how to process T-SQL compiling warnings.
+Treating warnings as errors can be optionally enabled by adding a property `TreatTSqlWarningsAsErrors` to the project file as in the below example:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+    <PropertyGroup>
+        <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+        ...
+    </PropertyGroup>
+</Project>
+```
+
+Suppression of some warnings from treating as errors can be done by adding comma-separated (or semicolon) list of warning codes to `SuppressTSqlWarnings` property in the project file:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+    <PropertyGroup>
+        <SuppressTSqlWarnings>71558,71502</SuppressTSqlWarnings>
+        <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+        ...
+    </PropertyGroup>
+</Project>
+```
+
+
 ## Pre- and post deployment scripts
 Support for pre- and post deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
 
