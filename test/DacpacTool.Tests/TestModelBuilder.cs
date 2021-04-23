@@ -41,9 +41,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
-        public TestModelBuilder AddReference(string path)
+        public TestModelBuilder AddReference(string path, string externalParts = "")
         {
-            sqlModel.AddReference(path, string.Empty);
+            sqlModel.AddReference(path, externalParts);
+            return this;
+        }
+
+        public TestModelBuilder AddSqlCmdVariables(string[] variableNames)
+        {
+            sqlModel.AddSqlCmdVariables(variableNames);
             return this;
         }
 
