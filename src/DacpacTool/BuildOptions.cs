@@ -19,5 +19,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public bool WarnAsError { get; set; }
         public string Suppress { get; set; }
+        public FileInfo SuppressListFile { get; set; }
     }
 }

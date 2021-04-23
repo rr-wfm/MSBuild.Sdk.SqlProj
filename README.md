@@ -130,6 +130,23 @@ To supress specific warnings from being treated as errors, add a comma-separated
 </Project>
 ```
 
+You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` for the this file:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+    <PropertyGroup>
+        ...
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="Procedures\csp_Test.sql">
+            <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+        </Content>
+    </ItemGroup>
+</Project>
+```
+
+
 ## Pre- and post deployment scripts
 Support for pre- and post deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
 

@@ -30,6 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<string>(new string[] { "--suppress", "-sp" }, "Warning(s) to suppress"),
+                new Option<FileInfo>(new string[] { "--suppresslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
@@ -136,6 +137,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (options.Suppress != null)
             {
                 packageBuilder.AddWarningsToSuppress(options.Suppress);
+            }
+
+            // Add warnings suppressions for particular files through $Project.WarningsSuppression.txt
+            if (options.SuppressListFile != null)
+            {
+                if (options.SuppressListFile.Exists)
+                {
+                    foreach (var line in File.ReadLines(options.SuppressListFile.FullName))
+                    {
+                        //Checks if there are suppression warnings list
+                        var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                        var warningList = (parts.Length > 1) ? parts[1] : null;
+
+                        FileInfo inputFile = new FileInfo(parts[0]); // Validation occurs in AddInputFile
+                        packageBuilder.AddFileWarningsToSuppress(inputFile, warningList);
+                    }
+                }
             }
 
             // Validate the model

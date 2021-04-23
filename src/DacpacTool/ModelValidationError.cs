@@ -50,6 +50,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public int ErrorCode { get => _errorCode; }
 
+        public string SourceName { get => _sourceName; }
+
         public override string ToString()
         {
             var stringBuilder = new StringBuilder();

@@ -14,7 +14,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     {
         private bool? _modelValid;
 
-        private List<int> _suppressedWarnings = new List<int>();
+        private List<int> _suppressedWarnings = new ();
+        private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
 
         public void UsingVersion(SqlServerVersion version)
         {
@@ -116,7 +117,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     if (!_suppressedWarnings.Contains(modelError.ErrorCode))
                     {
-                        validationErrors++;
+                        if (!_suppressedFileWarnings.TryGetValue(modelError.SourceName, out var suppressedFileWarnings) || !suppressedFileWarnings.Contains(modelError.ErrorCode))
+                        {
+                            validationErrors++;
+                        }   
                     }
                 }
 
@@ -333,16 +337,41 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         
         public void AddWarningsToSuppress(string suppressionList)
         {
+            _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
+        }
+
+        public void AddFileWarningsToSuppress(FileInfo inputFile, string suppressionList)
+        {
+            var warningList = ParseSuppressionList(suppressionList);
+            if (warningList.Count > 0)
+            {
+                if (!_suppressedFileWarnings.TryGetValue(inputFile.FullName, out var list))
+                {
+                    _suppressedFileWarnings.Add(inputFile.FullName, warningList);
+                }
+                else
+                {
+                    list.AddRange(warningList.FindAll((x) => !list.Contains(x)));
+                }
+            }
+                
+        }
+
+        private List<int> ParseSuppressionList(string suppressionList)
+        {
+            var result = new List<int>();
             if (!string.IsNullOrEmpty(suppressionList))
             {
-                foreach (string str in suppressionList.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var str in suppressionList.Split(new [] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (int.TryParse(str.Trim(), out var value))
                     {
-                        _suppressedWarnings.Add(value);
+                        result.Add(value);
                     }
                 }
             }
+
+            return result;
         }
     }
 }
