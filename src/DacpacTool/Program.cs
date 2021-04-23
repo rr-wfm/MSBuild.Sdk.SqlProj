@@ -29,7 +29,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
-                new Option<string>(new string[] { "--suppress", "-sp" }, "Warning(s) to suppress"),
+                new Option<string>(new string[] { "--suppresswarnings", "-spw" }, "Warning(s) to suppress"),
                 new Option<FileInfo>(new string[] { "--suppresslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
@@ -134,9 +134,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             //Add Warnings options
             packageBuilder.TreatTSqlWarningsAsErrors = options.WarnAsError;
-            if (options.Suppress != null)
+            if (options.SuppressWarnings != null)
             {
-                packageBuilder.AddWarningsToSuppress(options.Suppress);
+                packageBuilder.AddWarningsToSuppress(options.SuppressWarnings);
             }
 
             // Add warnings suppressions for particular files through $Project.WarningsSuppression.txt

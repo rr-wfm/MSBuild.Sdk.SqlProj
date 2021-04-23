@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo RefactorLog { get; set; }
 
         public bool WarnAsError { get; set; }
-        public string Suppress { get; set; }
+        public string SuppressWarnings { get; set; }
         public FileInfo SuppressListFile { get; set; }
     }
 }
