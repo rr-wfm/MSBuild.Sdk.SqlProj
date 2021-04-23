@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<string>(new string[] { "--suppresswarnings", "-spw" }, "Warning(s) to suppress"),
-                new Option<FileInfo>(new string[] { "--suppresslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
+                new Option<FileInfo>(new string[] { "--suppresswarningslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
@@ -140,11 +140,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Add warnings suppressions for particular files through $Project.WarningsSuppression.txt
-            if (options.SuppressListFile != null)
+            if (options.SuppressWarningsListFile != null)
             {
-                if (options.SuppressListFile.Exists)
+                if (options.SuppressWarningsListFile.Exists)
                 {
-                    foreach (var line in File.ReadLines(options.SuppressListFile.FullName))
+                    foreach (var line in File.ReadLines(options.SuppressWarningsListFile.FullName))
                     {
                         //Checks if there are suppression warnings list
                         var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
