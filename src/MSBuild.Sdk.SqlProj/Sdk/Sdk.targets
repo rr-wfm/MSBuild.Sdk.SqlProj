@@ -217,7 +217,7 @@
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument  Condition="'$(TreatTSqlWarningsAsErrors)' == 'True'">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
-      <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">--suppress &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
+      <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
