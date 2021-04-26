@@ -42,7 +42,7 @@ dotnet new sqlproj -s Sql130
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <SqlServerVersion>Sql130</SqlServerVersion>
@@ -106,7 +106,7 @@ Refer to the [documentation](https://docs.microsoft.com/dotnet/api/microsoft.sql
 **Note:** If you are replacing an existing `.sqlproj` be sure to copy over any of these properties into the new project file.
 
 ## Model compiler options
-Like `.sqlproj` projects  `MSBuild.Sdk.SqlProj` supports special `msbuild` options to control T-SQL build errors and warning.
+Like `.sqlproj` projects  `MSBuild.Sdk.SqlProj` supports controlling T-SQL build errors and warnings by using MSBuild properties..
 Treating warnings as errors can be optionally enabled by adding a property `TreatTSqlWarningsAsErrors` to the project file:
 
 ```xml
@@ -118,7 +118,7 @@ Treating warnings as errors can be optionally enabled by adding a property `Trea
 </Project>
 ```
 
-To supress specific warnings from being treated as errors, add a comma-separated list of warning codes to `SuppressTSqlWarnings` property in the project file:
+To suppress specific warnings from being treated as errors, add a comma-separated list of warning codes to `SuppressTSqlWarnings` property in the project file:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
