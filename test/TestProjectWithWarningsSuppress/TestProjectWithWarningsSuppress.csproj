@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+
+    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+    <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>

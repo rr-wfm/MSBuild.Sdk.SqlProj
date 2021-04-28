@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class PackageBuilder : IDisposable
     {
         private bool? _modelValid;
+
+        private List<int> _suppressedWarnings = new List<int>();
 
         public void UsingVersion(SqlServerVersion version)
         {
@@ -108,6 +111,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
+                }
+                else if (modelError.Severity == ModelErrorSeverity.Warning && TreatTSqlWarningsAsErrors)
+                {
+                    if (!_suppressedWarnings.Contains(modelError.ErrorCode))
+                    {
+                        validationErrors++;
+                    }
                 }
 
                 Console.WriteLine(modelError.ToString());
@@ -316,6 +326,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
                 var buffer = Encoding.UTF8.GetBytes(parser.GenerateScript());
                 stream.Write(buffer, 0, buffer.Length);
+            }
+        }
+        
+        public bool TreatTSqlWarningsAsErrors { get; set; }
+        
+        public void AddWarningsToSuppress(string suppressionList)
+        {
+            if (!string.IsNullOrEmpty(suppressionList))
+            {
+                foreach (string str in suppressionList.Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (int.TryParse(str.Trim(), out var value))
+                    {
+                        _suppressedWarnings.Add(value);
+                    }
+                }
             }
         }
     }
