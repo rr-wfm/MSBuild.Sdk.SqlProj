@@ -134,7 +134,7 @@ To suppress specific warnings from being treated as errors, add a comma-separate
 You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` for the this file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
