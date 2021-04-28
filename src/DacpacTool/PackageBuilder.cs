@@ -112,6 +112,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
+                    Console.WriteLine(modelError.ToString());
                 }
                 else if (modelError.Severity == ModelErrorSeverity.Warning && TreatTSqlWarningsAsErrors)
                 {
@@ -120,11 +121,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         if (!_suppressedFileWarnings.TryGetValue(modelError.SourceName, out var suppressedFileWarnings) || !suppressedFileWarnings.Contains(modelError.ErrorCode))
                         {
                             validationErrors++;
+                            Console.WriteLine(modelError.ToString());
                         }   
                     }
                 }
-
-                Console.WriteLine(modelError.ToString());
             }
 
             if (validationErrors > 0)
