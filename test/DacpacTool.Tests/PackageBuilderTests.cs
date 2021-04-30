@@ -500,6 +500,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void ValidateModel_WarningsAsErrorsSuppressSpecific()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.TreatTSqlWarningsAsErrors = true;
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+
+            // Add file with warnings suppression
+            var fileInfo = new FileInfo("../../../../TestProjectWithWarningsSuppressForFile/Procedures/csp_Test.sql");
+            packageBuilder.AddInputFile(fileInfo);
+            packageBuilder.AddFileWarningsToSuppress(fileInfo, "71502");
+
+            // Act
+            bool result = packageBuilder.ValidateModel();
+
+            // Assert
+            // Validation mast be true, SQL71502 Warning for file must be suppressed
+            result.ShouldBeTrue();
+        }
+
+        [TestMethod]
         public void ValidateModel_Errors()
         {
             // Arrange
