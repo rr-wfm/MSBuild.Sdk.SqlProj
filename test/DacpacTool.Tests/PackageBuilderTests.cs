@@ -517,7 +517,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             bool result = packageBuilder.ValidateModel();
 
             // Assert
-            // Validation mast be true, SQL71502 Warning for file must be suppressed
+            // Validation must be true, SQL71502 Warning for file must be suppressed
             result.ShouldBeTrue();
         }
 
