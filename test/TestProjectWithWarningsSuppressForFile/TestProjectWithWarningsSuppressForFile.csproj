@@ -11,7 +11,7 @@
   
   <ItemGroup>
     <Content Include="Procedures\csp_Test.sql">
-	  <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
     </Content>
     <Content Include="Procedures\csp_Test1.sql">
       <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
