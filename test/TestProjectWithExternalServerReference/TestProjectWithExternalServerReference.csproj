@@ -4,30 +4,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <SqlServerVersion>Sql150</SqlServerVersion>
-
-    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
-    <SuppressTSqlWarnings>71558</SuppressTSqlWarnings>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <Content Include="Procedures\csp_Test.sql">
-	  <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
-    </Content>
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" DatabaseVariableLiteralValue="SomeDatabase" ServerSqlCmdVariable="SomeServer"/>
   </ItemGroup>
 
   <ItemGroup>
-      <SqlCmdVariable Include="SomeDatabase">
-          <DefaultValue>SomeDatabase</DefaultValue>
-          <Value>$(SqlCmdVar__1)</Value>
-      </SqlCmdVariable>
-      <SqlCmdVariable Include="SomeServer">
-          <DefaultValue>SAPI_MDW</DefaultValue>
-          <Value>$(SqlCmdVar__2)</Value>
-      </SqlCmdVariable>
+    <SqlCmdVariable Include="SomeDatabase">
+      <DefaultValue>SomeDatabase</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="SomeServer">
+      <DefaultValue>SomeServer</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
