@@ -236,11 +236,11 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
-You also can use `.sqlproj` behaviour of references through `variables` by specifying `DatabaseSqlCmdVariable` and/or `DatabaseSqlCmdVariable` item metadata to the `PackageReference` element:
+You also can use `.sqlproj` behaviour of references through `variables` by specifying `DatabaseSqlCmdVariable` and optional `ServerSqlCmdVariable` item metadata to the `PackageReference` element:
 >Note: Don't forget to define appropriate [SQLCMD variables](#sqlcmd-variables) :
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/1.11.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -262,6 +262,7 @@ You also can use `.sqlproj` behaviour of references through `variables` by speci
 </Project>
 ```
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[$(SomeOtherServer)].[$(SomeOtherDatabase)].[<schema>].[<object>]` syntax.
+Also you can combine `ServerSqlCmdVariable` with `DatabaseVariableLiteralValue` and use  `[$(SomeOtherServer)].[SomeOtherDatabase].[<schema>].[<object>]` syntax
 
 When deploying a dacpac with references to other dacpacs, if you want the contents of all dacpacs to be deployed to a single database you will need to specify the `IncludeCompositeObjects` property. For example:
 
