@@ -73,7 +73,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             var error = modelValidationErrors.First();
             error.Severity.ShouldBe(Microsoft.SqlServer.Dac.Model.ModelErrorSeverity.Error);
-            error.ToString().ShouldBe("../../../../TestProjectWithErrors/Procedures/csp_Test.sql(2,18):ModelValidationError Error SQL71501: SqlSubroutineParameter: [dbo].[csp_Test].[@p_Parameter] has an unresolved reference to SqlBuiltInType [dbo].[MyCustomType].");
+            error.ErrorCode.ShouldBe(71501);
+            error.SourceName.ShouldBe("../../../../TestProjectWithErrors/Procedures/csp_Test.sql", StringCompareShould.IgnoreCase);
         }
 
         /// <summary>

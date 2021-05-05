@@ -1,4 +1,4 @@
-using Microsoft.SqlTools.ServiceLayer.BatchParser;
+﻿using Microsoft.SqlTools.ServiceLayer.BatchParser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using NSubstitute;
@@ -62,7 +62,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             result.ShouldNotBeNull();
             result.Count().ShouldBe(2);
-            result.ToList().Take(2).Last().ShouldBe($"{TEST_PROJECT_PATH}/Pre-Deployment/./MoreScripts/Script2.sql");
+            result.ToList().Take(2).Last().Replace("\\", "/").ShouldBe($"{TEST_PROJECT_PATH}/Pre-Deployment/./MoreScripts/Script2.sql");
         }
 
         [TestMethod]
