@@ -72,5 +72,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             return stringBuilder.ToString();
         }
+
+        /// <summary>
+        /// Make message for writing to output during build process more similar to the one displayed by standard SSDT build
+        /// </summary>
+        /// <param name="severity">Severity to override depends on TreatTSqlWarningsAsErrors</param>
+        /// <returns></returns>
+        public string GetOutputMessage(ModelErrorSeverity severity)
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(_sourceName);
+            stringBuilder.Append('(');
+            stringBuilder.Append(_line);
+            stringBuilder.Append(',');
+            stringBuilder.Append(_column);
+            stringBuilder.Append("):");
+            stringBuilder.Append(' ');
+            stringBuilder.Append(severity);
+            stringBuilder.Append(' ');
+            stringBuilder.Append(_prefix);
+            stringBuilder.Append(_errorCode);
+            stringBuilder.Append(": ");
+            stringBuilder.Append(_message);
+
+            return stringBuilder.ToString();
+        }
     }
 }
