@@ -187,7 +187,18 @@
     <WriteLinesToFile
       File="$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt"
       Overwrite="true"
-      Lines="@(Content)" />
+      Lines="@(Content->Distinct())" />
+
+    <!-- Write the list of input files whith warnings suppression to a file to be consumed by the dacpac tool -->
+    <ItemGroup>
+      <!-- Build a list of particular files with T-SQL warning suppression -->
+      <WarningsSuppressionFiles Include="@(Content->'%(Identity)|%(SuppressTSqlWarnings)')" Condition="'%(Content.SuppressTSqlWarnings)' != ''"/>
+    </ItemGroup>
+    <WriteLinesToFile 
+      File="$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt"
+      Overwrite="true"
+      Lines="@(WarningsSuppressionFiles)" />
+
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
@@ -203,7 +214,8 @@
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or '$(TreatWarningsAsErrors)' == 'True'">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(DebugArgument)</DacpacToolCommand>
+      <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

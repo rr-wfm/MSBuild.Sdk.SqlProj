@@ -39,6 +39,7 @@
   <ItemGroup>
     <Content Include="**/*.sql">
       <Pack>False</Pack>
+      <SuppressTSqlWarnings></SuppressTSqlWarnings>
     </Content>
     <Content Remove="Pre-Deployment/**/*.sql" />
     <Content Remove="Post-Deployment/**/*.sql" />

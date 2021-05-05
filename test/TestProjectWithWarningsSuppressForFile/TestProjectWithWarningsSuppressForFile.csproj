@@ -1,0 +1,22 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+
+    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+    <SuppressTSqlWarnings>71558</SuppressTSqlWarnings>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="Procedures\csp_Test.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Content>
+    <Content Include="Procedures\csp_Test1.sql">
+      <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
