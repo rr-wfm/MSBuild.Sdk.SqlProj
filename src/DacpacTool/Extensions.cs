@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
@@ -121,24 +122,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             string serverVariableName = null;
             string databaseVariableName = null;
             string databaseVariableLiteralValue = null;
-            foreach (var part in externalParts.Split('|', StringSplitOptions.RemoveEmptyEntries))
-            {
-                if (part.Length < 5)
-                    continue;
 
-                var prefix = part.Substring(0, 4);
-                if (string.Equals(prefix, "dbl=", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    databaseVariableLiteralValue = part.Substring(4);
-                }
-                else if (string.Equals(prefix, "dbv=", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    databaseVariableName = part.Substring(4);
-                }
-                else if (string.Equals(prefix, "srv=", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    serverVariableName = part.Substring(4);
-                }
+            foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)").Matches(externalParts))
+            {
+                if(match.Groups["dbl"].Success)
+                    databaseVariableLiteralValue = match.Groups["dbl"].Value;
+                else if (match.Groups["dbv"].Success)
+                    databaseVariableName = match.Groups["dbv"].Value;
+                else if (match.Groups["srv"].Success)
+                    serverVariableName = match.Groups["srv"].Value;
             }
 
             if (string.IsNullOrEmpty(serverVariableName) && string.IsNullOrEmpty(databaseVariableName) &&
