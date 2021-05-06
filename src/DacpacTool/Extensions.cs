@@ -123,7 +123,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             string databaseVariableName = null;
             string databaseVariableLiteralValue = null;
 
-            foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)").Matches(externalParts))
+            foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
             {
                 if(match.Groups["dbl"].Success)
                     databaseVariableLiteralValue = match.Groups["dbl"].Value;
