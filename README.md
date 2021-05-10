@@ -171,7 +171,7 @@ By default the pre- and/or post-deployment script of referenced packages (both [
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
     <PropertyGroup>
-        <RunScriptsFromReferences>True</RunScriptFromReferences>
+        <RunScriptsFromReferences>True</RunScriptsFromReferences>
         ...
     </PropertyGroup>
 
