@@ -292,7 +292,7 @@ Similar to package references you can also reference another project by using a 
 </Project>
 ```
 
-This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` or SQLCMD variables attributes on the `ProjectReference` similar to `PackageReference`:
+This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
