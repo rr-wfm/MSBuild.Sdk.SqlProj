@@ -236,7 +236,7 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
-You also can use `.sqlproj` behaviour of references through variables by specifying `DatabaseSqlCmdVariable` and optional `ServerSqlCmdVariable` item metadata to the `PackageReference` element:
+You also can use `.sqlproj` behaviour of references through variables by adding `DatabaseSqlCmdVariable` and optionally `ServerSqlCmdVariable` item metadata to the `PackageReference` element:
 >Note: Don't forget to define appropriate [SQLCMD variables](#sqlcmd-variables)
 
 ```xml
