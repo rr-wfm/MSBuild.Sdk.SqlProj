@@ -154,7 +154,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (string.IsNullOrEmpty(databaseVariableLiteralValue) && string.IsNullOrEmpty(databaseVariableName))
                 return null;
 
-
             //if either literal and variable specified for database (that is wrong situation), literal has the priority
             return (string.IsNullOrEmpty(serverVariableName) ? "" : serverVariableName + ".") + 
                      (string.IsNullOrEmpty(databaseVariableLiteralValue) ? databaseVariableName : databaseVariableLiteralValue);
