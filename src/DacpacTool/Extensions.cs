@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -117,48 +118,46 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddCustomData(dataSchemaModel, customData);
         }
 
-        public static string ParseExternalParts(string externalParts)
+        private static string ParseExternalParts(string externalParts)
         {
             string serverVariableName = null;
             string databaseVariableName = null;
             string databaseVariableLiteralValue = null;
 
-            foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
+            // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
+            if (externalParts.Contains('='))
             {
-                if(match.Groups["dbl"].Success)
-                    databaseVariableLiteralValue = match.Groups["dbl"].Value;
-                else if (match.Groups["dbv"].Success)
-                    databaseVariableName = match.Groups["dbv"].Value;
-                else if (match.Groups["srv"].Success)
-                    serverVariableName = match.Groups["srv"].Value;
+                foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)",
+                    RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
+                {
+                    if (match.Groups["dbl"].Success)
+                    {
+                        databaseVariableLiteralValue = Identifier.EncodeIdentifier(match.Groups["dbl"].Value);
+                    }
+                    else if (match.Groups["dbv"].Success)
+                    {
+                        databaseVariableName =
+                            Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["dbv"].Value));
+                    }
+                    else if (match.Groups["srv"].Success)
+                    {
+                        serverVariableName = Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["srv"].Value));
+                    }
+                }
+            }
+            else
+            {
+                databaseVariableLiteralValue = Identifier.EncodeIdentifier(externalParts);
             }
 
-            if (string.IsNullOrEmpty(serverVariableName) && string.IsNullOrEmpty(databaseVariableName) &&
-                string.IsNullOrEmpty(databaseVariableLiteralValue) && !externalParts.Contains('='))
-            {
-                databaseVariableLiteralValue = externalParts;
-            }
-            
-            string result = string.Empty;
-            
-            if (string.IsNullOrEmpty(serverVariableName) && !string.IsNullOrEmpty(databaseVariableLiteralValue))
-            {
-                result = "[" + databaseVariableLiteralValue + "]";
-            }
-            else if (!string.IsNullOrEmpty(serverVariableName) && !string.IsNullOrEmpty(databaseVariableLiteralValue))
-            {
-                result = string.Concat("[", EnsureIsDelimited(serverVariableName), "].[", databaseVariableLiteralValue, "]");
-            }
-            else if (string.IsNullOrEmpty(serverVariableName) && !string.IsNullOrEmpty(databaseVariableName))
-            {
-                result = "[" + EnsureIsDelimited(databaseVariableName) + "]";
-            }
-            else if (!string.IsNullOrEmpty(serverVariableName) && !string.IsNullOrEmpty(databaseVariableName))
-            {
-                result = string.Concat("[", EnsureIsDelimited(serverVariableName), "].[", EnsureIsDelimited(databaseVariableName), "]");
-            }
+            // if there are no value for database return. Reference MUST have database value
+            if (string.IsNullOrEmpty(databaseVariableLiteralValue) && string.IsNullOrEmpty(databaseVariableName))
+                return null;
 
-            return result;
+
+            //if either literal and variable specified for database (that is wrong situation), literal has the priority
+            return (string.IsNullOrEmpty(serverVariableName) ? "" : serverVariableName + ".") + 
+                     (string.IsNullOrEmpty(databaseVariableLiteralValue) ? databaseVariableName : databaseVariableLiteralValue);
         }
 
         /// <summary>
