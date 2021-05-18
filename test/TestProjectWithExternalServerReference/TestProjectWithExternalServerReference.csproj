@@ -1,0 +1,21 @@
+﻿<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\TestProject\TestProject.csproj" DatabaseVariableLiteralValue="SomeDatabase" ServerSqlCmdVariable="SomeServer"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <SqlCmdVariable Include="SomeDatabase">
+      <DefaultValue>SomeDatabase</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>

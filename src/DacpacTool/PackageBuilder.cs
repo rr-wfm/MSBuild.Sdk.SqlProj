@@ -112,19 +112,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
+                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
                 }
-                else if (modelError.Severity == ModelErrorSeverity.Warning && TreatTSqlWarningsAsErrors)
+                else if (modelError.Severity == ModelErrorSeverity.Warning)
                 {
-                    if (!_suppressedWarnings.Contains(modelError.ErrorCode))
-                    {
-                        if (!_suppressedFileWarnings.TryGetValue(modelError.SourceName, out var suppressedFileWarnings) || !suppressedFileWarnings.Contains(modelError.ErrorCode))
-                        {
-                            validationErrors++;
-                        }   
-                    }
+                    ProcessWarning(modelError);
                 }
-
-                Console.WriteLine(modelError.ToString());
+                else
+                {
+                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
+                }
             }
 
             if (validationErrors > 0)
@@ -138,6 +135,24 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             return _modelValid.Value;
+
+            void ProcessWarning(ModelValidationError modelError)
+            {
+                if (_suppressedWarnings.Contains(modelError.ErrorCode))
+                    return;
+
+                if (_suppressedFileWarnings.TryGetValue(modelError.SourceName, out var suppressedFileWarnings) && suppressedFileWarnings.Contains(modelError.ErrorCode))
+                    return;
+
+                if (TreatTSqlWarningsAsErrors)
+                {
+                    validationErrors++;
+                }
+
+                Console.WriteLine(modelError.GetOutputMessage(TreatTSqlWarningsAsErrors
+                    ? ModelErrorSeverity.Error
+                    : ModelErrorSeverity.Warning));
+            }
         }
 
         public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)

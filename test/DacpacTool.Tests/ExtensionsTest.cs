@@ -73,7 +73,121 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             var error = modelValidationErrors.First();
             error.Severity.ShouldBe(Microsoft.SqlServer.Dac.Model.ModelErrorSeverity.Error);
-            error.ToString().ShouldBe("../../../../TestProjectWithErrors/Procedures/csp_Test.sql(2,18):ModelValidationError Error SQL71501: SqlSubroutineParameter: [dbo].[csp_Test].[@p_Parameter] has an unresolved reference to SqlBuiltInType [dbo].[MyCustomType].");
+            error.ErrorCode.ShouldBe(71501);
+            error.SourceName.ShouldBe("../../../../TestProjectWithErrors/Procedures/csp_Test.sql", StringCompareShould.IgnoreCase);
+        }
+
+        /// <summary>
+        /// Tests reference DatabaseLiteral.
+        /// </summary>
+        [TestMethod]
+        public void AddReferenceDatabaseLiteral()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "SomeDatabase")
+                .AddStoredProcedure("MyProc", "SELECT * FROM SomeDatabase.dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
+        }
+
+        /// <summary>
+        /// Tests reference DatabaseLiteral in new Format.
+        /// </summary>
+        [TestMethod]
+        public void AddReferenceDatabaseLiteralNewFormat()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "dbl=SomeDatabase")
+                .AddStoredProcedure("MyProc", "SELECT * FROM SomeDatabase.dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
+        }
+
+        /// <summary>
+        /// Tests reference DatabaseVariable.
+        /// </summary>
+        [TestMethod]
+        public void AddReferenceDatabaseVariable()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "dbv=SomeDatabase")
+                .AddSqlCmdVariables(new string[] { "SomeDatabase" })
+                .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeDatabase)].dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
+        }
+
+        /// <summary>
+        /// Tests reference ServerVariable and DatabaseVariable.
+        /// </summary>
+        [TestMethod]
+        public void AddReferenceServerVariableAndDatabaseVariable()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "dbv=SomeDatabase|srv=SomeServer")
+                .AddSqlCmdVariables(new string[] { "SomeDatabase", "SomeServer" })
+                .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[$(SomeDatabase)].dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
+        }
+
+        /// <summary>
+        /// Tests reference ServerVariable and DatabaseLiteral.
+        /// </summary>
+        [TestMethod]
+        public void AddReferenceServerVariableAndDatabaseLiteral()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "dbl=SomeDatabase|srv=SomeServer")
+                .AddSqlCmdVariables(new string[] { "SomeServer" })
+                .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[SomeDatabase].dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
         }
     }
 }

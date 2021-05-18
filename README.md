@@ -236,6 +236,34 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
+You can also use SQLCMD variables to set references, similar to the behavior of a `.sqlproj` project, by adding `DatabaseSqlCmdVariable` and optionally `ServerSqlCmdVariable` item metadata to the `PackageReference` element:
+>Note: Don't forget to define appropriate [SQLCMD variables](#sqlcmd-variables)
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DatabaseSqlCmdVariable="SomeOtherDatabase" ServerSqlCmdVariable="SomeOtherServer"/>
+    </ItemGroup>
+
+  <ItemGroup>
+    <SqlCmdVariable Include="SomeOtherDatabase">
+      <DefaultValue>OtherDatabase</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="SomeOtherServer">
+      <DefaultValue>OtherServer</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+</Project>
+```
+In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[$(SomeOtherServer)].[$(SomeOtherDatabase)].[<schema>].[<object>]` syntax.
+Also you can combine `ServerSqlCmdVariable` with `DatabaseVariableLiteralValue` and use  `[$(SomeOtherServer)].[SomeOtherDatabase].[<schema>].[<object>]` syntax
+
 When deploying a dacpac with references to other dacpacs, if you want the contents of all dacpacs to be deployed to a single database you will need to specify the `IncludeCompositeObjects` property. For example:
 
 ```bash
@@ -264,7 +292,7 @@ Similar to package references you can also reference another project by using a 
 </Project>
 ```
 
-This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` attribute on the `ProjectReference` similar to `PackageReference`:
+This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/1.12.0">
@@ -275,6 +303,21 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
     <ItemGroup>
         <ProjectReference Include="../MyOtherProject/MyOtherProject.csproj" DatabaseVariableLiteralValue="SomeOtherDatabase" />
     </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../MySecondProject/MySecondProject.csproj" DatabaseSqlCmdVariable="SecondOtherDatabase" ServerSqlCmdVariable="SomeOtherServer" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <SqlCmdVariable Include="SecondOtherDatabase">
+      <DefaultValue>SecondDatabase</DefaultValue>
+      <Value>$(SqlCmdVar__1)</Value>
+    </SqlCmdVariable>
+    <SqlCmdVariable Include="SomeOtherServer">
+      <DefaultValue>OtherServer</DefaultValue>
+      <Value>$(SqlCmdVar__2)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+
 </Project>
 ```
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
@@ -107,10 +108,73 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (!string.IsNullOrWhiteSpace(externalParts))
             {
-                setMetadataMethod.Invoke(customData, new object[] { "ExternalParts", Identifier.EncodeIdentifier(externalParts) });
+                var parts = ParseExternalParts(externalParts);
+                if (!string.IsNullOrEmpty(parts))
+                {
+                    setMetadataMethod.Invoke(customData, new object[] {"ExternalParts", parts});
+                }
             }
 
             AddCustomData(dataSchemaModel, customData);
+        }
+
+        private static string ParseExternalParts(string externalParts)
+        {
+            string serverVariableName = null;
+            string databaseVariableName = null;
+            string databaseVariableLiteralValue = null;
+
+            // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
+            if (externalParts.Contains('='))
+            {
+                foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)",
+                    RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
+                {
+                    if (match.Groups["dbl"].Success)
+                    {
+                        databaseVariableLiteralValue = Identifier.EncodeIdentifier(match.Groups["dbl"].Value);
+                    }
+                    else if (match.Groups["dbv"].Success)
+                    {
+                        databaseVariableName =
+                            Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["dbv"].Value));
+                    }
+                    else if (match.Groups["srv"].Success)
+                    {
+                        serverVariableName = Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["srv"].Value));
+                    }
+                }
+            }
+            else
+            {
+                databaseVariableLiteralValue = Identifier.EncodeIdentifier(externalParts);
+            }
+
+            // if there are no value for database return. Reference MUST have database value
+            if (string.IsNullOrEmpty(databaseVariableLiteralValue) && string.IsNullOrEmpty(databaseVariableName))
+                return null;
+
+            //if either literal and variable specified for database (that is wrong situation), literal has the priority
+            return (string.IsNullOrEmpty(serverVariableName) ? "" : serverVariableName + ".") + 
+                     (string.IsNullOrEmpty(databaseVariableLiteralValue) ? databaseVariableName : databaseVariableLiteralValue);
+        }
+
+        /// <summary>
+        /// Cached method info for FileUtils.EnsureIsDelimited
+        /// </summary>
+        private static MethodInfo _ensureIsDelimitedMethod = null;
+        /// <summary>
+        /// This method found in Microsoft.Data.Tools.Utilities in class FileUtils. because of it is internal we do call through Reflection
+        /// </summary>
+        private static string EnsureIsDelimited(string name)
+        {
+            if (_ensureIsDelimitedMethod == null)
+            {
+                _ensureIsDelimitedMethod = Type.GetType("Microsoft.Data.Tools.Schema.Common.FileUtils, Microsoft.Data.Tools.Utilities")
+                    .GetMethod("EnsureIsDelimited", BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.Public, null, new[]{ typeof(string) }, null);
+            }
+
+            return (string)_ensureIsDelimitedMethod.Invoke(null, new object[]{ name });
         }
 
         public static IEnumerable<string> GetReferencedDacPackages(this TSqlModel model)
@@ -118,7 +182,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var result = new List<string>();
             var dataSchemaModel = GetDataSchemaModel(model);
 
-            var getCustomDataMethod = dataSchemaModel.GetType().GetMethod("GetCustomData", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string), typeof(string) }, null);
+            var getCustomDataMethod = dataSchemaModel.GetType().GetMethod("GetCustomData", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string), typeof(string) }, null);
             var references = (IEnumerable) getCustomDataMethod.Invoke(dataSchemaModel, new object[] { "Reference", "SqlSchema" });
 
             MethodInfo getMetadataMethod = null;
@@ -126,7 +190,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 if (getMetadataMethod == null)
                 {
-                    getMetadataMethod = reference.GetType().GetMethod("GetMetadata", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(string) }, null);
+                    getMetadataMethod = reference.GetType().GetMethod("GetMetadata", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string) }, null);
                 }
 
                 var fileName = (string)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
@@ -170,7 +234,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     documentProperty = modelValidationError.GetType().GetProperty("Document", BindingFlags.Public | BindingFlags.Instance);
                 }
 
-                var dacModelError = createDacModelErrorMethod.Invoke(service, new object[] { modelValidationError }) as DacModelError;
+                var dacModelError = createDacModelErrorMethod.Invoke(service, new[] { modelValidationError }) as DacModelError;
                 result.Add(new ModelValidationError(dacModelError, documentProperty.GetValue(modelValidationError) as string));
             }
 
@@ -187,7 +251,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static void AddCustomData(object dataSchemaModel, object customData)
         {
             var addCustomDataMethod = dataSchemaModel.GetType().GetMethod("AddCustomData", BindingFlags.Public | BindingFlags.Instance);
-            addCustomDataMethod.Invoke(dataSchemaModel, new object[] { customData });
+            addCustomDataMethod.Invoke(dataSchemaModel, new[] { customData });
         }
     }
 }
