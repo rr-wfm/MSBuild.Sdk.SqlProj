@@ -29,7 +29,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
-                new Option<bool>(new string[] { "--generatecreatescript" }, "Generate create script for package"),
+                new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
                 new Option<string>(new string[] { "--suppresswarnings", "-spw" }, "Warning(s) to suppress"),
                 new Option<FileInfo>(new string[] { "--suppresswarningslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
 #if DEBUG
