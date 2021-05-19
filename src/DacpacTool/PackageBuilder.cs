@@ -388,5 +388,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             return result;
         }
+
+        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName)
+        {
+            databaseName ??= Path.GetFileNameWithoutExtension(dacpacFile.Name);
+            using var package = DacPackage.Load(dacpacFile.FullName);
+            using var file = File.Create($"{databaseName}_Create.sql");
+            DacServices.GenerateCreateScript(file, package, databaseName);
+        }
     }
 }
