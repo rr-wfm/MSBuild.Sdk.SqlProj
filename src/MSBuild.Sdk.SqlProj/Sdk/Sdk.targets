@@ -32,6 +32,10 @@
     <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
   </ItemGroup>
 
+  <ItemGroup>
+      <SqlArtifacts Include="$(IntermediateOutputPath)*.sql" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!--We won't be generating debug symbols here -->
     <_DebugSymbolsProduced>false</_DebugSymbolsProduced>
@@ -231,10 +235,7 @@
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
 
     <!-- Copy and SQL artefact created from the command line tool -->
-    <CreateItem Include="$(IntermediateOutputPath)*.sql">
-        <Output TaskParameter="Include" ItemName="SqlArtefacts" />
-    </CreateItem>
-    <Copy SourceFiles="@(SqlArtefacts)" DestinationFolder="$(TargetDir)" />
+    <Copy SourceFiles="@(SqlArtifacts)" DestinationFolder="$(TargetDir)" />
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
