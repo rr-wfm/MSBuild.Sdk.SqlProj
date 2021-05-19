@@ -234,7 +234,7 @@
     <!-- Copy any referenced .dacpac packages to the output folder -->
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
 
-    <!-- Copy and SQL artefact created from the command line tool -->
+    <!-- Copy any SQL artifacts created from the command line tool -->
     <Copy SourceFiles="@(SqlArtifacts)" DestinationFolder="$(TargetDir)" />
   </Target>
 
