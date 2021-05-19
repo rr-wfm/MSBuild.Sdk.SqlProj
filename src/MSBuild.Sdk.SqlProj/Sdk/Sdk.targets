@@ -229,6 +229,12 @@
 
     <!-- Copy any referenced .dacpac packages to the output folder -->
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />
+
+    <!-- Copy and SQL artefact created from the command line tool -->
+    <CreateItem Include="$(IntermediateOutputPath)*.sql">
+        <Output TaskParameter="Include" ItemName="SqlArtefacts" />
+    </CreateItem>
+    <Copy SourceFiles="@(SqlArtefacts)" DestinationFolder="$(TargetDir)" />
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
