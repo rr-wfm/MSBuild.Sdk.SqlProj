@@ -574,7 +574,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.GenerateCreateScript(tempFile, packageName);
 
             // Assert
-            File.Exists($"{packageName}_Create.sql").ShouldBeTrue();
+            File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
 
             // Cleanup
             tempFile.Delete();
@@ -595,7 +595,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.GenerateCreateScript(tempFile, null);
 
             // Assert
-            File.Exists($"{Path.GetFileNameWithoutExtension(tempFile.Name)}_Create.sql").ShouldBeTrue();
+            File.Exists(Path.Combine(tempFile.DirectoryName, $"{Path.GetFileNameWithoutExtension(tempFile.Name)}_Create.sql")).ShouldBeTrue();
 
             // Cleanup
             tempFile.Delete();

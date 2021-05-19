@@ -393,7 +393,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             databaseName ??= Path.GetFileNameWithoutExtension(dacpacFile.Name);
             using var package = DacPackage.Load(dacpacFile.FullName);
-            using var file = File.Create($"{databaseName}_Create.sql");
+            using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, $"{databaseName}_Create.sql"));
             DacServices.GenerateCreateScript(file, package, databaseName);
         }
     }
