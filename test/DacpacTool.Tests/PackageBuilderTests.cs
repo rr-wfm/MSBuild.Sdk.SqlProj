@@ -557,6 +557,50 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             tempFile.Delete();
         }
 
+        [TestMethod]
+        public void GenerateCreateScript_Name()
+        {
+            // Arrange
+            var packageName = "MyPackage";
+
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata(packageName, "1.0.0.0");
+            packageBuilder.ValidateModel();
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+            packageBuilder.GenerateCreateScript(tempFile, packageName);
+
+            // Assert
+            File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void GenerateCreateScript_NoName()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata(null, "1.0.0.0");
+            packageBuilder.ValidateModel();
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+            packageBuilder.GenerateCreateScript(tempFile, null);
+
+            // Assert
+            File.Exists(Path.Combine(tempFile.DirectoryName, $"{Path.GetFileNameWithoutExtension(tempFile.Name)}_Create.sql")).ShouldBeTrue();
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
         class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
         {
             public IEnumerable<object[]> GetData(MethodInfo methodInfo)
