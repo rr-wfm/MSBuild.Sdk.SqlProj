@@ -1,0 +1,44 @@
+<Project Sdk="MSBuild.Sdk.SqlProj/1.16.0-beta.4">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>SqlAzure</SqlServerVersion>
+        <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Remove="Repos\**\Scripts\Inserts\*.sql" />
+
+        <Content Remove="Pre-Deployment\Script.PreDeployment.sql" />
+        <Content Remove="Pre-Deployment\transaction_begin.sql" />
+        
+        <Content Remove="Post-Deployment\Script.PostDeployment.sql" />
+        <Content Remove="Post-Deployment\DataScript.sql" />
+        <Content Remove="Post-Deployment\transaction_end.sql" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+        <PreDeploy Include="Pre-Deployment\Script.PreDeployment.sql" />
+        <PostDeploy Include="Post-Deployment\Script.PostDeployment.sql" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <DataScripts Include="Repos\*\Scripts\*.sql" />
+    </ItemGroup>
+
+    <Target AfterTargets="BeforeBuild" Name="CreateDataScript">
+        <Delete Files="Post-Deployment\DataScript.sql" />
+        <WriteLinesToFile 
+        Overwrite="false" 
+        File="Post-Deployment\DataScript.sql" 
+        Lines="
+            print 'Loading file %(DataScripts.Filename)' ;
+            print 'Script load timestamp: ' + cast(sysdatetime() as varchar(19));
+            :r %(DataScripts.FullPath)" />
+      </Target>
+
+</Project>

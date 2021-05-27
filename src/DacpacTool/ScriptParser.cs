@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
 using Microsoft.SqlServer.Dac.Model;
 
@@ -24,8 +25,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (! _parsed)
             {
-                _parser.Parse();
-                _parsed = true;
+                try
+                {
+                    _parser.Parse();
+                    _parsed = true;
+                }
+                catch (Microsoft.SqlTools.ServiceLayer.BatchParser.BatchParserException ex)
+                {
+                    string mostRecentFile = _includedFileNames.Last();
+                    throw new InvalidOperationException($"{ex.Message} File: {Path.GetFileName(mostRecentFile)}");
+                }
             }
         }
 
