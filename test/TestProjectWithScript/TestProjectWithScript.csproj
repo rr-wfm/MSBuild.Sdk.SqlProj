@@ -9,6 +9,7 @@
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
     <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
     <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+    <GenerateCreateScript>True</GenerateCreateScript>
   </PropertyGroup>
 
   <PropertyGroup>
