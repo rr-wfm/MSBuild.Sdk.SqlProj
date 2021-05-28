@@ -234,6 +234,7 @@
     <CreateItem Include="$(IntermediateOutputPath)*.sql">
         <Output TaskParameter="Include" ItemName="SqlArtifacts" />
     </CreateItem>
+    <Message Importance="Low" Text="Copying @(SqlArtifacts) to $(TargetDir)" />
     <Copy SourceFiles="@(SqlArtifacts)" DestinationFolder="$(TargetDir)" />
   </Target>
 
@@ -242,6 +243,7 @@
       <CreateItem Include="$(IntermediateOutputPath)*.sql">
           <Output TaskParameter="Include" ItemName="SqlArtifacts" />
       </CreateItem>
+      <Message Importance="Low" Text="Cleaning up Sql artifacts: @(SqlArtifacts)" />
       <Delete Files="@(SqlArtifacts)" />
   </Target>
 
