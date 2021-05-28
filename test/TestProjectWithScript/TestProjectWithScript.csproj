@@ -8,7 +8,7 @@
     <AllowSnapshotIsolation>True</AllowSnapshotIsolation>
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
     <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
-    <PackageProjectUrl>https://github.com/jmezach/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
     <GenerateCreateScript>True</GenerateCreateScript>
   </PropertyGroup>
 
