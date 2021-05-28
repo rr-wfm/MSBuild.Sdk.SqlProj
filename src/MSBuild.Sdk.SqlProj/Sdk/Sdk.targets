@@ -245,6 +245,8 @@
       </CreateItem>
       <Message Importance="Low" Text="Cleaning up Sql artifacts: @(SqlArtifacts)" />
       <Delete Files="@(SqlArtifacts)" />
+      <!--Also delete those files copied to target -->
+      <Delete Files="@(SqlArtifacts -> '$(TargetDir)%(Filename)%(Extension)')" />
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
