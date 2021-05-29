@@ -30,14 +30,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _parser.Parse();
                     _parsed = true;
                 }
-                catch (Microsoft.SqlTools.ServiceLayer.BatchParser.BatchParserException ex)
+                catch (BatchParserException ex)
                 {
                     string mostRecentFile = _includedFileNames.LastOrDefault();
-                    if (mostRecentFile != null)
-                    {
-                        throw new InvalidOperationException($"{ex.Message} File: {Path.GetFileName(mostRecentFile)}");
-                    }
-                    throw new InvalidOperationException($"{ex.Message}");
+                    throw new InvalidOperationException(
+                        mostRecentFile == null ? 
+                            ex.Message : 
+                            $"{ex.Message} File: {Path.GetFileName(mostRecentFile)}"
+                    );
                 }
             }
         }

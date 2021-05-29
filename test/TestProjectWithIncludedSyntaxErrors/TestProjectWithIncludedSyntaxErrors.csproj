@@ -1,4 +1,6 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/1.16.0-beta.4">
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <SqlServerVersion>SqlAzure</SqlServerVersion>
@@ -39,6 +41,7 @@
             print 'Loading file %(DataScripts.Filename)' ;
             print 'Script load timestamp: ' + cast(sysdatetime() as varchar(19));
             :r %(DataScripts.FullPath)" />
-      </Target>
+        </Target>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" /> 
 </Project>
