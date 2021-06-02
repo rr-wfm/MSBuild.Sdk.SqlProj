@@ -242,7 +242,7 @@ jobs:
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
       if: failure()
-      uses: jwalton/gh-docker-logs@v1
+      uses: jwalton/gh-docker-logs@v2
 
   # Attempt to deploy a project to a SQL Server instance running in a container using dotnet publish
   deploy-publish:
@@ -311,7 +311,7 @@ jobs:
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
       if: failure()
-      uses: jwalton/gh-docker-logs@v1
+      uses: jwalton/gh-docker-logs@v2
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
