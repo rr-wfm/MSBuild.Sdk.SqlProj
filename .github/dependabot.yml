@@ -5,4 +5,4 @@ updates:
     package-ecosystem: nuget
     rebase-strategy: auto
     schedule:
-      timezone: 05:00 UTC
+      interval: "weekly"
