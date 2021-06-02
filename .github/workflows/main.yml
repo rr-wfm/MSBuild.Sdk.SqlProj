@@ -337,4 +337,4 @@ jobs:
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
-      working-directory: ~/nuget-packages/
+      working-directory: $HOME/nuget-packages/
