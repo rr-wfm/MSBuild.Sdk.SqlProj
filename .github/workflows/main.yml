@@ -330,15 +330,16 @@ jobs:
     # Download artifacts
     - name: download-artifact
       uses: actions/download-artifact@v2.0.9
+      id: download-nugetpackages
       with:
         name: nuget-packages
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
       run: ls -R
-      working-directory: ~/nuget-packages/
+      working-directory: ${{steps.download-nugetpackages.outputs.download-path}}
 
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
-      working-directory: ~/nuget-packages/
+      working-directory: ${{steps.download-nugetpackages.outputs.download-path}}
