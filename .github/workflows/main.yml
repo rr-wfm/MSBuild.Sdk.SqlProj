@@ -334,7 +334,11 @@ jobs:
         name: nuget-packages
         path: ~/nuget-packages
 
+    - name: Display structure of downloaded files
+      run: ls -R
+      working-directory: ~/nuget-packages/
+
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
-      working-directory: $HOME/nuget-packages/
+      working-directory: ~/nuget-packages/
