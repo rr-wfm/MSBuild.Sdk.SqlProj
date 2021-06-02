@@ -142,7 +142,7 @@ jobs:
 
     # Download artifact
     - name: download-artifact
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.0.9
       with:
         name: nuget-packages
         path: test/TestProjectWithSDKRef/nuget-packages
@@ -215,7 +215,7 @@ jobs:
     steps:
     # Download artifacts
     - name: download-artifact
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.0.9
       with:
         name: dacpac-package
         path: ~/dacpac-package
@@ -232,7 +232,7 @@ jobs:
       run: >
         ~/sqlpackage/sqlpackage
         /Action:Publish
-        /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
+        /SourceFile:$HOME/dacpac-package/TestProjectWithSDKRef.dacpac
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
@@ -270,7 +270,7 @@ jobs:
 
     # Download artifact
     - name: download-artifact
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.0.9
       with:
         name: nuget-packages
         path: test/TestProjectWithSDKRef/nuget-packages
@@ -328,7 +328,7 @@ jobs:
 
     # Download artifacts
     - name: download-artifact
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v2.0.9
       with:
         name: nuget-packages
         path: ~/nuget-packages
