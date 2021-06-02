@@ -71,7 +71,7 @@ jobs:
 
     # Upload SDK package
     - name: upload SDK
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: nuget-packages
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
@@ -82,7 +82,7 @@ jobs:
 
     # Upload TestProject package
     - name: upload TestProject
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: nuget-packages
         path: ./test/TestProject/bin/Release/
@@ -99,7 +99,7 @@ jobs:
 
     # Upload templates package
     - name: upload templates
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: nuget-packages
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
@@ -163,7 +163,7 @@ jobs:
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
         path: ./msbuild.binlog
@@ -182,14 +182,14 @@ jobs:
     # Upload dacpac
     - name: upload
       if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '3.1.x' }}
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
@@ -303,7 +303,7 @@ jobs:
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.3
       with:
         name: binary-log-publish
         path: ./msbuild.binlog
