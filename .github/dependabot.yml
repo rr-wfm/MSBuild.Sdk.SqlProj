@@ -6,3 +6,17 @@ updates:
     rebase-strategy: auto
     schedule:
       interval: "weekly"
+
+  - directory: "/"
+    open-pull-requests-limit: 5
+    package-ecosystem: gitsubmodule
+    rebase-strategy: auto
+    schedule:
+      interval: "weekly"
+
+  - directory: "/"
+    open-pull-requests-limit: 5
+    package-ecosystem: github-actions
+    rebase-strategy: auto
+    schedule:
+      interval: "weekly"
