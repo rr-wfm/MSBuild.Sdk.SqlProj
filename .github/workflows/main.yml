@@ -232,7 +232,7 @@ jobs:
       run: >
         ~/sqlpackage/sqlpackage
         /Action:Publish
-        /SourceFile:~/dacpac-package/TestProjectWithSDKRef.dacpac
+        /SourceFile:$HOME/dacpac-package/TestProjectWithSDKRef.dacpac
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
