@@ -1,0 +1,2 @@
+print 'Loading file'
+:r

@@ -9,14 +9,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class ScriptParserTests
     {
-        private const string TEST_FOLDER = "../../../..";
+        private const string TEST_PROJECT_PATH = "../../../../TestProjectWithPrePost";
         private readonly IVariableResolver _variableResolver = Substitute.For<IVariableResolver>();
 
         [TestMethod]
         public void CanParseFileWithoutIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanParseFileWithIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -44,7 +44,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ParserFailsWhenIncludesDontExist()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.MissingScript.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.MissingScript.sql", _variableResolver);
 
             // Act / Assert
             Assert.ThrowsException<System.IO.FileNotFoundException>(() => collector.CollectFileNames());
@@ -54,7 +54,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanParseFileWithIncludesFromRelativePaths()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.RelativePathIncludes.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.RelativePathIncludes.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -62,14 +62,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             result.ShouldNotBeNull();
             result.Count().ShouldBe(2);
-            result.ToList().Take(2).Last().Replace("\\", "/").ShouldBe($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/./MoreScripts/Script2.sql");
+            result.ToList().Take(2).Last().Replace("\\", "/").ShouldBe($"{TEST_PROJECT_PATH}/Pre-Deployment/./MoreScripts/Script2.sql");
         }
 
         [TestMethod]
         public void CanParseFileWithNestedIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.NestedIncludes.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedIncludes.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -83,7 +83,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanParseFileWithNestedIncludesContainingRelativePaths()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.NestedRelativePaths.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedRelativePaths.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -97,7 +97,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void IgnoresDirectivesOtherThanColonR()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.IgnoredDirective.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.IgnoredDirective.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();
@@ -111,7 +111,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanGenerateScriptWithoutIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.Simple.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.Simple.sql", _variableResolver);
 
             // Act
             var result = collector.GenerateScript();
@@ -125,7 +125,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanGenerateScriptWithIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql", _variableResolver);
 
             // Act
             var result = collector.GenerateScript();
@@ -139,7 +139,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanGenerateScriptWithNestedIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.NestedIncludes.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedIncludes.sql", _variableResolver);
 
             // Act
             var result = collector.GenerateScript();
@@ -153,7 +153,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanGenerateScriptWithNestedIncludesContainingRelativePaths()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.NestedRelativePaths.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedRelativePaths.sql", _variableResolver);
 
             // Act
             var result = collector.GenerateScript();
@@ -167,11 +167,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ParserFailsWhenSyntaxError()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_FOLDER}/TestProjectWithIncludedSyntaxErrors/Post-Deployment/Script.PostDeployment.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.SyntaxErrors.sql", _variableResolver);
 
             // Act / Assert
             Should.Throw<System.InvalidOperationException>(() => collector.CollectFileNames())
-                .Message.ShouldBe("Incorrect syntax was encountered while parsing '\n'. File: DataScript.sql");
+                .Message.ShouldBe("Incorrect syntax was encountered while parsing '\n'. File: ScriptWithErrors.sql");
         }
     }
 }
