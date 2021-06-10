@@ -162,5 +162,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             result.ShouldNotBeNull();
             result.ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*PRINT N'Script4.sql'[\r\n]*PRINT N'Script5.sql'[\r\n]*PRINT N'Script6.sql'[\r\n]*GO[\r\n]*");
         }
+
+        [TestMethod]
+        public void ParserFailsWhenSyntaxError()
+        {
+            // Arrange
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.SyntaxErrors.sql", _variableResolver);
+
+            // Act / Assert
+            Should.Throw<System.InvalidOperationException>(() => collector.CollectFileNames())
+                .Message.ShouldBe("Incorrect syntax was encountered while parsing '\n'. File: ScriptWithErrors.sql");
+        }
     }
 }
