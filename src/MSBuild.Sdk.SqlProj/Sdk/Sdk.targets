@@ -95,7 +95,7 @@
       <DacpacToolExe>$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
-           Text="The current SDK bundles target framework 'netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET Core SDK that supports 2.1 or 3.1, or file an issue at https://github.com/jmezach/MSBuild.Sdk.SqlProj/ to add support." />
+           Text="The current SDK bundles target framework 'netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET Core SDK that supports 2.1, 3.1 or 5.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
     <Message Importance="normal" Text="Using target framework $(DacpacToolTfm) to run DacpacTool" />
   </Target>
 
