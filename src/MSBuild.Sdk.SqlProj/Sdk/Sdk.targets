@@ -279,4 +279,16 @@
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
   
+  <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <CreateItem Include="$(IntermediateOutputPath)*.dacpac">
+        <Output TaskParameter="Include" ItemName="CopyDacpacFiles" />
+    </CreateItem>
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles->'%(FullPath)')">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+    <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
+  </Target>
 </Project>

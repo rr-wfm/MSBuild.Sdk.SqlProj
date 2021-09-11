@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="../TestProjectWithWarnings/TestProjectWithWarnings.csproj">
+        <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      </ProjectReference>
+
+      <ProjectReference Include="../TestProjectWithProjectReference/TestProjectWithProjectReference.csproj">
+        <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      </ProjectReference>
+  </ItemGroup>
+
+</Project>
