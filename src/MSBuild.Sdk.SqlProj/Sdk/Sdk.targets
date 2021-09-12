@@ -280,11 +280,12 @@
   </Target>
   
   <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
-    <CreateItem Include="$(IntermediateOutputPath)*.dacpac">
-        <Output TaskParameter="Include" ItemName="CopyDacpacFiles" />
-    </CreateItem>
     <ItemGroup>
-      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles->'%(FullPath)')">
+      <CopyDacpacFiles Include="$(TargetPath)"/>
+      <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
+    </ItemGroup>
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles)">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>%(Filename)%(Extension)</TargetPath>
       </AllItemsFullPathWithTargetPath>
