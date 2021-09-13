@@ -5,13 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <ProjectReference Include="../TestProjectWithWarnings/TestProjectWithWarnings.csproj">
-        <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      </ProjectReference>
-
-      <ProjectReference Include="../TestProjectWithProjectReference/TestProjectWithProjectReference.csproj">
-        <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-      </ProjectReference>
+      <ProjectReference Include="../TestProjectWithWarnings/TestProjectWithWarnings.csproj" ReferenceOutputAssembly="False" />
+      <ProjectReference Include="../TestProjectWithProjectReference/TestProjectWithProjectReference.csproj" ReferenceOutputAssembly="False" />
   </ItemGroup>
 
 </Project>
