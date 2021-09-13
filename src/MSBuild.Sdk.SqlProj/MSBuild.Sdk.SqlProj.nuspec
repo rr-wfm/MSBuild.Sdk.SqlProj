@@ -14,10 +14,12 @@
       <packageType name="$packagetype$" />
     </packageTypes>
     <repository type="git" url="https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/" />
+    <readme>docs\README.md</readme>
   </metadata>
   <files>
     <file src="Sdk\**" target="Sdk" />
     <file src="tools\**" target="tools" />
     <file src="LICENSE.txt" target="LICENSE.txt" />
+    <file src="..\..\README.md" target="docs\" />
   </files>
 </package>
