@@ -471,6 +471,17 @@ DECLARE @Query NVARCHAR(MAX) = '<your-script>'
 EXEC (@Query)
 ```
 
+## Reference `MSBuild.Sdk.SqlProj` from class library
+The output of `MSBuild.Sdk.SqlProj` is not an assembly, but a `.dacpac`. In order to correctly reference a `MSBuild.Sdk.SqlProj` based project from a class library, the `ReferenceOutputAssembly` hint needs to be set to `False`:
+```
+<ItemGroup>
+    <ProjectReference
+      Include="../MyDacpacProj/MyDacpacProj.csproj"
+      ReferenceOutputAssembly="False" />
+</ItemGroup>
+```
+Now, upon compilation of the class library, the relevant `.dacpac` files get copied to the output directory.
+
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
 
