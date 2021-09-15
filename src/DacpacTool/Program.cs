@@ -16,7 +16,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var buildCommand = new Command("build")
             {
-                new Option<string>(new string[] { "--name", "-n" }, "Name of the package"),
+                new Option<string>(new string[] { "--name", "-n" }, "Name of the package") { IsRequired = true },
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"),

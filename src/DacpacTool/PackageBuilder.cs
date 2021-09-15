@@ -391,9 +391,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void GenerateCreateScript(FileInfo dacpacFile, string databaseName)
         {
-            databaseName ??= Path.GetFileNameWithoutExtension(dacpacFile.Name);
-            var scriptFileName = $"{databaseName}_Create.sql";
+            if (databaseName is null)
+            {
+                throw new ArgumentNullException(nameof(databaseName));
+            }
 
+            var scriptFileName = $"{databaseName}_Create.sql";
             Console.WriteLine($"Generating create script {scriptFileName}");
 
             using var package = DacPackage.Load(dacpacFile.FullName);

@@ -461,7 +461,6 @@ With this enabled you'll find a SQL script with the name `<database-name>_Create
 The database name for the create script gets resolved in the following manner:
 1. `TargetDatabaseName`.
 1. Package name.
-1. DacPac file name without extension.
 > Note: the generated script also uses the resolved database name via a setvar command.
 
 ## Workaround for parser errors (SQL46010)
