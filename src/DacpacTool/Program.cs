@@ -16,7 +16,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var buildCommand = new Command("build")
             {
-                new Option<string>(new string[] { "--name", "-n" }, "Name of the package"),
+                new Option<string>(new string[] { "--name", "-n" }, "Name of the package") { IsRequired = true },
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"),
@@ -30,6 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
+                new Option<string>(new string[] { "--targetdatabasename", "-tdn" }, "Name of the database to use in the generated create script"),
                 new Option<string>(new string[] { "--suppresswarnings", "-spw" }, "Warning(s) to suppress"),
                 new Option<FileInfo>(new string[] { "--suppresswarningslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
 #if DEBUG
@@ -172,7 +173,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.GenerateCreateScript)
             {
-                packageBuilder.GenerateCreateScript(options.Output, options.Name);
+                packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name);
             }
 
             return 0;

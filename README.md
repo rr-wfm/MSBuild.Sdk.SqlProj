@@ -457,7 +457,11 @@ Instead of using `dotnet publish` to deploy changes to a database, you can also 
 </Project>
 ```
 
-With this enabled you'll find a SQL script with the name `<datbase-name>_Create.sql` in the bin folder.
+With this enabled you'll find a SQL script with the name `<database-name>_Create.sql` in the bin folder.
+The database name for the create script gets resolved in the following manner:
+1. `TargetDatabaseName`.
+1. Package name.
+> Note: the generated script also uses the resolved database name via a setvar command.
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:

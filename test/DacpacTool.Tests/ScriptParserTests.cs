@@ -1,5 +1,6 @@
 ﻿using Microsoft.SqlTools.ServiceLayer.BatchParser;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using NSubstitute;
 using Shouldly;
@@ -171,7 +172,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act / Assert
             Should.Throw<System.InvalidOperationException>(() => collector.CollectFileNames())
-                .Message.ShouldBe("Incorrect syntax was encountered while parsing '\n'. File: ScriptWithErrors.sql");
+                .Message.ShouldBe($"Incorrect syntax was encountered while parsing '{Environment.NewLine}'. File: ScriptWithErrors.sql");
         }
     }
 }

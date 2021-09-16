@@ -592,11 +592,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, null);
-
+            
             // Assert
-            File.Exists(Path.Combine(tempFile.DirectoryName, $"{Path.GetFileNameWithoutExtension(tempFile.Name)}_Create.sql")).ShouldBeTrue();
-
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null));
+            
             // Cleanup
             tempFile.Delete();
         }
