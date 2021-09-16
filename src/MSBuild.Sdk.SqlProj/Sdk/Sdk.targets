@@ -216,7 +216,7 @@
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or '$(TreatWarningsAsErrors)' == 'True'">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
+      <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
       <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
@@ -280,4 +280,18 @@
     <Exec Command="$(DacpacToolCommand)" />
   </Target>
   
+  <!-- Lists all dacpac files of interest to the current project, so that a referencing class library can copy these to its output directory -->
+  <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <CopyDacpacFiles Include="$(TargetPath)"/>
+      <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
+    </ItemGroup>
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles)">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+    <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
+  </Target>
 </Project>
