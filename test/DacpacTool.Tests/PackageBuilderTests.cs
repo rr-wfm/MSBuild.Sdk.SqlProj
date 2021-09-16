@@ -594,7 +594,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
             
             // Assert
-            Should.Throw<ArgumentNullException>(() => packageBuilder.GenerateCreateScript(tempFile, null));
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null));
             
             // Cleanup
             tempFile.Delete();

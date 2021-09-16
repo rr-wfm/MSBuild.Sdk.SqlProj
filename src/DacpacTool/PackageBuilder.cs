@@ -391,9 +391,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void GenerateCreateScript(FileInfo dacpacFile, string databaseName)
         {
-            if (databaseName is null)
+            if (string.IsNullOrWhiteSpace(databaseName))
             {
-                throw new ArgumentNullException(nameof(databaseName));
+                throw new ArgumentException("The database name is mandatory.", nameof(databaseName));
             }
 
             var scriptFileName = $"{databaseName}_Create.sql";
