@@ -251,7 +251,7 @@
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
-  <Target Name="Publish" DependsOnTargets="Build">
+  <Target Name="Publish" DependsOnTargets="Build" Condition="'$(DeployOnPublish)' != 'False'">
     <ItemGroup>
       <_DeployPropertyNames Include="$(KnownDeployProperties)" />
       <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
