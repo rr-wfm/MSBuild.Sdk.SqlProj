@@ -26,12 +26,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         submodules: 'true' # need to check out the SqlTools submodule to build successfully.
 
-    # Install .NET Core SDK's for 2.1, 3.1 and 5.0
-    - name: Setup dotnet 2.1
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '2.1.x'
-
+    # Install .NET Core SDK's for 3.1, 5.0 and 6.0
     - name: Setup dotnet 3.1
       uses: actions/setup-dotnet@v1
       with:
@@ -41,6 +36,11 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '5.0.x'
+
+    - name: Setup dotnet 6.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -112,7 +112,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-18.04", "macos-10.15", "windows-2019" ]
-        dotnet: [ '2.1.x', '3.1.x', '5.0.x' ]
+        dotnet: [ '3.1.x', '5.0.x', '6.0.x' ]
       fail-fast: false
 
     steps:
@@ -176,13 +176,12 @@ jobs:
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (double floating version / dotnet 3)
-      if: ${{ matrix.dotnet != '2.1.x' }}
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '3.1.x' }}
+      if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '6.0.x' }}
       uses: actions/upload-artifact@v2.2.4
       with:
         name: dacpac-package
@@ -279,7 +278,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -325,7 +324,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '5.0.x'
+        dotnet-version: '6.0.x'
 
     # Download artifacts
     - name: download-artifact
