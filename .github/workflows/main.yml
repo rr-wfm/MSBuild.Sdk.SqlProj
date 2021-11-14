@@ -295,11 +295,11 @@ jobs:
       with:
         files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
       env:
-        DependencyVersion: '1.*-*'
+        DependencyVersion: '2.*-*'
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
 
     # Upload binary log
     - name: upload
