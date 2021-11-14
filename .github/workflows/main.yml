@@ -176,7 +176,7 @@ jobs:
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (double floating version / dotnet 3)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="1.*-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload dacpac
