@@ -17,7 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NSubstitute" Version="4.2.2" />
-    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.14" />
+    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.15" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
   </ItemGroup>
 
