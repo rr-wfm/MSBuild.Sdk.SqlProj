@@ -581,6 +581,45 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void GenerateCreateScript_IncludeCompositeObjects()
+        {
+            // Arrange
+            var packageName = "MyPackage";
+
+            var firstReference = new TestModelBuilder()
+            .AddTable("MyFirstTable", ("Column1", "nvarchar(100)"))
+            .SaveAsPackage();
+
+            var secondReference = new TestModelBuilder()
+            .AddTable("MySecondTable", ("Column1", "nvarchar(100)"))
+            .AddReference(firstReference)
+            .SaveAsPackage();
+
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata(packageName, "1.0.0.0");
+            packageBuilder.AddReference(firstReference);
+            packageBuilder.AddReference(secondReference);
+            packageBuilder.ValidateModel();
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+            packageBuilder.GenerateCreateScript(tempFile, packageName);
+
+            // Assert
+            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
+            File.Exists(scriptFilePath).ShouldBeTrue();
+
+            var scriptContent = File.ReadAllText(scriptFilePath);
+            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBeTrue();
+            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBeTrue();
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
         public void GenerateCreateScript_NoName()
         {
             // Arrange
