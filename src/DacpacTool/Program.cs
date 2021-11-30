@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
-                new Option<bool>(new string[] { "--includeCompositeObjects", "-ico" }, "Include referenced, external elements that also compose the source model"),
+                new Option<bool>(new string[] { "--includecompositeobjects", "-ico" }, "Include referenced, external elements that also compose the source model"),
                 new Option<string>(new string[] { "--targetdatabasename", "-tdn" }, "Name of the database to use in the generated create script"),
                 new Option<string>(new string[] { "--suppresswarnings", "-spw" }, "Warning(s) to suppress"),
                 new Option<FileInfo>(new string[] { "--suppresswarningslistfile", "-spl" }, "Filename for warning(s) to suppress for particular files"),
