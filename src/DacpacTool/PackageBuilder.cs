@@ -389,7 +389,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName)
+        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, bool includeCompositeObjects = false)
         {
             if (string.IsNullOrWhiteSpace(databaseName))
             {
@@ -402,7 +402,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             using var package = DacPackage.Load(dacpacFile.FullName);
             using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
 
-            var options = new DacDeployOptions() { IncludeCompositeObjects = true };
+            var options = new DacDeployOptions() { IncludeCompositeObjects = includeCompositeObjects };
             DacServices.GenerateCreateScript(file, package, databaseName, options);
         }
     }
