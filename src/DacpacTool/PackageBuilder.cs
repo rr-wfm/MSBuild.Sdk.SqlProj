@@ -389,7 +389,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, bool includeCompositeObjects = false)
+        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, bool includeCompositeObjects)
         {
             if (string.IsNullOrWhiteSpace(databaseName))
             {
