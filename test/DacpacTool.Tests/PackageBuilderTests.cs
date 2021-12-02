@@ -71,14 +71,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             string reference = new TestModelBuilder()
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
                 .SaveAsPackage(".dll");
-                
+
             var packageBuilder = new PackageBuilder();
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
             Should.Throw<ArgumentException>(() =>  packageBuilder.AddReference(reference))
                     .Message.ShouldStartWith("Invalid filetype .dll");
-            
+
             // Cleanup
             File.Delete(reference);
         }
@@ -98,7 +98,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
-            
+
             // Cleanup
             File.Delete(reference);
         }
@@ -143,7 +143,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(tempFile);
             var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
-            
+
             headerParser.GetCustomData()
                 .Where(d => d.Category == "SqlCmdVariables"
                     && d.Type == "SqlCmdVariable")
@@ -188,7 +188,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));            
+            var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));
             var postPart = package.GetPart(new Uri("/postdeploy.sql", UriKind.Relative));
             var refactorPart = package.GetPart(new Uri("/refactor.xml", UriKind.Relative));
 
@@ -227,7 +227,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
-            
+
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
                 .FirstOrDefault()
@@ -571,10 +571,51 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, false);
 
             // Assert
             File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void GenerateCreateScript_IncludeCompositeObjects(bool includeCompositeObjects)
+        {
+            // Arrange
+            var packageName = "MyPackage";
+
+            var firstReference = new TestModelBuilder()
+            .AddTable("MyFirstTable", ("Column1", "nvarchar(100)"))
+            .SaveAsPackage();
+
+            var secondReference = new TestModelBuilder()
+            .AddTable("MySecondTable", ("Column1", "nvarchar(100)"))
+            .AddReference(firstReference)
+            .SaveAsPackage();
+
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata(packageName, "1.0.0.0");
+            packageBuilder.AddReference(firstReference);
+            packageBuilder.AddReference(secondReference);
+            packageBuilder.ValidateModel();
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, includeCompositeObjects);
+
+            // Assert
+            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
+            File.Exists(scriptFilePath).ShouldBeTrue();
+
+            var scriptContent = File.ReadAllText(scriptFilePath);
+            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBe(includeCompositeObjects);
+            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBe(includeCompositeObjects);
 
             // Cleanup
             tempFile.Delete();
@@ -592,10 +633,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            
+
             // Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null));
-            
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, false));
+
             // Cleanup
             tempFile.Delete();
         }
