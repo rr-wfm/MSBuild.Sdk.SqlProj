@@ -21,6 +21,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string SuppressWarnings { get; set; }
         public FileInfo SuppressWarningsListFile { get; set; }
         public bool GenerateCreateScript { get; set; }
+        public bool IncludeCompositeObjects { get; set; }
         public string TargetDatabaseName { get; set; }
     }
 }
