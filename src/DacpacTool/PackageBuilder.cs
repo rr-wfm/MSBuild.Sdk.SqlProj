@@ -161,7 +161,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             EnsureModelCreated();
             EnsureModelValidated();
             EnsureMetadataCreated();
-
+            
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -347,9 +347,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
-
+        
         public bool TreatTSqlWarningsAsErrors { get; set; }
-
+        
         public void AddWarningsToSuppress(string suppressionList)
         {
             _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
@@ -369,7 +369,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     list.AddRange(warningList.FindAll((x) => !list.Contains(x)));
                 }
             }
-
+                
         }
 
         private List<int> ParseSuppressionList(string suppressionList)
