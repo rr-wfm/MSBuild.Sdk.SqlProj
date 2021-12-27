@@ -31,7 +31,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var deployOptions = new DacDeployOptions();
 
-            if (options.Property != null)
+            if (options.CreateScriptProperty != null)
             {
                 foreach (var buildProperty in options.CreateScriptProperty.Where(p => string.IsNullOrWhiteSpace(p) == false))
                 {

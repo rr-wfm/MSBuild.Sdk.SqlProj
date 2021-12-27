@@ -616,7 +616,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             if (includeCompositeObjects.HasValue)
             {
-                buildOptions.Property = new[] { $"IncludeCompositeObjects={includeCompositeObjects}" };
+                buildOptions.CreateScriptProperty = new[] { $"IncludeCompositeObjects={includeCompositeObjects}" };
             }
 
             // Act
@@ -658,7 +658,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             if (createNewDatabase.HasValue)
             {
-                buildOptions.Property = new[] { $"CreateNewDatabase={createNewDatabase}" };
+                buildOptions.CreateScriptProperty = new[] { $"CreateNewDatabase={createNewDatabase}" };
             }
 
             // Act
