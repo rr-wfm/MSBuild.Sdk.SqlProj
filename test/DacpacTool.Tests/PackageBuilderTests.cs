@@ -569,9 +569,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(packageName, "1.0.0.0");
             packageBuilder.ValidateModel();
 
+            var options = new BuildOptions();
+            options.TargetDatabaseName = packageName;
+            options.Output = tempFile;
+
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, false);
+            packageBuilder.GenerateCreateScript(options);
 
             // Assert
             File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
@@ -583,7 +587,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
-        public void GenerateCreateScript_IncludeCompositeObjects(bool includeCompositeObjects)
+        [DataRow(null)]
+        public void GenerateCreateScript_IncludeCompositeObjects(bool? includeCompositeObjects)
         {
             // Arrange
             var packageName = "MyPackage";
@@ -605,17 +610,69 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.AddReference(secondReference);
             packageBuilder.ValidateModel();
 
+            var buildOptions = new BuildOptions();
+            buildOptions.Output = tempFile;
+            buildOptions.TargetDatabaseName = packageName;
+
+            if (includeCompositeObjects.HasValue)
+            {
+                buildOptions.Property = new[] { $"IncludeCompositeObjects={includeCompositeObjects}" };
+            }
+
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, includeCompositeObjects);
+            packageBuilder.GenerateCreateScript(buildOptions);
 
             // Assert
             var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
             File.Exists(scriptFilePath).ShouldBeTrue();
 
+            var shouldContainReferencedTables = includeCompositeObjects == true;
+
             var scriptContent = File.ReadAllText(scriptFilePath);
-            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBe(includeCompositeObjects);
-            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBe(includeCompositeObjects);
+            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBe(shouldContainReferencedTables);
+            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBe(shouldContainReferencedTables);
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataRow(null)]
+        public void GenerateCreateScript_CreateNewDatabase(bool? createNewDatabase)
+        {
+            // Arrange
+            var packageName = "MyPackage";
+
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.SetMetadata(packageName, "1.0.0.0");
+            packageBuilder.ValidateModel();
+
+            var buildOptions = new BuildOptions();
+            buildOptions.Output = tempFile;
+            buildOptions.TargetDatabaseName = packageName;
+
+            if (createNewDatabase.HasValue)
+            {
+                buildOptions.Property = new[] { $"CreateNewDatabase={createNewDatabase}" };
+            }
+
+            // Act
+            packageBuilder.SaveToDisk(tempFile);
+            packageBuilder.GenerateCreateScript(buildOptions);
+
+            // Assert
+            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
+            File.Exists(scriptFilePath).ShouldBeTrue();
+
+            var shouldCreateDatabaseInScriptFile = createNewDatabase == true;
+
+            var scriptContent = File.ReadAllText(scriptFilePath);
+            scriptContent.Contains("CREATE DATABASE [$(DatabaseName)] ").ShouldBe(shouldCreateDatabaseInScriptFile);
 
             // Cleanup
             tempFile.Delete();
@@ -631,11 +688,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(null, "1.0.0.0");
             packageBuilder.ValidateModel();
 
+            var buildOptions = new BuildOptions();
+            buildOptions.Output = tempFile;
+
             // Act
             packageBuilder.SaveToDisk(tempFile);
 
             // Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, false));
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(buildOptions));
 
             // Cleanup
             tempFile.Delete();

@@ -12,6 +12,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo InputFile { get; set; }
         public string[] Reference { get; set; }
         public string[] Property { get; set; }
+        public string[] CreateScriptProperty { get; set; }
         public string[] SqlCmdVar { get; set; }
         public FileInfo PreDeploy { get; set; }
         public FileInfo PostDeploy { get; set; }
@@ -21,7 +22,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string SuppressWarnings { get; set; }
         public FileInfo SuppressWarningsListFile { get; set; }
         public bool GenerateCreateScript { get; set; }
-        public bool IncludeCompositeObjects { get; set; }
         public string TargetDatabaseName { get; set; }
     }
 }

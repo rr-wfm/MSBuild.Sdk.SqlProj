@@ -134,7 +134,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 // Only set initial catalog for post-deployment script since database might not exist yet for pre-deployment
                 builder.InitialCatalog = targetDatabaseName;
             }
-            
+
             var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
             using var engine = new ExecutionEngine();
             using var connection = new SqlConnection(builder.ConnectionString);
@@ -162,7 +162,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
                 AddSqlCmdVariables(scriptExecutionArgs, targetDatabaseName);
-                
+
                 engine.BatchParserExecutionError += (sender, args) => _console.WriteLine(args.Format(_currentSource));
                 engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
                     $"'{referencedPackage.Name}' version '{referencedPackage.Version}' with result: {args.ExecutionResult}");
@@ -213,12 +213,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "CompareUsingTargetCollation" => bool.Parse(value),
                     "CreateNewDatabase" => bool.Parse(value),
                     "DatabaseLockTimeout" => int.Parse(value),
-                    "DatabaseSpecification" => ParseDatabaseSpecification(value),
+                    "DatabaseSpecification" => PropertyParser.ParseDatabaseSpecification(value),
                     "DeployDatabaseInSingleUserMode" => bool.Parse(value),
                     "DisableAndReenableDdlTriggers" => bool.Parse(value),
                     "DoNotAlterChangeDataCaptureObjects" => bool.Parse(value),
                     "DoNotAlterReplicatedObjects" => bool.Parse(value),
-                    "DoNotDropObjectTypes" => ParseObjectTypes(value),
+                    "DoNotDropObjectTypes" => PropertyParser.ParseObjectTypes(value),
                     "DropConstraintsNotInSource" => bool.Parse(value),
                     "DropDmlTriggersNotInSource" => bool.Parse(value),
                     "DropExtendedPropertiesNotInSource" => bool.Parse(value),
@@ -227,7 +227,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "DropPermissionsNotInSource" => bool.Parse(value),
                     "DropRoleMembersNotInSource" => bool.Parse(value),
                     "DropStatisticsNotInSource" => bool.Parse(value),
-                    "ExcludeObjectTypes" => ParseObjectTypes(value),
+                    "ExcludeObjectTypes" => PropertyParser.ParseObjectTypes(value),
                     "GenerateSmartDefaults" => bool.Parse(value),
                     "IgnoreAnsiNulls" => bool.Parse(value),
                     "IgnoreAuthorizer" => bool.Parse(value),
@@ -313,65 +313,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 throw new InvalidOperationException("A target server has not been set. Call UseTargetServer first.");
             }
-            
+
             if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.UserID) && ConnectionStringBuilder.IntegratedSecurity == false)
             {
                 throw new InvalidOperationException("No authentication information has been set. Call UseSqlServerAuthentication or UseWindowsAuthentication first.");
             }
-        }
-
-        private ObjectType[] ParseObjectTypes(string value)
-        {
-            if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Expected object types to be comma-seperated instead of semi-colon separated");
-            }
-
-            var objectTypes = value.Split(',');
-            var result = new ObjectType[objectTypes.Length];
-
-            for (int i = 0; i < objectTypes.Length; i++)
-            {
-                if (!Enum.TryParse(objectTypes[i], false, out ObjectType objectType))
-                {
-                    throw new ArgumentException($"Unknown object type {objectTypes[i]} specified.", nameof(value));
-                }
-
-                result[i] = objectType;
-            }
-
-            return result;
-        }
-
-        private DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
-        {
-            if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Expected database specification to be comma-seperated instead of semi-colon separated");
-            }
-
-            var specification = value.Split(",", 3);
-            if (specification.Length != 3)
-            {
-                throw new ArgumentException("Expected at least 3 parameters for DatabaseSpecification; Edition, MaximumSize and ServiceObjective", nameof(value));
-            }
-
-            if (!Enum.TryParse(specification[0], false, out DacAzureEdition edition))
-            {
-                throw new ArgumentException($"Unknown edition '{specification[0]}' specified.", nameof(value));
-            }
-
-            if (!int.TryParse(specification[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int maximumSize))
-            {
-                throw new ArgumentException($"Unable to parse maximum size '{specification[1]}' as an integer.", nameof(value));
-            }
-
-            return new DacAzureDatabaseSpecification
-            {
-                Edition = edition,
-                MaximumSize = maximumSize,
-                ServiceObjective = specification[2]
-            };
         }
 
         void IBatchEventsHandler.OnBatchCancelling(object sender, EventArgs args)

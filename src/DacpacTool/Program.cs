@@ -26,6 +26,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
                 new Option<FileInfo>(new string[] { "--refactorlog" }, "Filename of optional refactor log script"),
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
+                new Option<string[]>(new string[] { "--createscriptproperty", "-cp" }, "Properties to be set for the create script"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
@@ -174,7 +175,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.GenerateCreateScript)
             {
-                packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, options.IncludeCompositeObjects);
+                packageBuilder.GenerateCreateScript(options);
             }
 
             return 0;

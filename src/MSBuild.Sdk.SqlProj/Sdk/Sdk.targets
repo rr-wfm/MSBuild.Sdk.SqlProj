@@ -184,6 +184,12 @@
         <PropertyValue>$(%(_PropertyNames.Identity))</PropertyValue>
       </PropertyNames>
 
+      <!-- Get the values for known properties to be used in the create script -->
+     <_CreateScriptPropertyNames Include="$(KnownDeployProperties)" />
+     <CreateScriptPropertyNames Include="@(_CreateScriptPropertyNames)" Condition=" '$(%(Identity))' != '' ">
+       <PropertyValue>$(%(_CreateScriptPropertyNames.Identity))</PropertyValue>
+     </CreateScriptPropertyNames>
+
       <!-- Compile the list of references -->
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
     </ItemGroup>
@@ -212,6 +218,7 @@
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <PropertyArguments>@(PropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
+      <GenerateScriptPropertyArguments>@(CreateScriptPropertyNames->'-cp %(Identity)=%(PropertyValue)', ' ')</GenerateScriptPropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
@@ -219,11 +226,10 @@
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
-      <IncludeCompositeObjectsArgument Condition="'$(IncludeCompositeObjects)' == 'True'">--includecompositeobjects</IncludeCompositeObjectsArgument>
       <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(IncludeCompositeObjectsArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(PropertyArguments) $(GenerateScriptPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

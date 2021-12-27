@@ -161,7 +161,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             EnsureModelCreated();
             EnsureModelValidated();
             EnsureMetadataCreated();
-            
+
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -347,9 +347,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
-        
+
         public bool TreatTSqlWarningsAsErrors { get; set; }
-        
+
         public void AddWarningsToSuppress(string suppressionList)
         {
             _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
@@ -369,7 +369,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     list.AddRange(warningList.FindAll((x) => !list.Contains(x)));
                 }
             }
-                
+
         }
 
         private List<int> ParseSuppressionList(string suppressionList)
@@ -389,21 +389,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, bool includeCompositeObjects)
+        public void GenerateCreateScript(BuildOptions options)
         {
-            if (string.IsNullOrWhiteSpace(databaseName))
+            if (string.IsNullOrWhiteSpace(options.TargetDatabaseName))
             {
-                throw new ArgumentException("The database name is mandatory.", nameof(databaseName));
+                throw new ArgumentException("The database name is mandatory.", nameof(options.TargetDatabaseName));
             }
 
-            var scriptFileName = $"{databaseName}_Create.sql";
+            var scriptFileName = $"{options.TargetDatabaseName}_Create.sql";
             Console.WriteLine($"Generating create script {scriptFileName}");
 
-            using var package = DacPackage.Load(dacpacFile.FullName);
-            using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
+            using var package = DacPackage.Load(options.Output.FullName);
+            using var file = File.Create(Path.Combine(options.Output.DirectoryName, scriptFileName));
 
-            var options = new DacDeployOptions() { IncludeCompositeObjects = includeCompositeObjects };
-            DacServices.GenerateCreateScript(file, package, databaseName, options);
+            var deployOptions = options.ToDacDeployOptions();
+            DacServices.GenerateCreateScript(file, package, options.TargetDatabaseName, deployOptions);
         }
     }
 }
