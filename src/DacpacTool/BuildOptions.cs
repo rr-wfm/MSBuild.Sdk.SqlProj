@@ -11,8 +11,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public SqlServerVersion SqlServerVersion { get; set; }
         public FileInfo InputFile { get; set; }
         public string[] Reference { get; set; }
-        public string[] Property { get; set; }
-        public string[] CreateScriptProperty { get; set; }
+        public string[] BuildProperty { get; set; }
+        public string[] DeployProperty { get; set; }
         public string[] SqlCmdVar { get; set; }
         public FileInfo PreDeploy { get; set; }
         public FileInfo PostDeploy { get; set; }

@@ -1,8 +1,4 @@
-﻿// <copyright file="PropertyParserTest.cs" company="Suez">
-// Copyright (c) Suez. All rights reserved.
-// </copyright>
-
-using System;
+﻿using System;
 using Microsoft.SqlServer.Dac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -16,7 +12,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithBooleanProperties_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[]
+            var buildOptions = new BuildOptions { DeployProperty = new[]
             {
                 "CreateNewDatabase=True",
                 "IgnoreAuthorizer=True"
@@ -34,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithIntegerProperty_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { "CommandTimeout=200" } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=200" } };
 
             // Act
             var deployOptions = buildOptions.ToDacDeployOptions();
@@ -47,7 +43,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithObjectTypesProperties_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[]
+            var buildOptions = new BuildOptions { DeployProperty = new[]
             {
                 $"ExcludeObjectTypes={ObjectType.Audits},{ObjectType.Endpoints},{ObjectType.Queues}",
                 $"DoNotDropObjectTypes={ObjectType.Certificates},{ObjectType.Contracts}"
@@ -73,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithIncorrectObjectTypesProperty_ShouldThrowException(string property)
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { property } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();
@@ -86,7 +82,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithDacAzureDatabaseSpecificationProperty_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { $"DatabaseSpecification={DacAzureEdition.DataWarehouse},20,S3" } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={DacAzureEdition.DataWarehouse},20,S3" } };
 
             // Act
             var deployOptions = buildOptions.ToDacDeployOptions();
@@ -106,7 +102,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithIncorrectDacAzureDatabaseSpecificationProperty_ShouldThrowException(string propertyValue, string exceptionMessage)
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();
@@ -119,7 +115,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithIncorrectIntegerProperty_ShouldThrowException()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { "CommandTimeout=WrongValue" } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=WrongValue" } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();
@@ -132,7 +128,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithIncorrectBooleanProperty_ShouldThrowException()
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { "CreateNewDatabase=WrongValue" } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { "CreateNewDatabase=WrongValue" } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();
@@ -147,7 +143,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithWronglyFormattedProperty_ShouldThrowException(string property, Type exceptionType)
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { property } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();
@@ -164,7 +160,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ToDacDeployOptions_WithUnknownOrEmptyProperty_ShouldNotThrowException(string property)
         {
             // Arrange
-            var buildOptions = new BuildOptions { CreateScriptProperty = new[] { property } };
+            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ToDacDeployOptions();

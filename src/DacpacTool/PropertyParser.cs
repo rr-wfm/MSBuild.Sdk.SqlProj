@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -31,9 +30,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var deployOptions = new DacDeployOptions();
 
-            if (options.CreateScriptProperty != null)
+            if (options.DeployProperty != null)
             {
-                foreach (var buildProperty in options.CreateScriptProperty.Where(p => string.IsNullOrWhiteSpace(p) == false))
+                foreach (var buildProperty in options.DeployProperty.Where(p => string.IsNullOrWhiteSpace(p) == false))
                 {
                     object propertyValue;
                     var databaseProperty = DatabaseProperty.Create(buildProperty);

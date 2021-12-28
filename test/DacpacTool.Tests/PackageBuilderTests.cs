@@ -569,13 +569,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(packageName, "1.0.0.0");
             packageBuilder.ValidateModel();
 
-            var options = new BuildOptions();
-            options.TargetDatabaseName = packageName;
-            options.Output = tempFile;
-
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(options);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, new DacDeployOptions());
 
             // Assert
             File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
@@ -610,18 +606,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.AddReference(secondReference);
             packageBuilder.ValidateModel();
 
-            var buildOptions = new BuildOptions();
-            buildOptions.Output = tempFile;
-            buildOptions.TargetDatabaseName = packageName;
+            var deployOptions = new DacDeployOptions();
 
             if (includeCompositeObjects.HasValue)
             {
-                buildOptions.CreateScriptProperty = new[] { $"IncludeCompositeObjects={includeCompositeObjects}" };
+                deployOptions.IncludeCompositeObjects = includeCompositeObjects.Value;
             }
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(buildOptions);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
 
             // Assert
             var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
@@ -652,18 +646,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(packageName, "1.0.0.0");
             packageBuilder.ValidateModel();
 
-            var buildOptions = new BuildOptions();
-            buildOptions.Output = tempFile;
-            buildOptions.TargetDatabaseName = packageName;
+            var deployOptions = new DacDeployOptions();
 
             if (createNewDatabase.HasValue)
             {
-                buildOptions.CreateScriptProperty = new[] { $"CreateNewDatabase={createNewDatabase}" };
+                deployOptions.CreateNewDatabase = createNewDatabase.Value;
             }
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(buildOptions);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
 
             // Assert
             var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
@@ -695,7 +687,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(buildOptions));
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, new DacDeployOptions()));
 
             // Cleanup
             tempFile.Delete();

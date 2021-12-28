@@ -389,21 +389,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public void GenerateCreateScript(BuildOptions options)
+        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, DacDeployOptions deployOptions)
         {
-            if (string.IsNullOrWhiteSpace(options.TargetDatabaseName))
+            if (string.IsNullOrWhiteSpace(databaseName))
             {
-                throw new ArgumentException("The database name is mandatory.", nameof(options.TargetDatabaseName));
+                throw new ArgumentException("The database name is mandatory.", nameof(databaseName));
             }
 
-            var scriptFileName = $"{options.TargetDatabaseName}_Create.sql";
+            var scriptFileName = $"{databaseName}_Create.sql";
             Console.WriteLine($"Generating create script {scriptFileName}");
 
-            using var package = DacPackage.Load(options.Output.FullName);
-            using var file = File.Create(Path.Combine(options.Output.DirectoryName, scriptFileName));
+            using var package = DacPackage.Load(dacpacFile.FullName);
+            using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
 
-            var deployOptions = options.ToDacDeployOptions();
-            DacServices.GenerateCreateScript(file, package, options.TargetDatabaseName, deployOptions);
+            DacServices.GenerateCreateScript(file, package, databaseName, deployOptions);
         }
     }
 }

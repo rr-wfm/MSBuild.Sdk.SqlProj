@@ -25,8 +25,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<FileInfo>(new string[] { "--predeploy" }, "Filename of optional pre-deployment script"),
                 new Option<FileInfo>(new string[] { "--postdeploy" }, "Filename of optional post-deployment script"),
                 new Option<FileInfo>(new string[] { "--refactorlog" }, "Filename of optional refactor log script"),
-                new Option<string[]>(new string[] { "--property", "-p" }, "Properties to be set on the model"),
-                new Option<string[]>(new string[] { "--createscriptproperty", "-cp" }, "Properties to be set for the create script"),
+                new Option<string[]>(new string[] { "--buildproperty", "-bp" }, "Build properties to be set on the model"),
+                new Option<string[]>(new string[] { "--deployproperty", "-dp" }, "Deploy properties to be set for the create script"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
@@ -84,9 +84,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)
-            if (options.Property != null)
+            if (options.BuildProperty != null)
             {
-                foreach (var propertyValue in options.Property)
+                foreach (var propertyValue in options.BuildProperty)
                 {
                     string[] keyValuePair = propertyValue.Split('=', 2);
                     packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
@@ -175,7 +175,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.GenerateCreateScript)
             {
-                packageBuilder.GenerateCreateScript(options);
+                var deployOptions = options.ToDacDeployOptions();
+                packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
             }
 
             return 0;
