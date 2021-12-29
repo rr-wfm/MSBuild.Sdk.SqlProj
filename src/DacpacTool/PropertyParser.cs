@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Microsoft.SqlServer.Dac;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -34,33 +35,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 foreach (var buildProperty in options.DeployProperty.Where(p => string.IsNullOrWhiteSpace(p) == false))
                 {
-                    object propertyValue;
                     var databaseProperty = DatabaseProperty.Create(buildProperty);
-
-                    var property = typeof(DacDeployOptions).GetProperties().SingleOrDefault(p => string.Compare(p.Name, databaseProperty.Name, StringComparison.OrdinalIgnoreCase) == 0);
-
-                    if (property == null)
-                    {
-                        continue;
-                    }
-
-                    if (CustomParsers.TryGetValue(databaseProperty.Name, out var parser))
-                    {
-                        propertyValue = parser.Invoke(databaseProperty.Value);
-                    }
-                    else
-                    {
-                        propertyValue =  StringToTypedValue(databaseProperty.Value, property.PropertyType);
-                    }
-
-                    if (propertyValue != null)
-                    {
-                        property.SetValue(deployOptions, propertyValue);
-                    }
+                    deployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
                 }
             }
 
             return deployOptions;
+        }
+
+        private static PropertyInfo GetDacDeployOptionsProperty(string propertyName)
+        {
+            var property = typeof(DacDeployOptions).GetProperties()
+                .SingleOrDefault(p => string.Compare(p.Name, propertyName, StringComparison.OrdinalIgnoreCase) == 0);
+
+            return property;
         }
 
         public static ObjectType[] ParseObjectTypes(string value)
@@ -117,6 +105,33 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
         }
 
+        public static object SetDeployProperty(this DacDeployOptions deployOptions, string name, string value)
+        {
+            object propertyValue;
+            var property = GetDacDeployOptionsProperty(name);
+
+            if (property == null)
+            {
+                throw new ArgumentException($@"Unknown property with name {name}", nameof(name));
+            }
+
+            if (CustomParsers.TryGetValue(property.Name, out var parser))
+            {
+                propertyValue = parser.Invoke(value);
+            }
+            else
+            {
+                propertyValue =  StringToTypedValue(value, property.PropertyType);
+            }
+
+            if (propertyValue != null)
+            {
+                property.SetValue(deployOptions, propertyValue);
+            }
+
+            return propertyValue;
+        }
+
         private static object StringToTypedValue(string stringValue, Type targetType)
         {
             object result = null;
@@ -129,31 +144,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             return result;
-        }
-
-        private class DatabaseProperty
-        {
-            private DatabaseProperty(string name, string value)
-            {
-                this.Name = name;
-                this.Value = value;
-            }
-
-            public string Name { get; }
-
-            public string Value { get; }
-
-            public static DatabaseProperty Create(string property)
-            {
-                var propertyKeyValuePair = property.Split('=', 2, StringSplitOptions.RemoveEmptyEntries);
-
-                if (propertyKeyValuePair.Length != 2)
-                {
-                    throw new ArgumentException($"Unexpected number of parameters in property {property}");
-                }
-
-                return new DatabaseProperty(propertyKeyValuePair[0], propertyKeyValuePair[1]);
-            }
         }
     }
 }

@@ -217,11 +217,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (options.Property != null)
                 {
-                    foreach (var propertyValue in options.Property)
-                    {
-                        string[] keyValuePair = propertyValue.Split('=', 2);
-                        deployer.SetProperty(keyValuePair[0], keyValuePair[1]);
-                    }
+                    deployer.SetDeployProperties(options.Property);
                 }
 
                 if (options.SqlCmdVar != null)

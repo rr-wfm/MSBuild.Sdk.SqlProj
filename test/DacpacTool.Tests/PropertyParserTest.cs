@@ -140,7 +140,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [TestMethod]
         [DataRow("Unknown -> WrongValue", typeof(ArgumentException))]
         [DataRow("=", typeof(ArgumentException))]
-        public void ToDacDeployOptions_WithWronglyFormattedProperty_ShouldThrowException(string property, Type exceptionType)
+        [DataRow("UnknownProperty=212", typeof(ArgumentException))]
+        public void ToDacDeployOptions_WithWronglyFormattedOrhUnknownProperty_ShouldThrowException(string property, Type exceptionType)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
@@ -156,8 +157,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow(" ")]
         [DataRow(null)]
         [DataRow("")]
-        [DataRow("UnknownProperty=212")]
-        public void ToDacDeployOptions_WithUnknownOrEmptyProperty_ShouldNotThrowException(string property)
+        public void ToDacDeployOptions_WithNullOrEmptyProperty_ShouldNotThrowException(string property)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
