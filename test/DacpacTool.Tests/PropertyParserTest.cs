@@ -134,7 +134,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
-            action.ShouldThrow<FormatException>();
+            action.ShouldThrow<ArgumentException>();
         }
 
         [TestMethod]

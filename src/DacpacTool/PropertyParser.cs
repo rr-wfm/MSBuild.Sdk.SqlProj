@@ -33,11 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.DeployProperty != null)
             {
-                foreach (var buildProperty in options.DeployProperty.Where(p => string.IsNullOrWhiteSpace(p) == false))
-                {
-                    var databaseProperty = DatabaseProperty.Create(buildProperty);
-                    deployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
-                }
+                deployOptions.SetDeployProperties(options.DeployProperty);
             }
 
             return deployOptions;
@@ -105,6 +101,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
         }
 
+        public static void SetDeployProperties(this DacDeployOptions deployOptions, string[] deployProperties, IConsole console = null)
+        {
+            foreach (var deployProperty in deployProperties.Where(p => string.IsNullOrWhiteSpace(p) == false))
+            {
+                var databaseProperty = DatabaseProperty.Create(deployProperty);
+                var propertyValue =deployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
+
+                if (console != null)
+                {
+                    var parsedValue = propertyValue switch
+                    {
+                        ObjectType[] o => string.Join(',', o),
+                        DacAzureDatabaseSpecification s => $"{s.Edition},{s.MaximumSize},{s.ServiceObjective}",
+                        _ => propertyValue == null ? "null" : propertyValue.ToString()
+                    };
+
+                    console.WriteLine($"Setting property {databaseProperty.Name} to value {parsedValue}");
+                }
+            }
+        }
+
         public static object SetDeployProperty(this DacDeployOptions deployOptions, string name, string value)
         {
             object propertyValue;
@@ -115,18 +132,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($@"Unknown property with name {name}", nameof(name));
             }
 
-            if (CustomParsers.TryGetValue(property.Name, out var parser))
+            if (name == "SqlCommandVariableValues")
             {
-                propertyValue = parser.Invoke(value);
-            }
-            else
-            {
-                propertyValue =  StringToTypedValue(value, property.PropertyType);
+                throw new ArgumentException("SQLCMD variables should be set using the --sqlcmdvar command line argument and not as a property.");
             }
 
-            if (propertyValue != null)
+            try
             {
-                property.SetValue(deployOptions, propertyValue);
+                if (CustomParsers.TryGetValue(property.Name, out var parser))
+                {
+                    propertyValue = parser.Invoke(value);
+                }
+                else
+                {
+                    propertyValue =  StringToTypedValue(value, property.PropertyType);
+                }
+
+                if (propertyValue != null)
+                {
+                    property.SetValue(deployOptions, propertyValue);
+                }
+            }
+            catch (FormatException)
+            {
+                throw new ArgumentException($@"Unable to parse value for property with name {name}: {value}", nameof(name));
             }
 
             return propertyValue;

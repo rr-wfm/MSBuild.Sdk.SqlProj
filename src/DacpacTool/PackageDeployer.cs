@@ -193,36 +193,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public void SetDeployProperty(string deployProperty)
             => this.SetDeployProperties(new[] { deployProperty });
 
-        public void SetDeployProperties(string[] deployProperties)
-        {
-            foreach (var deployProperty in deployProperties)
-            {
-                var databaseProperty = DatabaseProperty.Create(deployProperty);
-
-                if (databaseProperty.Name == "SqlCommandVariableValues")
-                {
-                    throw new ArgumentException("SQLCMD variables should be set using the --sqlcmdvar command line argument and not as a property.");
-                }
-
-                try
-                {
-                    var propertyValue = this.DeployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
-
-                    var parsedValue = propertyValue switch
-                    {
-                        ObjectType[] o => string.Join(',', o),
-                        DacAzureDatabaseSpecification s => $"{s.Edition},{s.MaximumSize},{s.ServiceObjective}",
-                        _ => propertyValue == null ? "null" : propertyValue.ToString()
-                    };
-
-                    _console.WriteLine($"Setting property {databaseProperty.Name} to value {parsedValue}");
-                }
-                catch (FormatException)
-                {
-                    throw new ArgumentException($@"Unable to parse value for property with name {databaseProperty.Name}: {databaseProperty.Value}", nameof(databaseProperty.Value));
-                }
-            }
-        }
+        public void SetDeployProperties(string[] deployProperties) => this.DeployOptions.SetDeployProperties(deployProperties, _console);
 
         private void EnsureConnectionStringComplete()
         {
