@@ -581,10 +581,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
-        [DataRow(null)]
-        public void GenerateCreateScript_IncludeCompositeObjects(bool? includeCompositeObjects)
+        public void GenerateCreateScript_ShouldNotModifyDeployOptions()
         {
             // Arrange
             var packageName = "MyPackage";
@@ -607,64 +604,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
 
             var deployOptions = new DacDeployOptions();
+            deployOptions.IncludeCompositeObjects = true;
+            deployOptions.CreateNewDatabase = true;
 
-            if (includeCompositeObjects.HasValue)
-            {
-                deployOptions.IncludeCompositeObjects = includeCompositeObjects.Value;
-            }
+            var expectedCreateScriptFileName = $"{packageName}_Expected_Create.sql";
 
-            // Act
+            // Act - Generate expected script
             packageBuilder.SaveToDisk(tempFile);
+            using var package = DacPackage.Load(tempFile.FullName);
+            using var expectedCreateScriptFile = File.Create(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            DacServices.GenerateCreateScript(expectedCreateScriptFile, package, packageName, deployOptions);
+            expectedCreateScriptFile.Close();
+
+            // Act - Generate script
             packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
 
             // Assert
-            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
-            File.Exists(scriptFilePath).ShouldBeTrue();
+            var expectedScriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            expectedScriptContent.ShouldNotBeNullOrEmpty();
 
-            var shouldContainReferencedTables = includeCompositeObjects == true;
+            var scriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql"));
+            scriptContent.ShouldNotBeNullOrEmpty();
 
-            var scriptContent = File.ReadAllText(scriptFilePath);
-            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBe(shouldContainReferencedTables);
-            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBe(shouldContainReferencedTables);
-
-            // Cleanup
-            tempFile.Delete();
-        }
-
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
-        [DataRow(null)]
-        public void GenerateCreateScript_CreateNewDatabase(bool? createNewDatabase)
-        {
-            // Arrange
-            var packageName = "MyPackage";
-
-            var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
-            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
-            packageBuilder.SetMetadata(packageName, "1.0.0.0");
-            packageBuilder.ValidateModel();
-
-            var deployOptions = new DacDeployOptions();
-
-            if (createNewDatabase.HasValue)
-            {
-                deployOptions.CreateNewDatabase = createNewDatabase.Value;
-            }
-
-            // Act
-            packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
-
-            // Assert
-            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
-            File.Exists(scriptFilePath).ShouldBeTrue();
-
-            var shouldCreateDatabaseInScriptFile = createNewDatabase == true;
-
-            var scriptContent = File.ReadAllText(scriptFilePath);
-            scriptContent.Contains("CREATE DATABASE [$(DatabaseName)] ").ShouldBe(shouldCreateDatabaseInScriptFile);
+            expectedScriptContent.ShouldBe(scriptContent);
 
             // Cleanup
             tempFile.Delete();
