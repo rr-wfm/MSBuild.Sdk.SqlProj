@@ -9,7 +9,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     public class PropertyParserTest
     {
         [TestMethod]
-        public void ToDacDeployOptions_WithBooleanProperties_ShouldParse()
+        public void ExtractDeployOptions_WithBooleanProperties_ShouldParse()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[]
@@ -19,7 +19,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             } };
 
             // Act
-            var deployOptions = buildOptions.ToDacDeployOptions();
+            var deployOptions = buildOptions.ExtractDeployOptions();
 
             // Assert
             deployOptions.CreateNewDatabase.ShouldBeTrue();
@@ -27,20 +27,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void ToDacDeployOptions_WithIntegerProperty_ShouldParse()
+        public void ExtractDeployOptions_WithIntegerProperty_ShouldParse()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=200" } };
 
             // Act
-            var deployOptions = buildOptions.ToDacDeployOptions();
+            var deployOptions = buildOptions.ExtractDeployOptions();
 
             // Assert
             deployOptions.CommandTimeout.ShouldBe(200);
         }
 
         [TestMethod]
-        public void ToDacDeployOptions_WithObjectTypesProperties_ShouldParse()
+        public void ExtractDeployOptions_WithObjectTypesProperties_ShouldParse()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[]
@@ -50,7 +50,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             } };
 
             // Act
-            var deployOptions = buildOptions.ToDacDeployOptions();
+            var deployOptions = buildOptions.ExtractDeployOptions();
 
             // Assert
             deployOptions.ExcludeObjectTypes.Length.ShouldBe(3);
@@ -66,26 +66,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [TestMethod]
         [DataRow("ExcludeObjectTypes=Audits;Endpoints;Queues", DisplayName = "Incorrect separator")]
         [DataRow("ExcludeObjectTypes=P1,P2,P3", DisplayName = "Unknown object types")]
-        public void ToDacDeployOptions_WithIncorrectObjectTypesProperty_ShouldThrowException(string property)
+        public void ExtractDeployOptions_WithIncorrectObjectTypesProperty_ShouldThrowException(string property)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldThrow<ArgumentException>();
         }
 
         [TestMethod]
-        public void ToDacDeployOptions_WithDacAzureDatabaseSpecificationProperty_ShouldParse()
+        public void ExtractDeployOptions_WithDacAzureDatabaseSpecificationProperty_ShouldParse()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={DacAzureEdition.DataWarehouse},20,S3" } };
 
             // Act
-            var deployOptions = buildOptions.ToDacDeployOptions();
+            var deployOptions = buildOptions.ExtractDeployOptions();
 
             // Assert
             deployOptions.DatabaseSpecification.ShouldNotBeNull();
@@ -99,39 +99,39 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow("DataWarehouse,20", "Expected at least 3 parameters for", DisplayName = "Incorrect number of parameter")]
         [DataRow("AwesomeEdition,20,S2", "Unknown edition", DisplayName = "Unknown database edition")]
         [DataRow("DataWarehouse,X20,S3", "Unable to parse maximum size", DisplayName = "Incorrect database max size")]
-        public void ToDacDeployOptions_WithIncorrectDacAzureDatabaseSpecificationProperty_ShouldThrowException(string propertyValue, string exceptionMessage)
+        public void ExtractDeployOptions_WithIncorrectDacAzureDatabaseSpecificationProperty_ShouldThrowException(string propertyValue, string exceptionMessage)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldThrow<ArgumentException>().Message.ShouldStartWith(exceptionMessage);
         }
 
         [TestMethod]
-        public void ToDacDeployOptions_WithIncorrectIntegerProperty_ShouldThrowException()
+        public void ExtractDeployOptions_WithIncorrectIntegerProperty_ShouldThrowException()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=WrongValue" } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldThrow<ArgumentException>();
         }
 
         [TestMethod]
-        public void ToDacDeployOptions_WithIncorrectBooleanProperty_ShouldThrowException()
+        public void ExtractDeployOptions_WithIncorrectBooleanProperty_ShouldThrowException()
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { "CreateNewDatabase=WrongValue" } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldThrow<FormatException>();
@@ -141,13 +141,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow("Unknown -> WrongValue", typeof(ArgumentException))]
         [DataRow("=", typeof(ArgumentException))]
         [DataRow("UnknownProperty=212", typeof(ArgumentException))]
-        public void ToDacDeployOptions_WithWronglyFormattedOrhUnknownProperty_ShouldThrowException(string property, Type exceptionType)
+        public void ExtractDeployOptions_WithWronglyFormattedOrhUnknownProperty_ShouldThrowException(string property, Type exceptionType)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldThrow(exceptionType);
@@ -157,13 +157,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow(" ")]
         [DataRow(null)]
         [DataRow("")]
-        public void ToDacDeployOptions_WithNullOrEmptyProperty_ShouldNotThrowException(string property)
+        public void ExtractDeployOptions_WithNullOrEmptyProperty_ShouldNotThrowException(string property)
         {
             // Arrange
             var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
 
             // Act
-            Action action = () => buildOptions.ToDacDeployOptions();
+            Action action = () => buildOptions.ExtractDeployOptions();
 
             // Assert
             action.ShouldNotThrow();

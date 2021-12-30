@@ -23,11 +23,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         /// <summary>
-        /// Converts the <see cref="BuildOptions"/> to a <see cref="DacDeployOptions"/> object with all properties
+        /// Extracts a <see cref="DacDeployOptions"/> from the <see cref="BuildOptions"/>
         /// </summary>
         /// <param name="options">The build options</param>
         /// <returns>The <see cref="DacDeployOptions"/> object</returns>
-        public static DacDeployOptions ToDacDeployOptions(this BuildOptions options)
+        public static DacDeployOptions ExtractDeployOptions(this BuildOptions options)
         {
             var deployOptions = new DacDeployOptions();
 

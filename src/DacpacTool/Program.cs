@@ -175,7 +175,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.GenerateCreateScript)
             {
-                var deployOptions = options.ToDacDeployOptions();
+                var deployOptions = options.ExtractDeployOptions();
                 packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
             }
 
