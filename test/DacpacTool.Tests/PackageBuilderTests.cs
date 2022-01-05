@@ -571,7 +571,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, false);
+            packageBuilder.GenerateCreateScript(tempFile, packageName, new DacDeployOptions());
 
             // Assert
             File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
@@ -581,9 +581,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
-        public void GenerateCreateScript_IncludeCompositeObjects(bool includeCompositeObjects)
+        public void GenerateCreateScript_ShouldNotModifyDeployOptions()
         {
             // Arrange
             var packageName = "MyPackage";
@@ -605,17 +603,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.AddReference(secondReference);
             packageBuilder.ValidateModel();
 
-            // Act
+            var deployOptions = new DacDeployOptions();
+            deployOptions.IncludeCompositeObjects = true;
+            deployOptions.CreateNewDatabase = true;
+
+            var expectedCreateScriptFileName = $"{packageName}_Expected_Create.sql";
+
+            // Act - Generate expected script
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, includeCompositeObjects);
+            using var package = DacPackage.Load(tempFile.FullName);
+            using var expectedCreateScriptFile = File.Create(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            DacServices.GenerateCreateScript(expectedCreateScriptFile, package, packageName, deployOptions);
+            expectedCreateScriptFile.Close();
+
+            // Act - Generate script
+            packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
 
             // Assert
-            var scriptFilePath = Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql");
-            File.Exists(scriptFilePath).ShouldBeTrue();
+            var expectedScriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            expectedScriptContent.ShouldNotBeNullOrEmpty();
 
-            var scriptContent = File.ReadAllText(scriptFilePath);
-            scriptContent.Contains("CREATE TABLE [dbo].[MyFirstTable]").ShouldBe(includeCompositeObjects);
-            scriptContent.Contains("CREATE TABLE [dbo].[MySecondTable]").ShouldBe(includeCompositeObjects);
+            var scriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql"));
+            scriptContent.ShouldNotBeNullOrEmpty();
+
+            expectedScriptContent.ShouldBe(scriptContent);
 
             // Cleanup
             tempFile.Delete();
@@ -631,11 +642,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(null, "1.0.0.0");
             packageBuilder.ValidateModel();
 
+            var buildOptions = new BuildOptions();
+            buildOptions.Output = tempFile;
+
             // Act
             packageBuilder.SaveToDisk(tempFile);
 
             // Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, false));
+            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, new DacDeployOptions()));
 
             // Cleanup
             tempFile.Delete();

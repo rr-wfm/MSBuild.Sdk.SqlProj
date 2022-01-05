@@ -157,10 +157,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("AllowDropBlockingAssemblies", "true");
+            packageDeployer.SetDeployProperties(new []{"AllowDropBlockingAssemblies=True"});
 
             // Assert
             packageDeployer.DeployOptions.AllowDropBlockingAssemblies.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void SetProperty_SqlCommandVariableValues_ShouldThrowException()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Assert
+            Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("SqlCommandVariableValues=var1,var2"));
         }
 
         [TestMethod]
@@ -170,7 +180,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("AllowDropBlockingAssemblies", "ARandomString"));
+            Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("AllowDropBlockingAssemblies=ARandomString"));
         }
 
         [TestMethod]
@@ -180,7 +190,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("DoNotDropObjectTypes", "Aggregates,Assemblies");
+            packageDeployer.SetDeployProperty("DoNotDropObjectTypes=Aggregates,Assemblies");
 
             // Assert
             packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Aggregates, ObjectType.Assemblies });
@@ -193,7 +203,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("ExcludeObjectTypes", "Contracts,Endpoints");
+            packageDeployer.SetDeployProperty("ExcludeObjectTypes=Contracts,Endpoints");
 
             // Assert
             packageDeployer.DeployOptions.ExcludeObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Contracts, ObjectType.Endpoints });
@@ -206,7 +216,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetProperty("DatabaseSpecification", "Hyperscale,1024,P15");
+            packageDeployer.SetDeployProperty("DatabaseSpecification=Hyperscale,1024,P15");
 
             // Assert
             packageDeployer.DeployOptions.DatabaseSpecification.Edition.ShouldBe(DacAzureEdition.Hyperscale);
@@ -222,7 +232,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packagePath = BuildSimpleModel();
 
             // Act
-            Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "MyFancyEdition;1024;P15"));
+            Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("DatabaseSpecification=MyFancyEdition;1024;P15"));
 
             // Assert
             packageDeployer.DeployOptions.DatabaseSpecification.Edition.ShouldBe(DacAzureEdition.Default);
@@ -237,7 +247,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "hyperscale;NotAnInteger;P15"));
+            Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("DatabaseSpecification=hyperscale;NotAnInteger;P15"));
 
             // Assert
             packageDeployer.DeployOptions.DatabaseSpecification.Edition.ShouldBe(DacAzureEdition.Default);
@@ -252,7 +262,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            Should.Throw<ArgumentException>(() => packageDeployer.SetProperty("DatabaseSpecification", "hyperscale"));
+            Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("DatabaseSpecification=hyperscale"));
 
             // Assert
             packageDeployer.DeployOptions.DatabaseSpecification.Edition.ShouldBe(DacAzureEdition.Default);
