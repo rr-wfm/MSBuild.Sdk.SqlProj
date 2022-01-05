@@ -161,7 +161,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             EnsureModelCreated();
             EnsureModelValidated();
             EnsureMetadataCreated();
-            
+
             // Check if the file already exists
             if (outputFile.Exists)
             {
@@ -347,9 +347,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
-        
+
         public bool TreatTSqlWarningsAsErrors { get; set; }
-        
+
         public void AddWarningsToSuppress(string suppressionList)
         {
             _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
@@ -369,7 +369,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     list.AddRange(warningList.FindAll((x) => !list.Contains(x)));
                 }
             }
-                
+
         }
 
         private List<int> ParseSuppressionList(string suppressionList)
@@ -389,7 +389,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, bool includeCompositeObjects)
+        public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, DacDeployOptions deployOptions)
         {
             if (string.IsNullOrWhiteSpace(databaseName))
             {
@@ -402,8 +402,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             using var package = DacPackage.Load(dacpacFile.FullName);
             using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
 
-            var options = new DacDeployOptions() { IncludeCompositeObjects = includeCompositeObjects };
-            DacServices.GenerateCreateScript(file, package, databaseName, options);
+            DacServices.GenerateCreateScript(file, package, databaseName, deployOptions);
         }
     }
 }

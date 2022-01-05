@@ -11,6 +11,8 @@
     <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
     <GenerateCreateScript>True</GenerateCreateScript>
     <TargetDatabaseName>MyDatabaseName</TargetDatabaseName>
+    <CreateNewDatabase>True</CreateNewDatabase>
+    <IncludeCompositeObjects>False</IncludeCompositeObjects>
   </PropertyGroup>
 
   <PropertyGroup>
