@@ -26,7 +26,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <NoPackageAnalysis>True</NoPackageAnalysis>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecFile Condition="Exists('$(MSBuildProjectName).nuspec')">$(MSBuildProjectName).nuspec"</NuspecFile>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
@@ -35,6 +35,19 @@
 
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
+    
+    <Target Name="SFCustomizePacking" AfterTargets="CoreBuild">
+        <ItemGroup Label="DacpacFilesToCopyBuild" Condition="'$(IncludeAllDacPacs)'!='true'">
+            <Content Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
+                <PackageCopyToOutput>true</PackageCopyToOutput>
+            </Content>
+        </ItemGroup>
+        <ItemGroup Label="DacpacFilesToCopyAll" Condition="'$(IncludeAllDacPacs)'=='true'">
+            <Content Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/">
+                <PackageCopyToOutput>true</PackageCopyToOutput>
+            </Content>
+        </ItemGroup>
+    </Target>
 
   <ItemGroup>
     <Content Include="**/*.sql">
