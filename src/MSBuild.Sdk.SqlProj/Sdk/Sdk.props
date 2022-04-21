@@ -38,12 +38,12 @@
     
     <Target Name="SFCustomizePacking" AfterTargets="CoreBuild">
         <ItemGroup Label="DacpacFilesToCopyBuild" Condition="'$(IncludeAllDacPacs)'!='true'">
-            <Content Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
+            <Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
                 <PackageCopyToOutput>true</PackageCopyToOutput>
             </Content>
         </ItemGroup>
         <ItemGroup Label="DacpacFilesToCopyAll" Condition="'$(IncludeAllDacPacs)'=='true'">
-            <Content Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/">
+            <Content Include="$(OutputPath)*.dacpac" Pack="true" PackagePath="tools/">
                 <PackageCopyToOutput>true</PackageCopyToOutput>
             </Content>
         </ItemGroup>

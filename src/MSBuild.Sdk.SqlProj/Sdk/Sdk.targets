@@ -61,8 +61,7 @@
           tags=$(PackageTags);
           configuration=$(Configuration);
           tfm=$(TargetFramework);
-          packagetype=Dacpac;
-          $(NuspecProperties)
+          packagetype=Dacpac
       </NuspecProperties>
     </PropertyGroup>
   </Target>
