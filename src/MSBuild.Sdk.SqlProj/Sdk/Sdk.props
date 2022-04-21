@@ -37,16 +37,19 @@
   <Target Name="CompileDesignTime" />
     
     <Target Name="SFCustomizePacking" AfterTargets="CoreBuild">
-        <ItemGroup Label="DacpacFilesToCopyBuild" Condition="'$(IncludeAllDacPacs)'!='true'">
-            <Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
-                <PackageCopyToOutput>true</PackageCopyToOutput>
-            </Content>
-        </ItemGroup>
-        <ItemGroup Label="DacpacFilesToCopyAll" Condition="'$(IncludeAllDacPacs)'=='true'">
-            <Content Include="$(OutputPath)*.dacpac" Pack="true" PackagePath="tools/">
-                <PackageCopyToOutput>true</PackageCopyToOutput>
-            </Content>
-        </ItemGroup>
+		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'!='true'">
+			<Content Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)\$(MSBuildProjectName).dacpac')">
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+			<Content Include="$(OutputPath)\$(AssemblyName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)\$(AssemblyName).dacpac')">
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+		</ItemGroup>
+		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'=='true'">
+			<Content Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/">
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+		</ItemGroup>
     </Target>
 
   <ItemGroup>
