@@ -46,7 +46,8 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties;_PackageDatabaseResults</GenerateNuspecDependsOn>
+    <PackageType Condition="'$(PackageType)'==''" >dacpac</PackageType>
   </PropertyGroup>
 
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">

@@ -36,21 +36,29 @@
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
     
-    <Target Name="SFCustomizePacking" AfterTargets="CoreBuild">
+	<Target Name="_PackageDatabaseResults" Condition="'$(IsDatabaseProject)'=='True'" BeforeTargets="_GetPackageFiles">
+		<Message Text="===== _PackageDatabaseResults ===== "  Importance="high"/>
+		<Message Text="===== _PackageDatabaseResults: IncludeAllDacPac===== "  Importance="high" Condition="'$(IncludeAllDacPacs)'!='true'"/>
 		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'!='true'">
-			<Content Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)\$(MSBuildProjectName).dacpac')">
+			
+			<Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
-			<Content Include="$(OutputPath)\$(AssemblyName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)\$(AssemblyName).dacpac')">
+			<Content Include="$(OutputPath)$(AssemblyName).dacpac" Pack="true" PackagePath="tools/">
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
+			<Content Include="$(OutputPath)$(PackageId).dacpac" Pack="true" PackagePath="tools/">
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+			
 		</ItemGroup>
 		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'=='true'">
-			<Content Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/">
+			<Content Include="$(OutputPath)*.dacpac" Pack="true" PackagePath="tools/">
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
 		</ItemGroup>
-    </Target>
+	</Target>
+
 
   <ItemGroup>
     <Content Include="**/*.sql">
