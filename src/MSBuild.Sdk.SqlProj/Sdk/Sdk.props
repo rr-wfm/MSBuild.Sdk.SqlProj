@@ -39,18 +39,23 @@
 	<Target Name="_PackageDatabaseResults" Condition="'$(IsDatabaseProject)'=='True'" BeforeTargets="_GetPackageFiles">
 		<Message Text="===== _PackageDatabaseResults ===== "  Importance="high"/>
 		<Message Text="===== _PackageDatabaseResults: IncludeAllDacPac===== "  Importance="high" Condition="'$(IncludeAllDacPacs)'!='true'"/>
+        
+		<Message Text="===== MSBuildProjectName: $(MSBuildProjectName) ===== "  Importance="high"/>
+		<Message Text="===== AssemblyName: $(AssemblyName) ===== "  Importance="high"/>
+		<Message Text="===== PackageId: $(PackageId) ===== "  Importance="high"/>
+        
 		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'!='true'">
 			
-			<Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/">
+			<Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)$(MSBuildProjectName).dacpac')" >
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
-			<Content Include="$(OutputPath)$(AssemblyName).dacpac" Pack="true" PackagePath="tools/">
+			<Content Include="$(OutputPath)$(AssemblyName).dacpac" Pack="true" PackagePath="tools/" Condition="'$(AssemblyName)'!='$(MSBuildProjectName)' and Exists('$(OutputPath)$(AssemblyName).dacpac')" >
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
-			<Content Include="$(OutputPath)$(PackageId).dacpac" Pack="true" PackagePath="tools/">
+			<Content Include="$(OutputPath)$(PackageId).dacpac" Pack="true" PackagePath="tools/" Condition="'$(AssemblyName)'!='$(PackageId)' and Exists('$(OutputPath)$(PackageId).dacpac')" >
 				<PackageCopyToOutput>true</PackageCopyToOutput>
 			</Content>
-			
+            
 		</ItemGroup>
 		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'=='true'">
 			<Content Include="$(OutputPath)*.dacpac" Pack="true" PackagePath="tools/">
