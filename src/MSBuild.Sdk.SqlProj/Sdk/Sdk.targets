@@ -259,7 +259,7 @@
   </Target>
 
   <!-- Allows a project to set to publish on build for their sql project (so they can deploy it on build that is if they want). -->
-  <Target Name="PublishSqlProject" BeforeTargets="CoreCompile" DependsOnTargets="Publish" Condition="'$(PublishOnBuild)' != 'False' And '$(DeployOnPublish)' != 'False'" />
+  <Target Name="PublishSqlProject" BeforeTargets="CoreCompile" DependsOnTargets="Publish" Condition="'$(PublishOnBuild)' != 'False'" />
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
   <Target Name="Publish" DependsOnTargets="Build" Condition="'$(DeployOnPublish)' != 'False'">
