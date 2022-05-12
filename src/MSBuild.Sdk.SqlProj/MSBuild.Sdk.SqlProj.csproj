@@ -1,5 +1,5 @@
 
-<Project Sdk="Microsoft.Build.NoTargets/3.3.0">
+<Project Sdk="Microsoft.Build.NoTargets/3.4.0">
 
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
