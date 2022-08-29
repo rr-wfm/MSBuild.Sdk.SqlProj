@@ -31,7 +31,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ValidateReference(referenceFile);
 
             Console.WriteLine($"Adding reference to {referenceFile}");
-            Model.AddReference(referenceFile, null);
+            Model.AddReference(referenceFile, null, false);
         }
 
         public void AddExternalReference(string referenceFile, string externalParts)
@@ -42,7 +42,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ValidateReference(referenceFile);
 
             Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts}");
-            Model.AddReference(referenceFile, externalParts);
+            Model.AddReference(referenceFile, externalParts, false);
+        }
+
+        public void AddExternalReference(string referenceFile, string externalParts, bool suppressErrorsForMissingDependencies)
+        {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+
+            ValidateReference(referenceFile);
+
+            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
         private void ValidateReference(string referenceFile)
