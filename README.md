@@ -325,6 +325,27 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 
 > Note: We do not support adding a `ProjectReference` to an existing `.sqlproj` file.
 
+
+## Circular References and SuppressMissingDependenciesErrors
+In order to solve circular references between databases that may have been incorrectly setup, it is possible to add
+`SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [ProjectReferences](#project-references)):
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/2.0.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DatabaseVariableLiteralValue="SomeDatabase" SuppressMissingDependenciesErrors="True"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../MyOtherProject/MyOtherProject.csproj" DatabaseVariableLiteralValue="SomeOtherDatabase" SuppressMissingDependenciesErrors="True"/>
+    </ItemGroup>
+</Project>
+```
+
 ## Packaging support
 `MSBuild.Sdk.SqlProj` supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command. In order for this to work, you'll need to add a `.nuspec` file next to your project file with the same name. For example, if your `.csproj` is called `TestProject.csproj` you'll need to add a `TestProject.nuspec` file in the same folder. Fill this file with the following contents and replace the placeholder with the appropriate value:
 
