@@ -120,6 +120,7 @@
 
         <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
         <DatabaseVariableLiteralValue>%(PackageReference.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
+        <SuppressMissingDependenciesErrors>%(PackageReference.SuppressMissingDependenciesErrors)</SuppressMissingDependenciesErrors>
         <!-- Constructs variable to make external parts -->
         <ExternalParts>dbl=%(PackageReference.DatabaseVariableLiteralValue)|dbv=%(PackageReference.DatabaseSqlCmdVariable)|srv=%(PackageReference.ServerSqlCmdVariable)</ExternalParts>
       </_ResolvedPackageReference>
@@ -128,6 +129,7 @@
       <_ResolvedProjectReference Include="%(_ResolvedProjectReferencePaths.Identity)">
         <DacpacFile>%(_ResolvedProjectReferencePaths.Identity)</DacpacFile>
         <DatabaseVariableLiteralValue>%(_ResolvedProjectReferencePaths.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
+        <SuppressMissingDependenciesErrors>%(_ResolvedProjectReferencePaths.SuppressMissingDependenciesErrors)</SuppressMissingDependenciesErrors>
         <!-- Constructs variable to make external parts -->
         <ExternalParts>dbl=%(_ResolvedProjectReferencePaths.DatabaseVariableLiteralValue)|dbv=%(_ResolvedProjectReferencePaths.DatabaseSqlCmdVariable)|srv=%(_ResolvedProjectReferencePaths.ServerSqlCmdVariable)</ExternalParts>
       </_ResolvedProjectReference>
@@ -215,7 +217,7 @@
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
-      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts)&quot;', ' ')</ReferenceArguments>
+      <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts);%(SuppressMissingDependenciesErrors)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
       <DeployPropertyArguments>@(DeployPropertyNames->'-dp %(Identity)=%(PropertyValue)', ' ')</DeployPropertyArguments>

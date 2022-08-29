@@ -35,15 +35,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
+        public TestModelBuilder AddView(string view, string body)
+        {
+            var viewDefinition = $"CREATE VIEW [{view}] AS {body}";
+            sqlModel.AddObjects(viewDefinition);
+            return this;
+        }
+
         public TestModelBuilder AddStoredProcedureFromFile(string filename)
         {
             sqlModel.AddOrUpdateObjects(File.ReadAllText(filename), filename, new TSqlObjectOptions());
             return this;
         }
 
-        public TestModelBuilder AddReference(string path, string externalParts = "")
+        public TestModelBuilder AddReference(string path, string externalParts = "", bool suppressErrors = false)
         {
-            sqlModel.AddReference(path, externalParts);
+            sqlModel.AddReference(path, externalParts, suppressErrors);
             return this;
         }
 

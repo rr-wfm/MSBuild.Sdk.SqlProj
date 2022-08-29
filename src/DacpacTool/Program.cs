@@ -101,14 +101,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 foreach (var reference in options.Reference)
                 {
-                    string[] referenceDetails = reference.Split(';', 2, StringSplitOptions.RemoveEmptyEntries);
+                    string[] referenceDetails = reference.Split(';', 3, StringSplitOptions.RemoveEmptyEntries);
                     if (referenceDetails.Length == 1)
                     {
                         packageBuilder.AddReference(referenceDetails[0]);
                     }
-                    else
+                    if (referenceDetails.Length == 2)
                     {
                         packageBuilder.AddExternalReference(referenceDetails[0], referenceDetails[1]);
+                    }
+                    else
+                    {
+                        if (!bool.TryParse(referenceDetails[2], out bool suppressErrorsForMissingDependencies))
+                        {
+                            throw new ArgumentException(
+                                $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
+                        }
+                        packageBuilder.AddExternalReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
                     }
                 }
             }
