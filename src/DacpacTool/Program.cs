@@ -108,7 +108,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     }
                     if (referenceDetails.Length == 2)
                     {
-                        packageBuilder.AddExternalReference(referenceDetails[0], referenceDetails[1]);
+                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
                     }
                     else
                     {
@@ -117,7 +117,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                             throw new ArgumentException(
                                 $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
                         }
-                        packageBuilder.AddExternalReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
+                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
                     }
                 }
             }

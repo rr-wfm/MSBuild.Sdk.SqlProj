@@ -115,7 +115,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddExternalReference(reference, "SomeOtherDatabase");
+            packageBuilder.AddReference(reference, "SomeOtherDatabase");
 
             // Assert
             var referencingStoredProcedure = "CREATE PROCEDURE [MyOtherStoredProcedure] AS BEGIN EXEC [SomeOtherDatabase].[dbo].[MyStoredProcedure] END";
@@ -142,7 +142,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddExternalReference(model1File, "Model1", true);
+            packageBuilder.AddReference(model1File, "Model1", true);
             packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
@@ -170,7 +170,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddExternalReference(model1File, "Model1", false);
+            packageBuilder.AddReference(model1File, "Model1", false);
             packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
