@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute.ExceptionExtensions;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
@@ -114,15 +115,72 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddExternalReference(reference, "SomeOtherDatabase");
+            packageBuilder.AddReference(reference, "SomeOtherDatabase");
 
             // Assert
             var referencingStoredProcedure = "CREATE PROCEDURE [MyOtherStoredProcedure] AS BEGIN EXEC [SomeOtherDatabase].[dbo].[MyStoredProcedure] END";
             packageBuilder.Model.AddObjects(referencingStoredProcedure);
-            packageBuilder.Model.Validate().Any().ShouldBeFalse();
+            packageBuilder.Model.Validate().ShouldBeEmpty();
 
             // Cleanup
             File.Delete(reference);
+        }
+
+        [TestMethod]
+        public void AddReference_CircularReferenceCanLoadWhenSuppressed()
+        {
+            // Arrange
+            var model1 = new TestModelBuilder()
+                .AddTable("Table1", ("Col1", "nvarchar(100)"));
+            var model2 = new TestModelBuilder()
+                .AddTable("Table2", ("Col2", "nvarchar(100)"));
+            var model2File = model2.SaveAsPackage();
+            model1.AddReference(model2File, "Model2", true);
+            model1.AddView("View1", "SELECT Col2 FROM [Model2].[dbo].[Table2]");
+            var model1File = model1.SaveAsPackage();
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddReference(model1File, "Model1", true);
+            packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
+            DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
+
+            // Assert Does not throw
+            TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions());
+
+            // Cleanup
+            File.Delete(model1File);
+            File.Delete(model2File);
+        }
+
+        [TestMethod]
+        public void AddReference_CircularReferenceThrowsWhenNotSuppressed()
+        {
+            // Arrange
+            var model1 = new TestModelBuilder()
+                .AddTable("Table1", ("Col1", "nvarchar(100)"));
+            var model2 = new TestModelBuilder()
+                .AddTable("Table2", ("Col2", "nvarchar(100)"));
+            var model2File = model2.SaveAsPackage();
+            model1.AddReference(model2File, "Model2", false);
+            model1.AddView("View1", "SELECT Col2 FROM [Model2].[dbo].[Table2]");
+            var model1File = model1.SaveAsPackage();
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddReference(model1File, "Model1", false);
+            packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
+            DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
+
+            // Assert
+            Assert.ThrowsException<DacModelException>(() =>
+                TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions()));
+
+            // Cleanup
+            File.Delete(model1File);
+            File.Delete(model2File);
         }
 
         [TestMethod]

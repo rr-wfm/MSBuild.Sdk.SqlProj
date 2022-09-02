@@ -23,26 +23,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Console.WriteLine($"Using SQL Server version {version}");
         }
 
-        public void AddReference(string referenceFile)
+        public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
 
             ValidateReference(referenceFile);
 
-            Console.WriteLine($"Adding reference to {referenceFile}");
-            Model.AddReference(referenceFile, null);
-        }
-
-        public void AddExternalReference(string referenceFile, string externalParts)
-        {
-            // Ensure that the model has been created
-            EnsureModelCreated();
-
-            ValidateReference(referenceFile);
-
-            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts}");
-            Model.AddReference(referenceFile, externalParts);
+            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
         private void ValidateReference(string referenceFile)

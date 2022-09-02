@@ -96,7 +96,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return streamReader.ReadToEnd();
         }
 
-        public static void AddReference(this TSqlModel model, string referencePath, string externalParts)
+        public static void AddReference(this TSqlModel model, string referencePath, string externalParts, bool suppressErrorsForMissingDependencies)
         {
             var dataSchemaModel = GetDataSchemaModel(model);
 
@@ -104,7 +104,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
             setMetadataMethod.Invoke(customData, new object[] { "FileName", referencePath });
             setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(referencePath) });
-            setMetadataMethod.Invoke(customData, new object[] { "SuppressMissingDependenciesErrors", "False" });
+            setMetadataMethod.Invoke(customData,
+                new object[] { "SuppressMissingDependenciesErrors", suppressErrorsForMissingDependencies.ToString() });
 
             if (!string.IsNullOrWhiteSpace(externalParts))
             {
