@@ -18,7 +18,7 @@
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="161.47027.0" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.8.0" />
     <ProjectReference Include="$(SqlToolsPath)/Microsoft.SqlTools.Hosting/Microsoft.SqlTools.Hosting.csproj" />
     <Compile Include="$(ManagedBatchParserPath)/Localization/*.cs" />
     <EmbeddedResource Include="$(ManagedBatchParserPath)/Localization/sr.resx" LogicalName="Microsoft.SqlTools.ManagedBatchParser.Localization.SR.resources" />
