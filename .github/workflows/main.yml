@@ -181,7 +181,7 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-18.04' && matrix.dotnet == '6.0.x' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' && matrix.dotnet == '6.0.x' }}
       uses: actions/upload-artifact@v3
       with:
         name: dacpac-package
@@ -196,7 +196,7 @@ jobs:
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
   deploy-sqlpackage:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     services:
       sqlserver:
@@ -246,7 +246,7 @@ jobs:
 
   # Attempt to deploy a project to a SQL Server instance running in a container using dotnet publish
   deploy-publish:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     services:
       sqlserver:
@@ -315,7 +315,7 @@ jobs:
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     if: startsWith(github.ref, 'refs/heads/release/')
     needs:
     - deploy-sqlpackage
