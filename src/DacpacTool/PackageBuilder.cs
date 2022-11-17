@@ -50,17 +50,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void AddSqlCmdVariables(string[] variableNames)
+        public void AddSqlCmdVariables(string[] variables)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            foreach (var variableName in variableNames)
+            foreach (var variable in variables)
             {
-                Console.WriteLine($"Adding SqlCmd variable {variableName}");
+                var varWithValue = variable.Split('=');
+                var variableName = varWithValue[0];
+
+                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
+                {
+                    Console.WriteLine($"Adding SqlCmd variable {variableName} with default value {varWithValue[1]}");
+                }
+                else
+                {
+                    Console.WriteLine($"Adding SqlCmd variable {variableName}");
+                }
             }
 
-            Model.AddSqlCmdVariables(variableNames);
+            Model.AddSqlCmdVariables(variables);
         }
 
         public void AddInputFile(FileInfo inputFile)

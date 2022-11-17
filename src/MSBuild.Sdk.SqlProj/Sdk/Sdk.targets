@@ -221,7 +221,7 @@
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
       <DeployPropertyArguments>@(DeployPropertyNames->'-dp %(Identity)=%(PropertyValue)', ' ')</DeployPropertyArguments>
-      <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)', ' ')</SqlCmdVariableArguments>
+      <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=%(DefaultValue)', ' ')</SqlCmdVariableArguments>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
