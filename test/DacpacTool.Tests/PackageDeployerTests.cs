@@ -67,6 +67,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void EncryptDefault()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Act
+            packageDeployer.UseEncrypt(false);
+
+            // Assert
+            packageDeployer.ConnectionStringBuilder.Encrypt.ShouldBe(Microsoft.Data.SqlClient.SqlConnectionEncryptOption.Optional);
+        }
+
+        [TestMethod]
         public void UseSqlServerAuthenticationNoPasswordPrompts()
         {
             // Arrange
