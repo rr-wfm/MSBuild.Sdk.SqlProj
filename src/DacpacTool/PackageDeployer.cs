@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
-        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder { Encrypt = false };
+        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
         public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
 
         public void UseTargetServer(string targetServer)
@@ -53,6 +53,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             ConnectionStringBuilder.IntegratedSecurity = true;
             _console.WriteLine("Using Windows Authentication");
+        }
+
+        public void UseEncrypt(bool encrypt)
+        {
+            ConnectionStringBuilder.Encrypt = encrypt;
+            _console.WriteLine($"Using encrypt: {encrypt}");
         }
 
         public void SetSqlCmdVariable(string key, string value)
