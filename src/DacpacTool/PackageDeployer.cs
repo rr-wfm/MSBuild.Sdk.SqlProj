@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Data.SqlClient;
@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
-        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
+        public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder { Encrypt = false };
         public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
 
         public void UseTargetServer(string targetServer)
