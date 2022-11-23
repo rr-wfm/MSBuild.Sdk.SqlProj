@@ -62,6 +62,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--property", "-p" }, "Properties used to control the deployment"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) and their associated values, separated by an equals sign."),
                 new Option<bool>(new string[] { "--runScriptsFromReferences", "-sff" }, "Whether to run pre- and postdeployment scripts from references"),
+                new Option<bool>(new string[] { "--encrypt", "-e" }, "Encrypt the connection, defaults to false"),
 #if DEBUG
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
@@ -228,6 +229,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     deployer.SetDeployProperties(options.Property);
                 }
+
+                deployer.UseEncrypt(options.Encrypt);
 
                 if (options.SqlCmdVar != null)
                 {
