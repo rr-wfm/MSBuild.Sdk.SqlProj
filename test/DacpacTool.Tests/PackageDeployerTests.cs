@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.SqlServer.Dac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,6 +51,32 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageDeployer.ConnectionStringBuilder.IntegratedSecurity.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void UseEncrypt()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Act
+            packageDeployer.UseEncrypt(true);
+
+            // Assert
+            packageDeployer.ConnectionStringBuilder.Encrypt.ShouldBe(Microsoft.Data.SqlClient.SqlConnectionEncryptOption.Mandatory);
+        }
+
+        [TestMethod]
+        public void EncryptDefault()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Act
+            packageDeployer.UseEncrypt(false);
+
+            // Assert
+            packageDeployer.ConnectionStringBuilder.Encrypt.ShouldBe(Microsoft.Data.SqlClient.SqlConnectionEncryptOption.Optional);
         }
 
         [TestMethod]

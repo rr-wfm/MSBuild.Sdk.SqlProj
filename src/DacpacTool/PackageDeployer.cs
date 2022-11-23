@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Data.SqlClient;
@@ -53,6 +53,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             ConnectionStringBuilder.IntegratedSecurity = true;
             _console.WriteLine("Using Windows Authentication");
+        }
+
+        public void UseEncrypt(bool encrypt)
+        {
+            ConnectionStringBuilder.Encrypt = encrypt;
+            _console.WriteLine($"Using encrypt: {encrypt}");
         }
 
         public void SetSqlCmdVariable(string key, string value)

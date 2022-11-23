@@ -220,17 +220,19 @@ jobs:
         name: dacpac-package
         path: ~/dacpac-package
 
-    # Download sqlpackage
-    - name: download sqlpackage
-      run: >
-        curl -L https://go.microsoft.com/fwlink/?linkid=2113331 --output sqlpackage.zip &&
-        unzip sqlpackage.zip -d ~/sqlpackage &&
-        chmod a+x ~/sqlpackage/sqlpackage
+    # Setup .NET SDK
+    - uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+
+    # Install Microsoft.SqlPackage
+    - name: install microsoft.sqlpackage
+      run: dotnet tool install --tool-path . microsoft.sqlpackage
 
     # Run sqlpackage
     - name: sqlpackage publish
       run: >
-        ~/sqlpackage/sqlpackage
+        sqlpackage
         /Action:Publish
         /SourceFile:$HOME/dacpac-package/TestProjectWithSDKRef.dacpac
         /Properties:IncludeCompositeObjects=True
