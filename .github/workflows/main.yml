@@ -240,6 +240,7 @@ jobs:
         /TargetUser:sa
         /TargetPassword:JdMsKZPBBA8kVFXVrj8d
         /TargetDatabaseName:TestProjectWithSDKRef
+        /TargetEncryptConnection:False
 
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
