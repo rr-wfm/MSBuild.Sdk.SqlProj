@@ -54,9 +54,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
-        public TestModelBuilder AddSqlCmdVariables(string[] variableNames)
+        public TestModelBuilder AddSqlCmdVariables(string[] variables)
         {
-            sqlModel.AddSqlCmdVariables(variableNames);
+            foreach (var variable in variables)
+            {
+                var varWithValue = variable.Split('=', 2);
+                var variableName = varWithValue[0];
+                var variableValue = string.Empty;
+                
+                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
+                    variableValue = varWithValue[1];
+
+                sqlModel.AddSqlCmdVariable(variableName, variableValue);
+            }
             return this;
         }
 
