@@ -212,11 +212,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             foreach (var variable in variables)
             {
-                var values = variable.Split('=');
-                var variableName = values[0];
+                var varWithValue = variable.Split('=', 2);
+                var variableName = varWithValue[0];
                 string variableDefaultValue = string.Empty;
-                if (values.Length > 1)
-                    variableDefaultValue = values[1];
+
+                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
+                {
+                    variableDefaultValue = varWithValue[1];
+                    Console.WriteLine($"Adding SqlCmd variable {variableName} with default value {variableDefaultValue}");
+                }
+                else
+                    Console.WriteLine($"Adding SqlCmd variable {variableName}");
+
                 var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
                 setMetadataMethod.Invoke(customData, new object[] { variableName, variableDefaultValue });
             }

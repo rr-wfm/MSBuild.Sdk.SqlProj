@@ -55,21 +55,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            foreach (var variable in variables)
-            {
-                var varWithValue = variable.Split('=');
-                var variableName = varWithValue[0];
-
-                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
-                {
-                    Console.WriteLine($"Adding SqlCmd variable {variableName} with default value {varWithValue[1]}");
-                }
-                else
-                {
-                    Console.WriteLine($"Adding SqlCmd variable {variableName}");
-                }
-            }
-
             Model.AddSqlCmdVariables(variables);
         }
 
