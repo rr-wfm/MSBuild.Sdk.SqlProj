@@ -223,6 +223,45 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void AddSqlCmdvariableWithDefaultValue()
+        {
+            // Arrange
+            var first = "DbReader=dbReaderValue";
+            var second = "DbWriter=dbWriterValue";
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddSqlCmdVariables(new string[] { first, second });
+
+            // Assert
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+            var headerParser = new DacpacHeaderParser.HeaderParser(tempFile.FullName);
+
+            headerParser.GetCustomData()
+                .Where(d => d.Category == "SqlCmdVariables"
+                    && d.Type == "SqlCmdVariable")
+                .SelectMany(d => d.Items)
+                .Where(i => i.Name == "DbReader"
+                    && i.Value == "dbReaderValue")
+                .ToList().Count.ShouldBe(1);
+
+            headerParser.GetCustomData()
+                .Where(d => d.Category == "SqlCmdVariables"
+                    && d.Type == "SqlCmdVariable")
+                .SelectMany(d => d.Items)
+                .Where(i => i.Name == "DbWriter"
+                    && i.Value == "dbWriterValue")
+                .ToList().Count.ShouldBe(1);
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
         public void AddPreDeployment_FilesExist()
         {
             // Arrange

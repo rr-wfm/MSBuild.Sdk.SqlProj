@@ -204,16 +204,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public static void AddSqlCmdVariables(this TSqlModel model, string[] variableNames)
+        public static void AddSqlCmdVariables(this TSqlModel model, string[] variables)
         {
             var dataSchemaModel = GetDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "SqlCmdVariables", "SqlCmdVariable");
 
-            foreach (var variableName in variableNames)
+            foreach (var variable in variables)
             {
+                var varWithValue = variable.Split('=', 2);
+                var variableName = varWithValue[0];
+                string variableDefaultValue = string.Empty;
+
+                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
+                {
+                    variableDefaultValue = varWithValue[1];
+                    Console.WriteLine($"Adding SqlCmd variable {variableName} with default value {variableDefaultValue}");
+                }
+                else
+                    Console.WriteLine($"Adding SqlCmd variable {variableName}");
+
                 var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-                setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
+                setMetadataMethod.Invoke(customData, new object[] { variableName, variableDefaultValue });
             }
 
             AddCustomData(dataSchemaModel, customData);
