@@ -118,7 +118,8 @@
         -->
         <PhysicalLocation Condition="'%(_ResolvedPackageReference.PhysicalLocation)'==''">$([System.String]::new('$(NuGetPackageRoot)%(PackageReference.Identity)/%(PackageReference.Version)').ToLower())</PhysicalLocation>
 
-        <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(Identity).dacpac</DacpacFile>
+        <DacpacFile>%(_ResolvedPackageReference.PhysicalLocation)/tools/%(PackageReference.Identity).dacpac</DacpacFile>
+        <DacpacFile Condition="Exists('%(_ResolvedPackageReference.PhysicalLocation)/tools/%(PackageReference.DacpacName).dacpac')">%(_ResolvedPackageReference.PhysicalLocation)/tools/%(PackageReference.DacpacName).dacpac</DacpacFile>
         <DatabaseVariableLiteralValue>%(PackageReference.DatabaseVariableLiteralValue)</DatabaseVariableLiteralValue>
         <SuppressMissingDependenciesErrors>%(PackageReference.SuppressMissingDependenciesErrors)</SuppressMissingDependenciesErrors>
         <!-- Constructs variable to make external parts -->
