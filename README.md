@@ -42,7 +42,7 @@ dotnet new sqlproj -s Sql130
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <SqlServerVersion>Sql130</SqlServerVersion>
@@ -92,7 +92,7 @@ If you already have a SSDT (.sqlproj) project in your solution, you can keep tha
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -110,7 +110,7 @@ Like `.sqlproj` projects  `MSBuild.Sdk.SqlProj` supports controlling T-SQL build
 Treating warnings as errors can be optionally enabled by adding a property `TreatTSqlWarningsAsErrors` to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
         ...
@@ -122,7 +122,7 @@ Treating warnings as errors can be optionally enabled by adding a property `Trea
 To suppress specific warnings from being treated as errors, add a comma-separated list of warning codes to `SuppressTSqlWarnings` property in the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <SuppressTSqlWarnings>71558,71502</SuppressTSqlWarnings>
         <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
@@ -134,7 +134,7 @@ To suppress specific warnings from being treated as errors, add a comma-separate
 You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` for this file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -154,7 +154,7 @@ Support for pre- and post deployment scripts has been added in version 1.1.0. Th
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -171,7 +171,7 @@ It is important to note that scripts in the `Pre-Deployment` and `Post-Deploymen
 By default the pre- and/or post-deployment script of referenced packages (both [PackageReference](#package-references) and [ProjectReference](#project-references)) are not run when using `dotnet publish`. As of version 1.11.0 this can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <RunScriptsFromReferences>True</RunScriptsFromReferences>
         ...
@@ -187,7 +187,7 @@ By default the pre- and/or post-deployment script of referenced packages (both [
 Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -211,7 +211,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -222,10 +222,29 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
-It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
+It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference` (introduced in version 2.5.0). For example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>Sql160</SqlServerVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SqlServer.Dacpacs" Version="160.0.0" DacpacName="master" />
+    </ItemGroup>
+</Project>
+```
+
+This will add a reference to the `tools\master.dacpac` file inside the [Microsoft.SqlServer.Dacpacs](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs) package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
+
+> Note: The above example also demonstrates how to reference objects within the `master` and `msdb` system databases, by using the Microsoft provided packages. It is recommended to use the same version of those packages as the `SqlServerVersion` you are targeting. Also note that for the Azure and Synapse flavors of SQL Server there are dedicated packages: `Microsoft.SqlServer.Dacpacs.Azure` and `Microsoft.SqlServer.Dacpacs.Synapse` respectively.
+
+By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -242,7 +261,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 >Note: Don't forget to define appropriate [SQLCMD variables](#sqlcmd-variables)
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -264,7 +283,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 </Project>
 ```
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[$(SomeOtherServer)].[$(SomeOtherDatabase)].[<schema>].[<object>]` syntax.
-Also you can combine `ServerSqlCmdVariable` with `DatabaseVariableLiteralValue` and use  `[$(SomeOtherServer)].[SomeOtherDatabase].[<schema>].[<object>]` syntax
+Also you can combine `ServerSqlCmdVariable` with `DatabaseVariableLiteralValue` and use  `[$(SomeOtherServer)].[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
 When deploying a dacpac with references to other dacpacs, if you want the contents of all dacpacs to be deployed to a single database you will need to specify the `IncludeCompositeObjects` property. For example:
 
@@ -283,7 +302,7 @@ sqlpackage
 Similar to package references you can also reference another project by using a `ProjectReference`. These references can be added manually to the project file or they can be added through Visual Studio. For example, consider the following example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -297,7 +316,7 @@ Similar to package references you can also reference another project by using a 
 This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -331,7 +350,7 @@ In order to solve circular references between databases that may have been incor
 `SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [ProjectReferences](#project-references)):
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
@@ -451,7 +470,7 @@ To further customize the deployment process, you can use the following propertie
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions) deployment options. These are typically set in the project file, for example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
     <PropertyGroup>
         ...
         <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
@@ -474,7 +493,7 @@ Most of those properties are simple values (like booleans, strings and integers)
 Instead of using `dotnet publish` to deploy changes to a database, you can also have a full SQL script generated that will create the database from scratch and then run that script against a SQL Server. This can be achieved by adding the following to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
   <PropertyGroup>
       <GenerateCreateScript>True</GenerateCreateScript>
       <IncludeCompositeObjects>True</IncludeCompositeObjects>
