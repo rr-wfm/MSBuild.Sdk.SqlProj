@@ -205,7 +205,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
-> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty we'll fall back to `DefaultValue`. 
+> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty we'll fall back to `DefaultValue`.
 
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
@@ -232,14 +232,12 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SqlServer.Dacpacs" Version="160.0.0" DacpacName="master" />
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DacpacName="SomeOtherDatabase" />
     </ItemGroup>
 </Project>
 ```
 
-This will add a reference to the `tools\master.dacpac` file inside the [Microsoft.SqlServer.Dacpacs](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs) package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
-
-> Note: The above example also demonstrates how to reference objects within the `master` and `msdb` system databases, by using the Microsoft provided packages. It is recommended to use the same version of those packages as the `SqlServerVersion` you are targeting. Also note that for the Azure and Synapse flavors of SQL Server there are dedicated packages: `Microsoft.SqlServer.Dacpacs.Azure` and `Microsoft.SqlServer.Dacpacs.Synapse` respectively.
+This will add a reference to the `tools\SomeOtherDatabase.dacpac` file inside the `MyDatabasePackage` package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
 
 By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
 
@@ -297,6 +295,26 @@ sqlpackage
     /TargetPassword: MyP@ssword \
     /Properties:IncludeCompositeObjects=True
 ```
+
+## Referencing system databases
+Microsoft has recently released NuGet packages containing the definitions of the `mater` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <SqlServerVersion>160</SqlServerVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SqlServer.Dacpacs" Version="160.0.0" DacpacName="master" />
+    </ItemGroup>
+</Project>
+```
+
+The above example references the `master` database from the [Microsoft.SqlServer.Dacpacs](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs) NuGet package. Please note that there are different versions of that package for different versions of SQL Server. It is recommended to reference the same version of the package as the `SqlServerVersion` you are targeting with your project, as seen in the example above.
+
+For the Azure SQL and Synapse variants of SQL Server there are dedicated packages: [Microsoft.SqlServer.Dacpacs.Azure](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Azure) and [Microsoft.SqlServer.Dacpacs.Synapse]https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Synapse) respectively.
 
 ## Project references
 Similar to package references you can also reference another project by using a `ProjectReference`. These references can be added manually to the project file or they can be added through Visual Studio. For example, consider the following example:
