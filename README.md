@@ -314,7 +314,7 @@ Microsoft has recently released NuGet packages containing the definitions of the
 
 The above example references the `master` database from the [Microsoft.SqlServer.Dacpacs](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs) NuGet package. Please note that there are different versions of that package for different versions of SQL Server. It is recommended to reference the same version of the package as the `SqlServerVersion` you are targeting with your project, as seen in the example above.
 
-For the Azure SQL and Synapse variants of SQL Server there are dedicated packages: [Microsoft.SqlServer.Dacpacs.Azure](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Azure) and [Microsoft.SqlServer.Dacpacs.Synapse]https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Synapse) respectively.
+For the Azure SQL and Synapse variants of SQL Server there are dedicated packages: [Microsoft.SqlServer.Dacpacs.Azure](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Azure) and [Microsoft.SqlServer.Dacpacs.Synapse](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Synapse) respectively.
 
 ## Project references
 Similar to package references you can also reference another project by using a `ProjectReference`. These references can be added manually to the project file or they can be added through Visual Studio. For example, consider the following example:
