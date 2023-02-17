@@ -297,7 +297,7 @@ sqlpackage
 ```
 
 ## Referencing system databases
-Microsoft has recently released NuGet packages containing the definitions of the `mater` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
+Microsoft has recently released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.5.0">
