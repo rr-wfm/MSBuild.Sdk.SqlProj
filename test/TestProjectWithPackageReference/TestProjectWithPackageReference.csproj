@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TestProject" Version="1.2.0-beta.9.gf2d69b1c16" />
+    <PackageReference Include="TestProject" Version="1.2.0-beta.9.gf2d69b1c16" DacpacName="TestProject" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets" />
