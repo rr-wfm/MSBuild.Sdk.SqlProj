@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <!-- Enable detection of this project SDK - see https://github.com/microsoft/VSProjectSystem/blob/master/doc/overview/about_project_capabilities.md -->
-    <ProjectCapability Include="MSBuild.SDK.SqlProj.BuildTSqlScript" />
+    <ProjectCapability Include="MSBuild.Sdk.SqlProj.BuildTSqlScript" />
 
     <!-- Override primary output path to be a .dacpac -->
     <_IntermediateAssembly Include="@(IntermediateAssembly)" />
