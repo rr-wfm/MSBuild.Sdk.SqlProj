@@ -26,7 +26,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <NoPackageAnalysis>True</NoPackageAnalysis>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecFile Condition="Exists('$(MSBuildProjectName).nuspec')">$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
@@ -35,6 +35,35 @@
 
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
+    
+	<Target Name="_PackageDatabaseResults" Condition="'$(IsDatabaseProject)'=='True'" BeforeTargets="_GetPackageFiles">
+		<Message Text="===== _PackageDatabaseResults ===== "  Importance="high"/>
+		<Message Text="===== _PackageDatabaseResults: IncludeAllDacPac===== "  Importance="high" Condition="'$(IncludeAllDacPacs)'!='true'"/>
+        
+		<Message Text="===== MSBuildProjectName: $(MSBuildProjectName) ===== "  Importance="high"/>
+		<Message Text="===== AssemblyName: $(AssemblyName) ===== "  Importance="high"/>
+		<Message Text="===== PackageId: $(PackageId) ===== "  Importance="high"/>
+        
+		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'!='true'">
+			
+			<Content Include="$(OutputPath)$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools/" Condition="Exists('$(OutputPath)$(MSBuildProjectName).dacpac')" >
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+			<Content Include="$(OutputPath)$(AssemblyName).dacpac" Pack="true" PackagePath="tools/" Condition="'$(AssemblyName)'!='$(MSBuildProjectName)' and Exists('$(OutputPath)$(AssemblyName).dacpac')" >
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+			<Content Include="$(OutputPath)$(PackageId).dacpac" Pack="true" PackagePath="tools/" Condition="'$(AssemblyName)'!='$(PackageId)' and Exists('$(OutputPath)$(PackageId).dacpac')" >
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+            
+		</ItemGroup>
+		<ItemGroup Label="FilesToCopy" Condition="'$(IncludeAllDacPacs)'=='true'">
+			<Content Include="$(OutputPath)*.dacpac" Pack="true" PackagePath="tools/">
+				<PackageCopyToOutput>true</PackageCopyToOutput>
+			</Content>
+		</ItemGroup>
+	</Target>
+
 
   <ItemGroup>
     <Content Include="**/*.sql">

@@ -49,22 +49,24 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties;_PackageDatabaseResults</GenerateNuspecDependsOn>
+    <PackageType Condition="'$(PackageType)'==''" >dacpac</PackageType>
   </PropertyGroup>
 
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
     <PropertyGroup>
       <NuspecProperties>
-        id=$(PackageId);
-        description=$(PackageDescription);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        copyright=$(Copyright);
-        projecturl=$(PackageProjectUrl);
-        tags=$(PackageTags);
-        configuration=$(Configuration);
-        tfm=$(TargetFramework);
-        packagetype=Dacpac
+          id=$(PackageId);
+          description=$(PackageDescription);
+          version=$(PackageVersion);
+          authors=$(Authors);
+          copyright=$(Copyright);
+          projecturl=$(PackageProjectUrl);
+          tags=$(PackageTags);
+          configuration=$(Configuration);
+          tfm=$(TargetFramework);
+          packagetype=Dacpac;
+          $(NuspecProperties)
       </NuspecProperties>
     </PropertyGroup>
   </Target>
