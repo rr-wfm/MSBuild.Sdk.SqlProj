@@ -25,12 +25,12 @@ If a maintainer asks you to "rebase" your PR, they're saying that a lot of code 
 # Getting started
 In order to get started contributing code, make sure you have the following installed on your machine:
 
-* .NET Core 3.1 SDK
-* Optionally: A local [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2019) (possibly as a [Docker container](https://hub.docker.com/_/microsoft-mssql-server))
+* .NET 6 SDK
+* Optionally: A local [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2022) (possibly as a [Docker container](https://hub.docker.com/_/microsoft-mssql-server))
 
 This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.Tests` folder.
 
-In order to test your changes on your development machine you should first run `dotnet build` from the `src/MSBuild.Sdk.SqlProj` folder. This will build the command line tool for the supported target frameworks (`netcoreapp2.1`, `netcoreapp3.1`, `netcoreapp5.0` as of this writing) and copy those outputs to the `src/MSBuild.Sdk.SqlProj/tools/<target-framework>` folders. You can then build any of the test projects in the `test` folder to try out your changes without having to build the SDK package and push it a NuGet package feed. This works because these projects reference the `Sdk.props` and `Sdk.targets` files directly like for example `TestProjectWithPackageReference.csproj`:
+In order to test your changes on your development machine you should first run `dotnet build` from the `src/MSBuild.Sdk.SqlProj` folder. This will build the command line tool for the supported target frameworks (`net6.0`, `net7.0` as of this writing) and copy those outputs to the `src/MSBuild.Sdk.SqlProj/tools/<target-framework>` folders. You can then build any of the test projects in the `test` folder to try out your changes without having to build the SDK package and push it a NuGet package feed. This works because these projects reference the `Sdk.props` and `Sdk.targets` files directly like for example `TestProjectWithPackageReference.csproj`:
 
 ```xml
 <Project>
