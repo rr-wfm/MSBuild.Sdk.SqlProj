@@ -37,6 +37,11 @@ jobs:
       with:
         dotnet-version: '7.0.x'
 
+    - name: Setup dotnet 8.0
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
     # Install Nerdbank.GitVersioning
     - name: install nbgv
       run: dotnet tool install --tool-path . nbgv
@@ -107,7 +112,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-22.04", "macos-11", "windows-2022" ]
-        dotnet: [ '6.0.x', '7.0.x' ]
+        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
       fail-fast: false
 
     steps:
