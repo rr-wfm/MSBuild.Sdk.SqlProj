@@ -11,7 +11,7 @@
       <Value>$(SqlCmdVar__1)</Value>
     </SqlCmdVariable>
     <SqlCmdVariable Include="MySqlCmdVariable2">
-      <DefaultValue>DefaultValue</DefaultValue>
+      <DefaultValue>Some value with spaces and such</DefaultValue>
       <Value>$(SqlCmdVar__2)</Value>
     </SqlCmdVariable>
   </ItemGroup>
