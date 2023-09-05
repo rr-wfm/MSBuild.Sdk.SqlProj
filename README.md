@@ -224,7 +224,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
-It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference` (introduced in version 2.6.1). For example:
+It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference` (introduced in version 2.5.0). For example:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.6.1">
@@ -299,7 +299,7 @@ sqlpackage
 ```
 
 ## Referencing system databases
-Microsoft has recently released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.6.1 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
+Microsoft has recently released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.6.1">
