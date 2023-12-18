@@ -72,9 +72,9 @@ jobs:
 
     # Upload SDK package
     - name: upload SDK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
     # Package TestProject
@@ -83,9 +83,9 @@ jobs:
 
     # Upload TestProject package
     - name: upload TestProject
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: test-package
         path: ./test/TestProject/bin/Release/
 
     # Replace tokens 
@@ -100,9 +100,9 @@ jobs:
 
     # Upload templates package
     - name: upload templates
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: template-package
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
 
   # Run tests in parallel
@@ -143,9 +143,16 @@ jobs:
 
     # Download artifact
     - name: download-artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: nuget-packages
+        name: sdk-package
+        path: test/TestProjectWithSDKRef/nuget-packages
+
+    # Download artifact
+    - name: download-artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Restore packages
@@ -164,7 +171,7 @@ jobs:
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
         path: ./msbuild.binlog
@@ -182,14 +189,14 @@ jobs:
     # Upload dacpac
     - name: upload
       if: ${{ matrix.os == 'ubuntu-22.04' && matrix.dotnet == '6.0.x' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
@@ -215,7 +222,7 @@ jobs:
     steps:
     # Download artifacts
     - name: download-artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: dacpac-package
         path: ~/dacpac-package
@@ -271,11 +278,18 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    # Download artifact
+    # Download SDK
     - name: download-artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        name: nuget-packages
+        name: sdk-package
+        path: test/TestProjectWithSDKRef/nuget-packages
+
+    # Download test package
+    - name: download-artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
  
     # Setup .NET SDK
@@ -306,7 +320,7 @@ jobs:
 
     # Upload binary log
     - name: upload
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: binary-log-publish
         path: ./msbuild.binlog
@@ -331,10 +345,10 @@ jobs:
 
     # Download artifacts
     - name: download-artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
-        name: nuget-packages
+        name: test-package
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
