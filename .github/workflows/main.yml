@@ -148,6 +148,13 @@ jobs:
         name: sdk-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
+    # Download artifact
+    - name: download-artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: test-package
+        path: test/TestProjectWithSDKRef/nuget-packages
+
     # Restore packages
     - name: dotnet restore
       run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
