@@ -145,7 +145,7 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v4
       with:
-        name: sdk-packages
+        name: sdk-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Restore packages
