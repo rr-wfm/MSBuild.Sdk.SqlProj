@@ -74,7 +74,7 @@ jobs:
     - name: upload SDK
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
     # Package TestProject
@@ -85,7 +85,7 @@ jobs:
     - name: upload TestProject
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: test-package
         path: ./test/TestProject/bin/Release/
 
     # Replace tokens 
@@ -102,7 +102,7 @@ jobs:
     - name: upload templates
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-packages
+        name: template-package
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
 
   # Run tests in parallel
@@ -145,7 +145,7 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v4
       with:
-        name: nuget-packages
+        name: sdk-packages
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Restore packages
@@ -275,7 +275,7 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v4
       with:
-        name: nuget-packages
+        name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
  
     # Setup .NET SDK
@@ -334,7 +334,7 @@ jobs:
       uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
-        name: nuget-packages
+        name: test-package
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
