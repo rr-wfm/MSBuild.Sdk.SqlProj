@@ -6,10 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
-using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
