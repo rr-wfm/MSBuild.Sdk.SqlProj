@@ -1,12 +1,15 @@
 ﻿using System;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -72,7 +75,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var rootCommand = new RootCommand { buildCommand, collectIncludesCommand, deployCommand };
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
-            return await rootCommand.InvokeAsync(args);
+            var processed = rootCommand.Parse(args);
+            return await processed.InvokeAsync();
         }
 
         private static int BuildDacpac(BuildOptions options)
