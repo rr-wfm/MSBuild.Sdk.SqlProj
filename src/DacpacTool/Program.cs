@@ -29,7 +29,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--buildproperty", "-bp" }, "Build properties to be set on the model"),
                 new Option<string[]>(new string[] { "--deployproperty", "-dp" }, "Deploy properties to be set for the create script"),
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
-
+                
+                new Option<bool>(new string[] { "--runcodeanalysis" }, "Run static code analysis"),
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
                 new Option<bool>(new string[] { "--includecompositeobjects", "-ico" }, "Include referenced, external elements that also compose the source model"),
@@ -189,6 +190,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var deployOptions = options.ExtractDeployOptions();
                 packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
+            }
+
+            if (options.RunCodeAnalysis)
+            {
+                var analyzer = new PackageAnalyzer(new ActualConsole());
+                analyzer.Analyze(options.Output);
             }
 
             return 0;
