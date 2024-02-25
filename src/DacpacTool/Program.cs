@@ -31,6 +31,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string[]>(new string[] { "--sqlcmdvar", "-sc" }, "SqlCmdVariable(s) to include"),
                 
                 new Option<bool>(new string[] { "--runcodeanalysis" }, "Run static code analysis"),
+                new Option<string>(new string[] { "--codeanalysisrules" }, "List of rules to suppress in format '-Microsoft.Rules.Data.SR0001;-Microsoft.Rules.Data.SR0008'"),
+
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
                 new Option<bool>(new string[] { "--includecompositeobjects", "-ico" }, "Include referenced, external elements that also compose the source model"),
@@ -194,8 +196,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.RunCodeAnalysis)
             {
-                var analyzer = new PackageAnalyzer(new ActualConsole());
-                analyzer.Analyze(options.Output);
+                var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
+                analyzer.Analyze(packageBuilder.Model, options.Output);
             }
 
             return 0;

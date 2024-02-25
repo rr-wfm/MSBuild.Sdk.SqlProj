@@ -14,7 +14,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ArgumentNullException.ThrowIfNull(sqlRuleProblem);
             
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append(sqlRuleProblem.SourceName ?? sqlRuleProblem.ModelElement.Name.ToString());
+            stringBuilder.Append(sqlRuleProblem.SourceName);
             stringBuilder.Append('(');
             stringBuilder.Append(sqlRuleProblem.StartLine);
             stringBuilder.Append(',');

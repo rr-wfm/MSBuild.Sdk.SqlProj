@@ -1,43 +1,47 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 using Microsoft.SqlServer.Dac.Model;
+using System.Linq;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
+        private readonly HashSet<string> _ignoredRules = new HashSet<string>();
 
-        public PackageAnalyzer(IConsole console)
+        public PackageAnalyzer(IConsole console, string rulesExpression)
         {
             _console = console ?? throw new ArgumentNullException(nameof(console));
+
+            if (!string.IsNullOrWhiteSpace(rulesExpression))
+            {
+                foreach (var rule in rulesExpression.Split(new[] { ';' }, 
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Where(rule => rule
+                            .StartsWith("-", StringComparison.OrdinalIgnoreCase)
+                                && rule.Length > 1))
+                {
+                    _ignoredRules.Add(rule.Substring(1));
+                }
+            }
         }
 
-        public void Analyze(FileInfo outputFile, string suppressionsString = null)
+        public void Analyze(TSqlModel model, FileInfo outputFile)
         {
-            _console.WriteLine($"Loading package '{outputFile.FullName}'");
-            TSqlModel model;
-            try
-            {
-                model = TSqlModel.LoadFromDacpac(
-                        outputFile.FullName,
-                        new ModelLoadOptions()
-                        {
-                            LoadAsScriptBackedModel = true,
-                        });
-            }
-            catch (DacModelException ex)
-            {
-                _console.WriteLine($"ERROR: An unknown error occurred while loading package '{outputFile.FullName}': {ex.Message}");
-                return;
-            }
-
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
                 var factory = new CodeAnalysisServiceFactory();
                 var service = factory.CreateAnalysisService(model);
+
+                if (_ignoredRules.Count > 0)
+                {
+                    service.SetProblemSuppressor(p => _ignoredRules.Contains(p.Rule.RuleId));
+                }
+
                 var result = service.Analyze(model);
                 if (!result.AnalysisSucceeded)
                 {
