@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using Microsoft.SqlServer.Dac.CodeAnalysis;
 using Microsoft.SqlServer.Dac.Extensibility;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool

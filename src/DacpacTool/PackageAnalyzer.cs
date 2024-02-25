@@ -10,7 +10,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
-        private readonly HashSet<string> _ignoredRules = new HashSet<string>();
+        private readonly HashSet<string> _ignoredRules = new();
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
         {
@@ -24,7 +24,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                             .StartsWith("-", StringComparison.OrdinalIgnoreCase)
                                 && rule.Length > 1))
                 {
-                    _ignoredRules.Add(rule.Substring(1));
+                    _ignoredRules.Add(rule[1..]);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         _console.WriteLine(err.GetOutputMessage());
                     }
 
-                    result.SerializeResultsToXml(GetOutputFileName(outputFile));
+                    result.SerializeResultsToXml(PackageAnalyzer.GetOutputFileName(outputFile));
                 }
                 _console.WriteLine($"Successfully analyzed package '{outputFile}'");
             }
@@ -79,12 +79,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private string GetOutputFileName(FileInfo outputFile)
+        private static string GetOutputFileName(FileInfo outputFile)
         {
             var outputFileName = outputFile.FullName;
             if (outputFile.Extension.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
             {
-                outputFileName = outputFile.FullName.Substring(0, outputFile.FullName.Length - 7);
+                outputFileName = outputFile.FullName[..^7];
             }
             return outputFileName + ".CodeAnalysis.xml";
         }
