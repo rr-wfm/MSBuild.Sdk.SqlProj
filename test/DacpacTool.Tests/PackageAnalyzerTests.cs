@@ -52,6 +52,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
+        [TestMethod]
+        public void RunsAnalyzerWithWildcardSupressions()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo);
+
+            // Assert
+            testConsole.Lines.Count.ShouldBe(13);
+
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldNotContain($"SRD");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()

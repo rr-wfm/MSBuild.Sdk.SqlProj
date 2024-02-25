@@ -11,22 +11,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     {
         private readonly IConsole _console;
         private readonly HashSet<string> _ignoredRules = new();
+        private readonly HashSet<string> _ignoredRuleSets = new();
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
         {
             _console = console ?? throw new ArgumentNullException(nameof(console));
 
-            if (!string.IsNullOrWhiteSpace(rulesExpression))
-            {
-                foreach (var rule in rulesExpression.Split(new[] { ';' }, 
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith("-", StringComparison.OrdinalIgnoreCase)
-                                && rule.Length > 1))
-                {
-                    _ignoredRules.Add(rule[1..]);
-                }
-            }
+            BuildRuleLists(rulesExpression);
         }
 
         public void Analyze(TSqlModel model, FileInfo outputFile)
@@ -37,9 +28,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var factory = new CodeAnalysisServiceFactory();
                 var service = factory.CreateAnalysisService(model);
 
-                if (_ignoredRules.Count > 0)
+                if (_ignoredRules.Count > 0 || _ignoredRuleSets.Count > 0)
                 {
-                    service.SetProblemSuppressor(p => _ignoredRules.Contains(p.Rule.RuleId));
+                    service.SetProblemSuppressor(p => 
+                        _ignoredRules.Contains(p.Rule.RuleId) 
+                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s)));
                 }
 
                 var result = service.Analyze(model);
@@ -69,13 +62,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         _console.WriteLine(err.GetOutputMessage());
                     }
 
-                    result.SerializeResultsToXml(PackageAnalyzer.GetOutputFileName(outputFile));
+                    result.SerializeResultsToXml(GetOutputFileName(outputFile));
                 }
                 _console.WriteLine($"Successfully analyzed package '{outputFile}'");
             }
             catch (Exception ex)
             {
                 _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex.Message}");
+            }
+        }
+
+        private void BuildRuleLists(string rulesExpression)
+        {
+            if (!string.IsNullOrWhiteSpace(rulesExpression))
+            {
+                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Where(rule => rule
+                            .StartsWith("-", StringComparison.OrdinalIgnoreCase)
+                                && rule.Length > 1))
+                {
+                    if (rule.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _ignoredRuleSets.Add(rule[1..^1]);
+                    }
+                    else
+                    {
+                        _ignoredRules.Add(rule[1..]);
+                    }
+                }
             }
         }
 
