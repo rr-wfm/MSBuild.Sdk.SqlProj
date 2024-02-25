@@ -16,18 +16,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var path = BuildSimpleModel();
+            var result = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(path.Item2, path.Item1);
+            packageAnalyzer.Analyze(result.model, result.fileInfo);
             
             // Assert
-            testConsole.Lines.Count.ShouldBe(11);
+            testConsole.Lines.Count.ShouldBe(15);
 
-            testConsole.Lines.ShouldContain($"Analyzing package '{path.Item1.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{path.Item1.FullName}'");
+            testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SML005 : Smells : Avoid use of 'Select *'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -36,21 +37,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var path = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-SqlServer.Rules.SRD9999;");
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;;");
 
             // Act
-            packageAnalyzer.Analyze(path.Item2, path.Item1);
+            packageAnalyzer.Analyze(result.model, result.fileInfo);
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(10);
+            testConsole.Lines.Count.ShouldBe(13);
 
-            testConsole.Lines.ShouldContain($"Analyzing package '{path.Item1.FullName}'");
-            testConsole.Lines.ShouldNotContain($"Warning SRD0006 : SqlServer.Rules");
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{path.Item1.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldNotContain($"SRD0006");
+            testConsole.Lines.ShouldNotContain($"SML005");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
-        private static (FileInfo, TSqlModel) BuildSimpleModel()
+        private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()
                 .AddTable("TestTable", ("Column1", "nvarchar(100)"))
