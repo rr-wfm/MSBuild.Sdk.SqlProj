@@ -38,21 +38,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var result = service.Analyze(model);
                 if (!result.AnalysisSucceeded)
                 {
-                    foreach (var err in result.InitializationErrors)
+                    var errors = result.GetAllErrors();
+                    foreach (var err in errors)
                     {
                         _console.WriteLine(err.GetOutputMessage());
                     }
-
-                    foreach (var err in result.SuppressionErrors)
-                    {
-                        _console.WriteLine(err.GetOutputMessage());
-                    }
-
-                    foreach (var err in result.AnalysisErrors)
-                    {
-                        _console.WriteLine(err.GetOutputMessage());
-                    }
-
                     return;
                 }
                 else
