@@ -28,10 +28,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
-        public TestModelBuilder AddStoredProcedure(string procName, string body)
+        public TestModelBuilder AddStoredProcedure(string procName, string body, string fileName = null)
         {
             var procDefinition = $"CREATE PROCEDURE [{procName}] AS BEGIN {body} END";
-            sqlModel.AddObjects(procDefinition);
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                sqlModel.AddOrUpdateObjects(procDefinition, fileName, new TSqlObjectOptions());
+            }
+            else
+            {
+                sqlModel.AddObjects(procDefinition);
+            }
             return this;
         }
 

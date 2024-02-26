@@ -18,6 +18,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo PostDeploy { get; set; }
         public FileInfo RefactorLog { get; set; }
 
+        public bool RunCodeAnalysis { get; set; }
+        public string CodeAnalysisRules { get; set; }
         public bool WarnAsError { get; set; }
         public string SuppressWarnings { get; set; }
         public FileInfo SuppressWarningsListFile { get; set; }
