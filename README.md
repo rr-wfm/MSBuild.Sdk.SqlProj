@@ -575,5 +575,3 @@ Now, upon compilation of the class library, the relevant `.dacpac` files get cop
 
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
-
-The SQL Server Data Tools also includes a static code analysis feature. Currently this is not (yet) available when using this SDK.
