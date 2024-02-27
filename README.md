@@ -550,6 +550,8 @@ The optional `CodeAnalysisRules` property allows you to disable individual rules
 
 A xml file with the analysis results is created in the output folder, and any problems found during analysis are reported as build warnings.
 
+`TreatWarningsAsErrors` does not affect found problems.
+
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
 
