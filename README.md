@@ -539,7 +539,7 @@ Starting with version 2.7.0 of the SDK, there is support for running static code
 Static code analysis can be enabled by adding the following to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.6.2">
+<Project Sdk="MSBuild.Sdk.SqlProj/2.7.0">
   <PropertyGroup>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
