@@ -530,7 +530,7 @@ The database name for the create script gets resolved in the following manner:
 >- if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`
 
 ## Static code analysis
-Starting with version 2.6.2 of the SDK, there is support for running static code analysis during build. The SDK includes the following sets of rules:
+Starting with version 2.7.0 of the SDK, there is support for running static code analysis during build. The SDK includes the following sets of rules:
 
 - Microsoft.Rules ([1](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193411), [2](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193246) and [3](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd172117))
 - [SqlServer.Rules](https://github.com/tcartwright/SqlServer.Rules/blob/master/docs/table_of_contents.md)
