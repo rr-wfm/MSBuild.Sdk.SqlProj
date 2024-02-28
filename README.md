@@ -542,15 +542,17 @@ Static code analysis can be enabled by adding the following to the project file:
 <Project Sdk="MSBuild.Sdk.SqlProj/2.7.0">
   <PropertyGroup>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
-    <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
+    <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*;+!SqlServer.Rules.SRN0005</CodeAnalysisRules>
   </PropertyGroup>
 </Project>
 ```
 The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules.
 
-A xml file with the analysis results is created in the output folder, and any problems found during analysis are reported as build warnings.
+Any rule violations found during analysis are reported as build warnings.
 
-`TreatWarningsAsErrors` does not affect found problems.
+This syntax in the `CodeAnalysisRules` property: `+!SqlServer.Rules.SRN0005` forces a rule violation to be treated as a build error.
+
+A xml file with the analysis results is created in the output folder, 
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:

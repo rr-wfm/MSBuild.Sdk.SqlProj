@@ -12,6 +12,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly IConsole _console;
         private readonly HashSet<string> _ignoredRules = new();
         private readonly HashSet<string> _ignoredRuleSets = new();
+        private readonly HashSet<string> _errorRuleSets = new();
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
         {
@@ -49,7 +50,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     foreach (var err in result.Problems)
                     {
-                        _console.WriteLine(err.GetOutputMessage());
+                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets));
                     }
 
                     result.SerializeResultsToXml(GetOutputFileName(outputFile));
@@ -72,7 +73,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                             .StartsWith("-", StringComparison.OrdinalIgnoreCase)
                                 && rule.Length > 1))
                 {
-                    if (rule.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                    if (rule.Length > 2 && rule.EndsWith("*", StringComparison.OrdinalIgnoreCase))
                     {
                         _ignoredRuleSets.Add(rule[1..^1]);
                     }
@@ -80,6 +81,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     {
                         _ignoredRules.Add(rule[1..]);
                     }
+                }
+                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Where(rule => rule
+                            .StartsWith("+!", StringComparison.OrdinalIgnoreCase)
+                                && rule.Length > 2))
+                {
+                    _errorRuleSets.Add(rule[2..]);
                 }
             }
         }
