@@ -527,7 +527,30 @@ The database name for the create script gets resolved in the following manner:
 1. Package name.
 > Note: 
 >- the generated script also uses the resolved database name via a setvar command.
->- if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`   
+>- if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`
+
+## Static code analysis
+Starting with version 2.7.0 of the SDK, there is support for running static code analysis during build. The SDK includes the following sets of rules:
+
+- Microsoft.Rules ([1](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193411), [2](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193246) and [3](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd172117))
+- [SqlServer.Rules](https://github.com/tcartwright/SqlServer.Rules/blob/master/docs/table_of_contents.md)
+- [Smells](https://github.com/davebally/TSQL-Smells)
+
+Static code analysis can be enabled by adding the following to the project file:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/2.7.0">
+  <PropertyGroup>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
+  </PropertyGroup>
+</Project>
+```
+The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules.
+
+A xml file with the analysis results is created in the output folder, and any problems found during analysis are reported as build warnings.
+
+`TreatWarningsAsErrors` does not affect found problems.
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
@@ -554,5 +577,3 @@ Now, upon compilation of the class library, the relevant `.dacpac` files get cop
 
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
-
-The SQL Server Data Tools also includes a static code analysis feature. Currently this is not (yet) available when using this SDK.
