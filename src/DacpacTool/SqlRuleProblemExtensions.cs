@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 
@@ -9,9 +10,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     public static class SqlRuleProblemExtensions
     {
-        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem)
+        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules)
         {
             ArgumentNullException.ThrowIfNull(sqlRuleProblem);
+
+            SqlRuleProblemSeverity sqlRuleProblemSeverity = sqlRuleProblem.Severity;
+
+            if (errorRules.Contains(sqlRuleProblem.RuleId))
+            {
+                sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+            }
             
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(sqlRuleProblem.SourceName);
@@ -21,7 +29,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             stringBuilder.Append(sqlRuleProblem.StartColumn);
             stringBuilder.Append("):");
             stringBuilder.Append(' ');
-            stringBuilder.Append(sqlRuleProblem.Severity);
+            stringBuilder.Append(sqlRuleProblemSeverity);
             stringBuilder.Append(' ');
             stringBuilder.Append(sqlRuleProblem.ErrorMessageString);
             

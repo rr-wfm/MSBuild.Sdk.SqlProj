@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -38,7 +39,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;;");
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
 
             // Act
             packageAnalyzer.Analyze(result.model, result.fileInfo);
@@ -47,8 +48,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(13);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
-            testConsole.Lines.ShouldNotContain($"SRD0006");
-            testConsole.Lines.ShouldNotContain($"SML005");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("SML0005")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("Error SRN0002")).ShouldBeTrue();
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
@@ -68,7 +70,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(13);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
-            testConsole.Lines.ShouldNotContain($"SRD");
+            testConsole.Lines.Any(l => l.Contains("SRD")).ShouldBeFalse();
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
