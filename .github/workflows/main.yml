@@ -344,7 +344,7 @@ jobs:
         dotnet-version: '6.0.x'
 
     # Download SDK package
-    - name: download-artifact
+    - name: download-sdk-package
       uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
@@ -352,7 +352,7 @@ jobs:
         path: ~/nuget-packages
 
     # Download Templates package
-    - name: download-artifact
+    - name: download-template-package
       uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
