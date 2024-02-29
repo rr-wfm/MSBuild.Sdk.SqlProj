@@ -346,7 +346,7 @@ jobs:
     # Download SDK package
     - name: download-sdk-package
       uses: actions/download-artifact@v4
-      id: download-nugetpackages
+      id: download-sdk-package
       with:
         name: sdk-package
         path: ~/nuget-packages
@@ -354,7 +354,7 @@ jobs:
     # Download Templates package
     - name: download-template-package
       uses: actions/download-artifact@v4
-      id: download-nugetpackages
+      id: download-template-package
       with:
         name: template-package
         path: ~/nuget-packages
