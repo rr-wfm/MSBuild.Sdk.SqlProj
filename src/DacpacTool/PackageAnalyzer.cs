@@ -59,7 +59,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             catch (Exception ex)
             {
-                _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex.Message}");
+                _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex}");
             }
         }
 

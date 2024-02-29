@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <!-- These packages contain DacFX analysis rules, which must be located with the executable in order to be discovered-->
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.0.0-preview3" IncludeAssets="runtime" />
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.0.0-preview4" IncludeAssets="runtime" />
     <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.0.0-preview1" IncludeAssets="runtime" />
       
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.2.111" />
