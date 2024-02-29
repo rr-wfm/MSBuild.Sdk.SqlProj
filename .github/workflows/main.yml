@@ -348,7 +348,7 @@ jobs:
       uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
-        name: test-package
+        name: sdk-package
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
