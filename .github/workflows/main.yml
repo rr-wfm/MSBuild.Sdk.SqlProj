@@ -343,12 +343,20 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
-    # Download artifacts
+    # Download SDK package
     - name: download-artifact
       uses: actions/download-artifact@v4
       id: download-nugetpackages
       with:
         name: sdk-package
+        path: ~/nuget-packages
+
+    # Download Templates package
+    - name: download-artifact
+      uses: actions/download-artifact@v4
+      id: download-nugetpackages
+      with:
+        name: template-package
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
