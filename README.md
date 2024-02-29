@@ -532,7 +532,7 @@ The database name for the create script gets resolved in the following manner:
 ## Static code analysis
 Starting with version 2.7.0 of the SDK, there is support for running static code analysis during build. The SDK includes the following sets of rules:
 
-- Microsoft.Rules ([1](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193411), [2](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd193246) and [3](https://learn.microsoft.com/previous-versions/visualstudio/visual-studio-2010/dd172117))
+- Microsoft.Rules ([1](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193411(v=vs.100)), [2](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193246(v=vs.100)) and [3](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd172117(v=vs.100)))
 - [SqlServer.Rules](https://github.com/tcartwright/SqlServer.Rules/blob/master/docs/table_of_contents.md)
 - [Smells](https://github.com/davebally/TSQL-Smells)
 
