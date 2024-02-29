@@ -361,9 +361,9 @@ jobs:
 
     - name: Display structure of downloaded files
       run: ls -R
-      working-directory: ${{steps.download-nugetpackages.outputs.download-path}}
+      working-directory: ${{steps.download-sdk-package.outputs.download-path}}
 
     # Push
     - name: dotnet nuget push
       run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
-      working-directory: ${{steps.download-nugetpackages.outputs.download-path}}
+      working-directory: ${{steps.download-sdk-package.outputs.download-path}}
