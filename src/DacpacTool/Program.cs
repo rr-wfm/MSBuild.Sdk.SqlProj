@@ -197,6 +197,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (options.RunCodeAnalysis)
             {
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
+
+                foreach (var line in File.ReadLines(options.InputFile.FullName))
+                {
+                    FileInfo inputFile = new FileInfo(line); // Validation occurs in AddRulesFile
+                    analyzer.AddRulesFile(inputFile);
+                }
+
                 analyzer.Analyze(packageBuilder.Model, options.Output);
             }
 
