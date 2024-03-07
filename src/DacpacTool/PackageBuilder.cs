@@ -69,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"Unable to find input file {inputFile}", nameof(inputFile));
             }
 
-            // Skip custom rules files
+            // Skip custom rules files, they will be added to the tools folder later by the analyzer
             if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
                 && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             {
