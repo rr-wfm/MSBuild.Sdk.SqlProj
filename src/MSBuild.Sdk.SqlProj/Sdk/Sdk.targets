@@ -230,7 +230,7 @@
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
       <RunSqlCodeAnalysisArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">-an</RunSqlCodeAnalysisArgument>
-      <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar $(CodeAnalysisRules)</CodeAnalysisRulesArgument>
+      <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar &quot;$(CodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
