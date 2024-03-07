@@ -21,6 +21,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             BuildRuleLists(rulesExpression);
         }
 
+        public void AddRulesFile(FileInfo inputFile)
+        {
+            // Make sure the file exists
+            if (!inputFile.Exists)
+            {
+                throw new ArgumentException($"Unable to find rules file {inputFile}", nameof(inputFile));
+            }
+
+            if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
+                && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                CopyAdditionalRulesFile(inputFile);
+            }
+        }
+
         public void Analyze(TSqlModel model, FileInfo outputFile)
         {
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
@@ -101,6 +116,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 outputFileName = outputFile.FullName[..^7];
             }
             return outputFileName + ".CodeAnalysis.xml";
+        }
+
+        private void CopyAdditionalRulesFile(FileInfo rulesFile)
+        {
+            var destPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+            var dest = Path.Combine(destPath, rulesFile.Name);
+                    
+            rulesFile.CopyTo(dest, overwrite: true);
+
+            _console.WriteLine($"Adding additional rules file from '{rulesFile.FullName}' to '{dest}'");
         }
     }
 }

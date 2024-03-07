@@ -69,6 +69,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"Unable to find input file {inputFile}", nameof(inputFile));
             }
 
+            // Skip custom rules files
+            if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
+                && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             Console.WriteLine($"Adding {inputFile.FullName} to the model");
             Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
         }
