@@ -17,8 +17,15 @@
         "type": "parameter",
         "defaultValue": "Sql150",
         "replaces": "#{SqlServerVersion}",
-        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql90", "SqlAzure", "SqlDw" ],
-        "description": "Version of SQL Server being targetted"
+        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql160", "Sql90", "SqlAzure", "SqlDw" ],
+        "description": "Version of SQL Server being targeted"
+      },
+      "codeAnalysis": {
+        "type": "parameter",
+        "defaultValue": "True",
+        "replaces": "#{CodeAnalysis}",
+        "choices": [ "True", "False" ],
+        "description": "Enable code analysis"
       }
     }
   }
