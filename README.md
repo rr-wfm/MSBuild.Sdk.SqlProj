@@ -553,13 +553,13 @@ The optional `CodeAnalysisRules` property allows you to disable individual rules
 
 Any rule violations found during analysis are reported as build warnings.
 
-Individual rule violations can be configured to be reported as build errors as shown below.
+Individual rule violations or groups of rules can be configured to be reported as build errors as shown below.
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.7.1">
   <PropertyGroup>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
-    <CodeAnalysisRules>+!SqlServer.Rules.SRN0005</CodeAnalysisRules>
+    <CodeAnalysisRules>+!SqlServer.Rules.SRN0005;+!SqlServer.Rules.SRD*</CodeAnalysisRules>
   </PropertyGroup>
 </Project>
 ```

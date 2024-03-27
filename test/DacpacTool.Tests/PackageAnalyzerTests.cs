@@ -74,6 +74,48 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
+        [TestMethod]
+        public void RunsAnalyzerWithWarningsAsErrors()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo);
+
+            // Assert
+            testConsole.Lines.Count.ShouldBe(15);
+
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.Count(l => l.Contains("Error ")).ShouldBe(1);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithWarningsAsErrorsUsingWildcard()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo);
+
+            // Assert
+            testConsole.Lines.Count.ShouldBe(15);
+
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()
