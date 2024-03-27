@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 
@@ -17,6 +18,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             SqlRuleProblemSeverity sqlRuleProblemSeverity = sqlRuleProblem.Severity;
 
             if (errorRules.Contains(sqlRuleProblem.RuleId))
+            {
+                sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+            }
+
+            var wildCardErrorRules = errorRules
+                .Where(r => r.EndsWith("*", StringComparison.OrdinalIgnoreCase));
+            if (wildCardErrorRules.Any(s => sqlRuleProblem.RuleId.StartsWith(s[..^1])))
             {
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }
