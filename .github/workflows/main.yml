@@ -111,7 +111,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ "ubuntu-22.04", "macos-11", "windows-2022" ]
+        os: [ "ubuntu-22.04", "macos-13", "windows-2022" ]
         dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
       fail-fast: false
 
