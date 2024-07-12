@@ -234,12 +234,12 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DacpacName="SomeOtherDatabase" />
+        <PackageReference Include="MyDatabasePackage" Version="1.1.0" DacpacName="SomeOtherDacpac" />
     </ItemGroup>
 </Project>
 ```
 
-This will add a reference to the `tools\SomeOtherDatabase.dacpac` file inside the `MyDatabasePackage` package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
+This will add a reference to the `tools\SomeOtherDacpac.dacpac` file inside the `MyDatabasePackage` package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
 
 By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
 
@@ -309,12 +309,12 @@ Microsoft has recently released NuGet packages containing the definitions of the
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.0.0" DacpacName="master" />
+        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.1" DacpacName="master" />
     </ItemGroup>
 </Project>
 ```
 
-The above example references the `master` database from the [Microsoft.SqlServer.Dacpacs.Master](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Master) NuGet package. Please note that there are different versions of that package for different versions of SQL Server. It is recommended to reference the same version of the package as the `SqlServerVersion` you are targeting with your project, as seen in the example above.
+The above example references the `master` database from the [Microsoft.SqlServer.Dacpacs.Master](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Master) NuGet package. Please note that there are different major versions of that package for different versions of SQL Server. It is recommended to reference the most recent minor/patch version of the package as the `SqlServerVersion` you are targeting with your project, as seen in the example above.
 
 For other variants of SQL Server / Azure SQL Database there are dedicated packages as [listed here](https://www.nuget.org/packages/Microsoft.SqlServer.Dacpacs.Master#readme-body-tab).
 
