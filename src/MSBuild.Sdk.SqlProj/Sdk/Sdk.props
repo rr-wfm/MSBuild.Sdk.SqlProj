@@ -26,7 +26,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <NoPackageAnalysis>True</NoPackageAnalysis>
-    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecFile Condition="Exists('$(MSBuildProjectName).nuspec')">$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>

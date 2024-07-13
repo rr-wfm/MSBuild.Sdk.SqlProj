@@ -1,0 +1,23 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+    <RecoveryMode>Simple</RecoveryMode>
+    <AllowSnapshotIsolation>True</AllowSnapshotIsolation>
+    <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
+    <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
+    <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ExcludeObjectTypes>Users,Assemblies</ExcludeObjectTypes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
