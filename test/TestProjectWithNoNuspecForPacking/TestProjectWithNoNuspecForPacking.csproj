@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(OutputPath)\$(MSBuildProjectName).dacpac" Pack="true" PackagePath="tools" />
+    <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
