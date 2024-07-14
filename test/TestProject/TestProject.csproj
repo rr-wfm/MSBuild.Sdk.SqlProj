@@ -9,11 +9,16 @@
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
     <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
     <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+    <Authors>MSBuild.SDK.SqlProj team</Authors>
   </PropertyGroup>
 
   <PropertyGroup>
     <ExcludeObjectTypes>Users,Assemblies</ExcludeObjectTypes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" />
+  </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>
