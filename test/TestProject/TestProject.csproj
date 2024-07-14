@@ -9,7 +9,6 @@
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
     <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
     <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
-    <Authors>MSBuild.SDK.SqlProj team</Authors>
   </PropertyGroup>
 
   <PropertyGroup>
