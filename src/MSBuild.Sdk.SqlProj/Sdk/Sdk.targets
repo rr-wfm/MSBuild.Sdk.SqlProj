@@ -49,25 +49,7 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
-
-  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        description=$(PackageDescription);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        copyright=$(Copyright);
-        projecturl=$(PackageProjectUrl);
-        tags=$(PackageTags);
-        configuration=$(Configuration);
-        tfm=$(TargetFramework);
-        packagetype=Dacpac
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
 
   <!--
     The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  NoTargets projects do no generate resource assemblies
