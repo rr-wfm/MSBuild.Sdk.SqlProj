@@ -389,7 +389,7 @@ In order to solve circular references between databases that may have been incor
 
 `MSBuild.Sdk.SqlProj` version 2.8.0 and later supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command and does not require a `.nuspec` file.
 
-You'll need to set the `PackageProjectUrl` property and add an item group for your package build output inside of the `.csproj` like this:
+You'll need to set the `PackageProjectUrl` property in the `.csproj` like this:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.8.0">
@@ -398,14 +398,8 @@ You'll need to set the `PackageProjectUrl` property and add an item group for yo
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" />
-  </ItemGroup>
-
 </Project>
 ```
-
-> Note: The above `.csproj` file will result in a package that includes the .dacpac of the project as well as any referenced .dacpac file's (those from `PackageReference`). This is by design since you'll probably need those later on when deploying the .dacpac. If you want to only include the .dacpac of the project replace `$(OutputPath)\*.dacpac` with `$(OutputPath)\$(MSBuildProjectName).dacpac`.
 
 Other metadata for the package can be controlled by using the [documented](https://docs.microsoft.com/dotnet/core/tools/csproj#nuget-metadata-properties) properties in your project file.
 
