@@ -15,9 +15,5 @@
     <ExcludeObjectTypes>Users,Assemblies</ExcludeObjectTypes>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" />
-  </ItemGroup>
-
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>
