@@ -7,7 +7,7 @@
 
 ## Introduction
 
-An MSBuild SDK that is capable of producing a SQL Server Data-Tier Application package (.dacpac) from a set of SQL scripts that can be subsequently deployed using the `Microsoft.SqlPackage` [dotnet tool](https://www.nuget.org/packages/Microsoft.SqlPackage). It provides much of the same functionality as the SQL Server Data Tools .sqlproj project format, but is built on top of the new SDK-style projects that were first introduced in Visual Studio 2017.
+A MSBuild SDK that is capable of producing a SQL Server Data-Tier Application package (.dacpac) from a set of SQL scripts that can be subsequently deployed using the `Microsoft.SqlPackage` [dotnet tool](https://www.nuget.org/packages/Microsoft.SqlPackage). It provides much of the same functionality as the SQL Server Data Tools .sqlproj project format, but is built on top of the new SDK-style projects that were first introduced in Visual Studio 2017.
 
 If you're looking for a video introduction, please watch this [dotnetFlix episode](https://dotnetflix.com/player/104). For some more background on this project read the following blogposts:
 
@@ -59,7 +59,7 @@ Then run a `dotnet build` and you'll find a .dacpac file with the same name as y
 
 > Note: For PackageReferences this SDK currently assumes that the `.dacpac` file has the same name as the package. If you plan to create a NuGet package out of your project (see [below](#packaging-support)) then make sure that `<TargetName>` matches the ID of your package.
 
-> Note: Ensure you **do not** change the `TargetFramework` element from `netstandard2.0` to anything else. Otherwise you will see errors like `The "CopyRefAssembly" task was not given a value for the required parameter "SourcePath"`.
+> Note: Ensure you **do not** change the `TargetFramework` element from `netstandard2.0` to anything else. Otherwise, you will see errors like `The "CopyRefAssembly" task was not given a value for the required parameter "SourcePath"`.
 
 ## Editing the Project file
 The project file can have extension `.csproj` or `.fsproj`.
@@ -70,7 +70,7 @@ To exclude files from the package, add a `<Content Remove="Directory\File.sql" /
 
 If you are using Visual Studio, to make files excluded from the package appear in Solution Explorer (like scripts for Pre- and Post-Deployment), add `<None Include="Directory\File.sql" />`.
 
-Wilcards cards are supported for all nodes (`Content`, `None`, etc.). For example, `<None Include="Directory\**" />`.
+Wildcards are supported for all nodes (`Content`, `None`, etc.). For example, `<None Include="Directory\**" />`.
 
 ## Item templates
 To create database objects you can use the following item templates:
@@ -86,7 +86,7 @@ To create database objects you can use the following item templates:
 | uddt | `dotnet new uddt -n <name> [-s <schema-name>]` | Creates a new user-defined data type with the provided name |
 | udtt | `dotnet new udtt -n <name> [-s <schema-name>]` | Creates a new user-defined table type with the provided name |
 
-> Note: In a future update of Visual Studio you should be able to use both the project template and the item templates directly from Visual Studio. This feature is currently in preview and some of our early testing has revealed that it doesn't work as expected. Stay tuned for updates on this.
+> Note: In a future update of Visual Studio, you should be able to use both the project template and the item templates directly from Visual Studio. This feature is currently in preview and some of our early testing has revealed that it doesn't work as expected. Stay tuned for updates on this.
 
 If you already have a SSDT (.sqlproj) project in your solution, you can keep that as a "companion" project in order to enjoy the Visual Studio designer experience, as described in [this blog post](https://erikej.github.io/efcore/2020/05/11/ssdt-dacpac-netcore.html).
 
@@ -119,7 +119,7 @@ Treating warnings as errors can be optionally enabled by adding a property `Trea
     </PropertyGroup>
 </Project>
 ```
-> Note: Alternatively one can use `TreatWarningsAsErrors` instead of `TreatTSqlWarningsAsErrors` to apply the same effect.
+> Note: Alternatively, you can use `TreatWarningsAsErrors` instead of `TreatTSqlWarningsAsErrors` to apply the same effect.
 
 To suppress specific warnings from being treated as errors, add a comma-separated list of warning codes to `SuppressTSqlWarnings` property in the project file:
 
@@ -151,7 +151,7 @@ You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` f
 > Note: Warnings suppressed at the project level are always applied to every file in the project, regardless of what is configured at the file level.
 
 ## Pre- and post deployment scripts
-Support for pre- and post deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
+Support for pre- and post-deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
 
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
@@ -186,7 +186,7 @@ By default the pre- and/or post-deployment script of referenced packages (both [
 ```
 
 ## SQLCMD variables
-Especially when using pre- and post deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported through the use of SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
+Especially when using pre- and post-deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.8.0">
@@ -207,7 +207,7 @@ Especially when using pre- and post deployment scripts, but also in other scenar
 </Project>
 ```
 
-> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty we'll fall back to `DefaultValue`.
+> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty, we'll fall back to `DefaultValue`.
 
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
@@ -239,9 +239,9 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 </Project>
 ```
 
-This will add a reference to the `tools\SomeOtherDacpac.dacpac` file inside the `MyDatabasePackage` package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However the build will most likely fail if your project actually references objects from the reference package.
+This will add a reference to the `tools\SomeOtherDacpac.dacpac` file inside the `MyDatabasePackage` package. Note that if that file doesn't exist within the package, the package reference will still be silently ignored. However, the build will most likely fail if your project actually references objects from the reference package.
 
-By default the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
+By default, the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.8.0">
@@ -333,7 +333,7 @@ Similar to package references you can also reference another project by using a 
 </Project>
 ```
 
-This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
+This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database, you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.8.0">
@@ -416,9 +416,6 @@ If you have an already-compiled `.dacpac` file without a corresponding `.csproj`
     <description>your-description</description>
     <authors>your-author</authors>
     <owners>your-owner</owners>
-    <packageTypes>
-      <packageType name="dacpac" />
-    </packageTypes>
   </metadata>
   <files>
     <file src="fileName.dacpac" target="tools/" />
@@ -462,7 +459,7 @@ To further customize the deployment process, you can use the following propertie
 | TargetName | Project name | Controls the name of the `.dacpac` created by `dotnet build`. The default name for the `.dacpac` file is the name of the project file, e.g. `MyProject.csproj` produces `MyProject.dacpac`. |
 | DeployOnPublish | True | Controls whether a deploy occurs when the project is published. |
 
-> IMPORTANT: Although you can set the username and password in your project file we don't recommend doing so since you'll be committing credentials to version control. Instead you should specify these at the command line when needed.
+> IMPORTANT: Although you can set the username and password in your project file we don't recommend doing so since you'll be committing credentials to version control. Instead, you should specify these at the command line when needed.
 
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions) deployment options. These are typically set in the project file, for example:
 
@@ -552,7 +549,7 @@ To use custom rules, place the rule .dll files in a `Rules` folder in the projec
 ```
 
 ## Workaround for parser errors (SQL46010)
-This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
+This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
 
 1. Exclude the file from the build entirely by changing its build action to None.
 1. Move the offending script to the pre- and/or post-deployment scripts.
