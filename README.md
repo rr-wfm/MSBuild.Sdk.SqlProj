@@ -387,7 +387,7 @@ In order to solve circular references between databases that may have been incor
 
 ## Packaging support
 
-`MSBuild.Sdk.SqlProj` version 2.8.0 and later supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command and does not require a `.nuspec` file.
+`MSBuild.Sdk.SqlProj` version 2.8.0 and later supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command.
 
 You'll need to set the `PackageProjectUrl` property in the `.csproj` like this:
 
