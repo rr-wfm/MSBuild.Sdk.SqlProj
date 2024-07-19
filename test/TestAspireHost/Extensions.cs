@@ -18,11 +18,11 @@ public static class Extensions
         return resource.Annotations.OfType<IProjectMetadata>().Single();
     }
 
-    public static IResourceBuilder<SqlServerDatabaseResource> WithDatabaseProject(
-        this IResourceBuilder<SqlServerDatabaseResource> builder, IResourceBuilder<DatabaseProjectResource> project)
+    public static IResourceBuilder<DatabaseProjectResource> DeployTo(
+        this IResourceBuilder<DatabaseProjectResource> builder, IResourceBuilder<SqlServerDatabaseResource> project)
     {
         builder.ApplicationBuilder.Services.TryAddLifecycleHook<DeployDatabaseProjectLifecycleHook>();
-        builder.WithAnnotation(new DatabaseProjectAnnotation(project.Resource.Name), ResourceAnnotationMutationBehavior.Replace);
+        builder.WithAnnotation(new TargetDatabaseResourceAnnotation(project.Resource.Name), ResourceAnnotationMutationBehavior.Replace);
         return builder;
     }
 }
@@ -48,7 +48,7 @@ public sealed class DatabaseProjectResource(string name) : Resource(name)
     }
 }
 
-public record DatabaseProjectAnnotation(string DatabaseProjectResourceName) : IResourceAnnotation
+public record TargetDatabaseResourceAnnotation(string TargetDatabaseResourceName) : IResourceAnnotation
 {
 }
 
@@ -65,32 +65,32 @@ public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecyc
 
     public async Task AfterResourcesCreatedAsync(DistributedApplicationModel application, CancellationToken cancellationToken)
     {
-        foreach (var database in application.Resources.OfType<SqlServerDatabaseResource>())
+        foreach (var databaseProject in application.Resources.OfType<DatabaseProjectResource>())
         {
-            var connectionString = await database.ConnectionStringExpression.GetValueAsync(cancellationToken);
-            foreach (var annotation in database.Annotations.OfType<DatabaseProjectAnnotation>())
+            var targetDatabaseResourceName = databaseProject.Annotations.OfType<TargetDatabaseResourceAnnotation>().Single().TargetDatabaseResourceName;
+            var targetDatabaseResource = application.Resources.OfType<SqlServerDatabaseResource>().Single(r => r.Name == targetDatabaseResourceName);
+            var connectionString = await targetDatabaseResource.ConnectionStringExpression.GetValueAsync(cancellationToken);
+
+            var logger = _resourceLoggerService.GetLogger(databaseProject);
+
+            await _resourceNotificationService.PublishUpdateAsync(databaseProject,
+                state => state with { State = new ResourceStateSnapshot("Deploying", KnownResourceStateStyles.Info) });
+
+            try
             {
-                var databaseProjectResource = application.Resources.OfType<DatabaseProjectResource>().Single(r => r.Name == annotation.DatabaseProjectResourceName);
-                var logger = _resourceLoggerService.GetLogger(databaseProjectResource);
+                var dacServices = new DacServices(connectionString);
+                dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
 
-                await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
-                    state => state with { State = new ResourceStateSnapshot("Deploying", KnownResourceStateStyles.Info) });
+                var dacpacPackage = DacPackage.Load(databaseProject.GetDacpacPath(), DacSchemaModelStorageType.Memory);
+                dacServices.Deploy(dacpacPackage, targetDatabaseResource.Name, true, new DacDeployOptions(), cancellationToken);
 
-                try {
-                    var dacServices = new DacServices(connectionString);
-                    dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
-
-                    var dacpacPackage = DacPackage.Load(databaseProjectResource.GetDacpacPath(), DacSchemaModelStorageType.Memory);
-                    dacServices.Deploy(dacpacPackage, database.Name, true, new DacDeployOptions(), cancellationToken);
-
-                    await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
-                        state => state with { State = new ResourceStateSnapshot("Deployed", KnownResourceStateStyles.Success) });
-                }
-                catch (Exception)
-                {
-                    await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
-                        state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
-                }
+                await _resourceNotificationService.PublishUpdateAsync(databaseProject,
+                    state => state with { State = new ResourceStateSnapshot("Deployed", KnownResourceStateStyles.Success) });
+            }
+            catch (Exception)
+            {
+                await _resourceNotificationService.PublishUpdateAsync(databaseProject,
+                    state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
             }
         }
     }
