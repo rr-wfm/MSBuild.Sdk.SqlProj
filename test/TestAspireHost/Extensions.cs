@@ -55,10 +55,12 @@ public record DatabaseProjectAnnotation(string DatabaseProjectResourceName) : IR
 public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecycleHook
 {
     private readonly ResourceLoggerService _resourceLoggerService;
+    private readonly ResourceNotificationService _resourceNotificationService;
 
-    public DeployDatabaseProjectLifecycleHook(ResourceLoggerService resourceLoggerService)
+    public DeployDatabaseProjectLifecycleHook(ResourceLoggerService resourceLoggerService, ResourceNotificationService resourceNotificationService)
     {
         _resourceLoggerService = resourceLoggerService ?? throw new ArgumentNullException(nameof(resourceLoggerService));
+        _resourceNotificationService = resourceNotificationService ?? throw new ArgumentNullException(nameof(resourceNotificationService));
     }
 
     public async Task AfterResourcesCreatedAsync(DistributedApplicationModel application, CancellationToken cancellationToken)
@@ -71,11 +73,24 @@ public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecyc
                 var databaseProjectResource = application.Resources.OfType<DatabaseProjectResource>().Single(r => r.Name == annotation.DatabaseProjectResourceName);
                 var logger = _resourceLoggerService.GetLogger(databaseProjectResource);
 
-                var dacServices = new DacServices(connectionString);
-                dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
+                await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
+                    state => state with { State = new ResourceStateSnapshot("Deploying", KnownResourceStateStyles.Info) });
 
-                var dacpacPackage = DacPackage.Load(databaseProjectResource.GetDacpacPath(), DacSchemaModelStorageType.Memory);
-                dacServices.Deploy(dacpacPackage, database.Name, true, new DacDeployOptions(), cancellationToken);
+                try {
+                    var dacServices = new DacServices(connectionString);
+                    dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
+
+                    var dacpacPackage = DacPackage.Load(databaseProjectResource.GetDacpacPath(), DacSchemaModelStorageType.Memory);
+                    dacServices.Deploy(dacpacPackage, database.Name, true, new DacDeployOptions(), cancellationToken);
+
+                    await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
+                        state => state with { State = new ResourceStateSnapshot("Deployed", KnownResourceStateStyles.Success) });
+                }
+                catch (Exception)
+                {
+                    await _resourceNotificationService.PublishUpdateAsync(databaseProjectResource,
+                        state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
+                }
             }
         }
     }
