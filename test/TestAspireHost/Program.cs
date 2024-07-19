@@ -4,6 +4,6 @@ var sql = builder.AddSqlServer("sql")
                  .AddDatabase("test");
 
 builder.AddDatabaseProject<Projects.TestProject>("db")
-       .DeployTo(sql);
+       .PublishTo(sql);
 
 builder.Build().Run();
