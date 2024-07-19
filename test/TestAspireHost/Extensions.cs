@@ -54,11 +54,11 @@ public record DatabaseProjectAnnotation(string DatabaseProjectResourceName) : IR
 
 public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecycleHook
 {
-    private readonly ILogger<DeployDatabaseProjectLifecycleHook> _logger;
+    private readonly ResourceLoggerService _resourceLoggerService;
 
-    public DeployDatabaseProjectLifecycleHook(ILogger<DeployDatabaseProjectLifecycleHook> logger)
+    public DeployDatabaseProjectLifecycleHook(ResourceLoggerService resourceLoggerService)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _resourceLoggerService = resourceLoggerService ?? throw new ArgumentNullException(nameof(resourceLoggerService));
     }
 
     public async Task AfterResourcesCreatedAsync(DistributedApplicationModel application, CancellationToken cancellationToken)
@@ -68,10 +68,12 @@ public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecyc
             var connectionString = await database.ConnectionStringExpression.GetValueAsync(cancellationToken);
             foreach (var annotation in database.Annotations.OfType<DatabaseProjectAnnotation>())
             {
-                var dacServices = new DacServices(connectionString);
-                dacServices.Message += (sender, args) => _logger.LogInformation(args.Message.ToString());
-
                 var databaseProjectResource = application.Resources.OfType<DatabaseProjectResource>().Single(r => r.Name == annotation.DatabaseProjectResourceName);
+                var logger = _resourceLoggerService.GetLogger(databaseProjectResource);
+
+                var dacServices = new DacServices(connectionString);
+                dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
+
                 var dacpacPackage = DacPackage.Load(databaseProjectResource.GetDacpacPath(), DacSchemaModelStorageType.Memory);
                 dacServices.Deploy(dacpacPackage, database.Name, true, new DacDeployOptions(), cancellationToken);
             }
