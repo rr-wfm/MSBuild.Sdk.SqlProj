@@ -1,4 +1,6 @@
 using Aspire.Hosting.Lifecycle;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Locator;
 using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
 
@@ -7,6 +9,9 @@ public static class Extensions
     public static IResourceBuilder<DatabaseProjectResource> AddDatabaseProject<TProject>(this IDistributedApplicationBuilder builder, string name)
         where TProject : IProjectMetadata, new()
     {
+        MSBuildLocator.RegisterInstance(MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(
+            instance => instance.Version).First());
+
         var resource = new DatabaseProjectResource(name);
         
         return builder.AddResource(resource)
@@ -18,7 +23,7 @@ public static class Extensions
         return resource.Annotations.OfType<IProjectMetadata>().Single();
     }
 
-    public static IResourceBuilder<DatabaseProjectResource> DeployTo(
+    public static IResourceBuilder<DatabaseProjectResource> PublishTo(
         this IResourceBuilder<DatabaseProjectResource> builder, IResourceBuilder<SqlServerDatabaseResource> project)
     {
         builder.ApplicationBuilder.Services.TryAddLifecycleHook<DeployDatabaseProjectLifecycleHook>();
@@ -32,19 +37,8 @@ public sealed class DatabaseProjectResource(string name) : Resource(name)
     public string GetDacpacPath()
     {
         var projectPath = this.GetProjectMetadata().ProjectPath;
-        var projectDirectory = Path.GetDirectoryName(projectPath);
-        if (projectDirectory == null)
-        {
-            throw new InvalidOperationException("Unable to determine parent directory of project path.");
-        }
-
-        var dacpacPath = Path.Combine(projectDirectory, "bin", "Debug", "netstandard2.0", Path.GetFileNameWithoutExtension(projectPath) + ".dacpac");
-        if (!File.Exists(dacpacPath))
-        {
-            throw new InvalidOperationException($"Dacpac not found at '{dacpacPath}'.");
-        }
-
-        return dacpacPath;
+        var project = new Project(projectPath);
+        return project.GetPropertyValue("TargetPath");
     }
 }
 
@@ -87,8 +81,10 @@ public class DeployDatabaseProjectLifecycleHook : IDistributedApplicationLifecyc
                 await _resourceNotificationService.PublishUpdateAsync(databaseProject,
                     state => state with { State = new ResourceStateSnapshot("Deployed", KnownResourceStateStyles.Success) });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Failed to deploy database project.");
+
                 await _resourceNotificationService.PublishUpdateAsync(databaseProject,
                     state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
             }
