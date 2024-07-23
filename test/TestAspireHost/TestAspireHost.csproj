@@ -12,13 +12,11 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="8.0.2" />
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="8.0.2" />
-    <PackageReference Include="Microsoft.Build" Version="17.10.4" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.566" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" />
+    <ProjectReference Include="..\..\src\MSBuild.Sdk.SqlProj.Aspire\MSBuild.Sdk.SqlProj.Aspire.csproj" IsAspireProjectResource="False" />
   </ItemGroup>
 
 </Project>
