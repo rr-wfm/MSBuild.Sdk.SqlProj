@@ -7,6 +7,7 @@
     <IsPackable>true</IsPackable>
     <PackageTags>aspire hosting sqlserver sql dacfx sqlproj</PackageTags>
     <Description>.NET Aspire integration for MSBuild.Sdk.SqlProj projects</Description>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,10 @@
     <PackageReference Include="Microsoft.Build" Version="17.10.4" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.566" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="readme.md" Link="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
