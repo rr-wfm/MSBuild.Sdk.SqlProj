@@ -19,8 +19,7 @@ public static class DataTierApplicationBuilderExtensions
     {
         if (!MSBuildLocator.IsRegistered)
         {
-            MSBuildLocator.RegisterInstance(MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(
-                instance => instance.Version).First());
+            MSBuildLocator.RegisterDefaults();
         }
 
         var resource = new DataTierApplicationResource(name);
