@@ -65,12 +65,23 @@ jobs:
     - name: dotnet pack SDK
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
+    # Package Aspire integration
+    - name: dotnet pack Aspire
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Aspire/MSBuild.Sdk.SqlProj.Aspire.csproj
+
     # Upload SDK package
     - name: upload SDK
       uses: actions/upload-artifact@v4
       with:
         name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
+    
+    # Upload Aspire package
+    - name: upload SDK
+      uses: actions/upload-artifact@v4
+      with:
+        name: aspire-package
+        path: ./src/MSBuild.Sdk.SqlProj.Aspire/bin/Release/    
     
     # Package TestProject
     - name: dotnet pack TestProject
