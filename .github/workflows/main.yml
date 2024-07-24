@@ -26,16 +26,11 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         submodules: 'true' # need to check out the SqlTools submodule to build successfully.
 
-    # Install .NET SDK's for 6.0 and 7.0
+    # Install .NET SDK's for 6.0 and 8.0
     - name: Setup dotnet 6.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
-
-    - name: Setup dotnet 7.0
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '7.0.x'
 
     - name: Setup dotnet 8.0
       uses: actions/setup-dotnet@v4
@@ -70,12 +65,23 @@ jobs:
     - name: dotnet pack SDK
       run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
 
+    # Package Aspire integration
+    - name: dotnet pack Aspire
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Aspire/MSBuild.Sdk.SqlProj.Aspire.csproj
+
     # Upload SDK package
     - name: upload SDK
       uses: actions/upload-artifact@v4
       with:
         name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
+    
+    # Upload Aspire package
+    - name: upload SDK
+      uses: actions/upload-artifact@v4
+      with:
+        name: aspire-package
+        path: ./src/MSBuild.Sdk.SqlProj.Aspire/bin/Release/    
     
     # Package TestProject
     - name: dotnet pack TestProject
@@ -112,7 +118,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-22.04", "macos-13", "windows-2022" ]
-        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
+        dotnet: [ '6.0.x', '8.0.x' ]
       fail-fast: false
 
     steps:
