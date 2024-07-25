@@ -8,6 +8,12 @@
     <PackageTags>aspire hosting sqlserver sql dacfx sqlproj</PackageTags>
     <Description>.NET Aspire integration for MSBuild.Sdk.SqlProj projects</Description>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
