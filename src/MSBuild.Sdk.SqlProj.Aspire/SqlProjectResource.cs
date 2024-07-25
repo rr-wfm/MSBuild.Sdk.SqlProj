@@ -4,7 +4,7 @@ using Microsoft.Build.Evaluation;
 
 namespace MSBuild.Sdk.SqlProj.Aspire;
 
-public sealed class DataTierApplicationResource(string name) : Resource(name)
+public sealed class SqlProjectResource(string name) : Resource(name)
 {
     public string GetDacpacPath()
     {
@@ -22,6 +22,6 @@ public sealed class DataTierApplicationResource(string name) : Resource(name)
             return dacpacMetadata.DacpacPath;
         }
 
-        throw new InvalidOperationException($"Unable to locate data-tier application package for resource {Name}.");
+        throw new InvalidOperationException($"Unable to locate SQL Server Database project package for resource {Name}.");
     }
 }

@@ -24,7 +24,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var sql = builder.AddSqlServer("sql")
                  .AddDatabase("test");
 
-builder.AddDataTierApplication<Projects.MySqlProj>("mysqlproj")
+builder.AddSqlProject<Projects.MySqlProj>("mysqlproj")
        .PublishTo(sql);
 
 builder.Build().Run();
@@ -33,7 +33,7 @@ builder.Build().Run();
 Now when you run your .NET Aspire AppHost project you will see the SQL Database Project being published to the specified SQL Server.
 
 ## Local .dacpac file support
-If you are sourcing your data-tier application package (.dacpac) file from somewhere other than a project reference, you can also specify the path to the .dacpac file directly:
+If you are sourcing your .dacpac file from somewhere other than a project reference, you can also specify the path to the .dacpac file directly:
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -41,7 +41,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 var sql = builder.AddSqlServer("sql")
                  .AddDatabase("test");
 
-builder.AddDataTierApplication("mysqlproj", "path/to/mysqlproj.dacpac")
+builder.AddSqlProject("mysqlproj")
+       .FromDacpac("path/to/mysqlproj.dacpac")
        .PublishTo(sql);
 
 builder.Build().Run();
