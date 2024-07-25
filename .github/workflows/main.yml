@@ -77,7 +77,7 @@ jobs:
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
     # Upload Aspire package
-    - name: upload SDK
+    - name: upload Aspire
       uses: actions/upload-artifact@v4
       with:
         name: aspire-package
@@ -363,6 +363,14 @@ jobs:
       id: download-template-package
       with:
         name: template-package
+        path: ~/nuget-packages
+
+    # Download Aspire package
+    - name: download-aspire-package
+      uses: actions/download-artifact@v4
+      id: download-aspire-package
+      with:
+        name: aspire-package
         path: ~/nuget-packages
 
     - name: Display structure of downloaded files
