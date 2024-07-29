@@ -548,6 +548,16 @@ To use custom rules, place the rule .dll files in a `Rules` folder in the projec
   </ItemGroup>
 ```
 
+## Integrations
+
+`MSBuild.Sdk.SqlProj` integrates with a number of other technologies and tools. Here are some examples:
+
+- [MSBuild.Sdk.SqlProj.Aspire](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj.Aspire) - Library that provides .NET Aspire integration for MSBuild.Sdk.SqlPproj projects. It allows you to publish SQL Database Projects as part of your .NET Aspire AppHost projects.
+
+- [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
+
+- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes directly from your `MSBuild.Sdk.SqlProj` project.
+
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
 
