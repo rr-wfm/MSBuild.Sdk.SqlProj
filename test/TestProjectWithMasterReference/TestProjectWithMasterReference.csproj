@@ -6,6 +6,7 @@
       <SqlServerVersion>Sql150</SqlServerVersion>
       <RecoveryMode>Simple</RecoveryMode>
       <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
+      <GenerateCreateScript>True</GenerateCreateScript>
     </PropertyGroup>
 
     <ItemGroup>
