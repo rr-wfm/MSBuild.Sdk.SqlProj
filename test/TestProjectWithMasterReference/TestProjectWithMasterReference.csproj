@@ -1,15 +1,16 @@
-<Project>
+﻿<Project>
     <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
   
     <PropertyGroup>
       <TargetFramework>netstandard2.0</TargetFramework>
       <SqlServerVersion>Sql150</SqlServerVersion>
       <RecoveryMode>Simple</RecoveryMode>
+      <GenerateCreateScript>True</GenerateCreateScript>
       <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="150.0.0" DacpacName="master" />
+      <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="150.0.0" DacpacName="master" DatabaseVariableLiteralValue="master" />
     </ItemGroup>
   
     <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
