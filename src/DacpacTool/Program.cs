@@ -134,6 +134,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
             }
 
+            var modelExceptions = false;
+
             // Add input files by iterating through $Project.InputFiles.txt
             if (options.InputFile != null)
             {
@@ -142,7 +144,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     foreach (var line in File.ReadLines(options.InputFile.FullName))
                     {
                         FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
-                        packageBuilder.AddInputFile(inputFile);
+                        if (!packageBuilder.AddInputFile(inputFile))
+                        {
+                            modelExceptions = true;
+                        }
                     }
                 }
                 else
@@ -176,7 +181,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Validate the model
-            if (!packageBuilder.ValidateModel())
+            if (modelExceptions || !packageBuilder.ValidateModel())
             {
                 return 1;
             }

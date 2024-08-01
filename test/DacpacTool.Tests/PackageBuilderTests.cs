@@ -7,7 +7,6 @@ using System.Reflection;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute.ExceptionExtensions;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
@@ -47,10 +46,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
-            packageBuilder.AddInputFile(new FileInfo("../../../../TestProject/Tables/MyTable.sql"));
+            var result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProject/Tables/MyTable.sql"));
 
             // Assert
+            result.ShouldBe(true);
             packageBuilder.Model.GetObject(Table.TypeClass, new ObjectIdentifier("dbo", "MyTable"), DacQueryScopes.Default).ShouldNotBeNull();
+        }
+
+        [TestMethod]
+        public void AddInputFile_FileExists_WithInvalidSyntax()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder();
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            var result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProjectWithExceptions/Tables/MyTable.sql"));
+
+            // Assert
+            result.ShouldBe(false);
         }
 
         [TestMethod]

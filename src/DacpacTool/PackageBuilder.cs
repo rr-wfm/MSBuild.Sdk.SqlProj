@@ -58,7 +58,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Model.AddSqlCmdVariables(variables);
         }
 
-        public void AddInputFile(FileInfo inputFile)
+        public bool AddInputFile(FileInfo inputFile)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -73,11 +73,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
                 && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             {
-                return;
+                return true;
             }
 
             Console.WriteLine($"Adding {inputFile.FullName} to the model");
-            Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+
+            try
+            {
+                TSqlObjectOptions sqlObjectOptions = new TSqlObjectOptions();
+                Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+                return true;
+            }
+            catch (DacModelException dex)
+            {
+                Console.WriteLine(dex.Format(inputFile.Name));
+                return false;
+            }
         }
 
         public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
