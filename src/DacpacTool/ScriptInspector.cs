@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal sealed class ScriptInspector
+    public sealed class ScriptInspector
     {
         private readonly List<string> _includedFiles = new List<string>();
         public IEnumerable<string> IncludedFiles

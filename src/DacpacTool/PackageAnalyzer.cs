@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal sealed class PackageAnalyzer
+    public sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
         private readonly HashSet<string> _ignoredRules = new();

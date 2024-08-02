@@ -8,7 +8,7 @@ using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal sealed class PackageDeployer : IBatchEventsHandler
+    public sealed class PackageDeployer : IBatchEventsHandler
     {
         private readonly IConsole _console;
         private string _currentSource;

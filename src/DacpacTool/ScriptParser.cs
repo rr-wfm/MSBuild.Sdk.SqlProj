@@ -8,7 +8,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal sealed class ScriptParser : ICommandHandler, IDisposable
+    public sealed class ScriptParser : ICommandHandler, IDisposable
     {
         private readonly Parser _parser;
         private bool _parsed;

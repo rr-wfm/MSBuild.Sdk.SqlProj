@@ -11,7 +11,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal sealed class PackageBuilder : IDisposable
+    public sealed class PackageBuilder : IDisposable
     {
         private readonly IConsole _console;
         private bool? _modelValid;

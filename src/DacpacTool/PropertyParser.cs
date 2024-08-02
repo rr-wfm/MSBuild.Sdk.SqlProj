@@ -11,7 +11,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// <summary>
     /// Allows to parse properties from build or deploy options
     /// </summary>
-    internal static class PropertyParser
+    public static class PropertyParser
     {
         private static readonly Dictionary<string, Func<string, object>> CustomParsers = new Dictionary<string, Func<string, object>>();
 
