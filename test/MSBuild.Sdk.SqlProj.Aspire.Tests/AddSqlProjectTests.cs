@@ -83,9 +83,4 @@ public class AddSqlProjectTests
         var lifecycleHooks = app.Services.GetServices<IDistributedApplicationLifecycleHook>();
         Assert.Single(lifecycleHooks.OfType<PublishSqlProjectLifecycleHook>());
     }
-
-    private class TestProject : IProjectMetadata
-    {
-        public string ProjectPath { get; } = "../../../../TestProject/TestProject.csproj";
-    }
 }
