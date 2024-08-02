@@ -12,15 +12,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class PackageBuilder : IDisposable
     {
+        private readonly IConsole _console;
         private bool? _modelValid;
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
 
+        public PackageBuilder(IConsole console)
+        {
+            _console = console ?? throw new ArgumentNullException(nameof(console));
+        }
+
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
-            Console.WriteLine($"Using SQL Server version {version}");
+            _console.WriteLine($"Using SQL Server version {version}");
         }
 
         public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
@@ -30,7 +36,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             ValidateReference(referenceFile);
 
-            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
             Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
@@ -58,7 +64,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Model.AddSqlCmdVariables(variables);
         }
 
-        public void AddInputFile(FileInfo inputFile)
+        public bool AddInputFile(FileInfo inputFile)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -73,11 +79,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
                 && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             {
-                return;
+                return true;
             }
 
-            Console.WriteLine($"Adding {inputFile.FullName} to the model");
-            Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+            _console.WriteLine($"Adding {inputFile.FullName} to the model");
+
+            try
+            {
+                TSqlObjectOptions sqlObjectOptions = new TSqlObjectOptions();
+                Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+                return true;
+            }
+            catch (DacModelException dex)
+            {
+                _console.WriteLine(dex.Format(inputFile.Name));
+                return false;
+            }
         }
 
         public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
@@ -103,7 +120,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
-                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
+                    _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
                 }
                 else if (modelError.Severity == ModelErrorSeverity.Warning)
                 {
@@ -111,14 +128,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 else
                 {
-                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
+                    _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
                 }
             }
 
             if (validationErrors > 0)
             {
                 _modelValid = false;
-                Console.WriteLine($"Found {validationErrors} error(s), skip building package");
+                _console.WriteLine($"Found {validationErrors} error(s), skip building package");
             }
             else
             {
@@ -140,7 +157,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     validationErrors++;
                 }
 
-                Console.WriteLine(modelError.GetOutputMessage(TreatTSqlWarningsAsErrors
+                _console.WriteLine(modelError.GetOutputMessage(TreatTSqlWarningsAsErrors
                     ? ModelErrorSeverity.Error
                     : ModelErrorSeverity.Warning));
             }
@@ -157,11 +174,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (outputFile.Exists)
             {
                 // Delete the existing file
-                Console.WriteLine($"Deleting existing file {outputFile.FullName}");
+                _console.WriteLine($"Deleting existing file {outputFile.FullName}");
                 outputFile.Delete();
             }
 
-            Console.WriteLine($"Writing model to {outputFile.FullName}");
+            _console.WriteLine($"Writing model to {outputFile.FullName}");
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
@@ -173,7 +190,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 Version = version,
             };
 
-            Console.WriteLine($"Using package name {name} and version {version}");
+            _console.WriteLine($"Using package name {name} and version {version}");
         }
 
         public void SetProperty(string key, string value)
@@ -258,7 +275,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                 property.SetValue(Options, propertyValue);
 
-                Console.WriteLine($"Setting property {key} to value {value}");
+                _console.WriteLine($"Setting property {key} to value {value}");
             }
             catch (FormatException)
             {
@@ -320,7 +337,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
             {
-                Console.WriteLine($"Adding {script.FullName} to package");
+                _console.WriteLine($"Adding {script.FullName} to package");
                 WritePart(script, package, path);
 
                 package.Close();
@@ -388,7 +405,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             var scriptFileName = $"{databaseName}_Create.sql";
-            Console.WriteLine($"Generating create script {scriptFileName}");
+            _console.WriteLine($"Generating create script {scriptFileName}");
 
             using var package = DacPackage.Load(dacpacFile.FullName);
             using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));

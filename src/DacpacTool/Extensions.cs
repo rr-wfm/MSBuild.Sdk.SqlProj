@@ -72,6 +72,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return outputMessageBuilder.ToString();
         }
 
+        public static string Format(this DacModelException exception, string fileName)
+        {
+            var stringBuilder = new StringBuilder();
+
+            foreach (var modelError in exception.Messages)
+            {
+                stringBuilder.Append(fileName);
+                stringBuilder.Append('(');
+                stringBuilder.Append("1");
+                stringBuilder.Append(',');
+                stringBuilder.Append("1");
+                stringBuilder.Append("):");
+                stringBuilder.Append(' ');
+                stringBuilder.Append("Error");
+                stringBuilder.Append(' ');
+                stringBuilder.Append(modelError.Prefix);
+                stringBuilder.Append(modelError.Number);
+                stringBuilder.Append(": ");
+                stringBuilder.Append(modelError.Message);
+            }
+
+            return stringBuilder.ToString();
+        }
+
         public static string GetPreDeploymentScript(this DacPackage package)
         {
             var stream = package.PreDeploymentScript;
