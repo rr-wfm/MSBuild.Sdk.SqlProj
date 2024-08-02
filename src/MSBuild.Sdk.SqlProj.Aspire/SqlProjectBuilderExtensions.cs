@@ -1,6 +1,8 @@
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Microsoft.Build.Locator;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MSBuild.Sdk.SqlProj.Aspire;
 
 namespace Aspire.Hosting;
@@ -66,6 +68,7 @@ public static class SqlProjectBuilderExtensions
     public static IResourceBuilder<SqlProjectResource> PublishTo(
         this IResourceBuilder<SqlProjectResource> builder, IResourceBuilder<SqlServerDatabaseResource> target)
     {
+        builder.ApplicationBuilder.Services.TryAddSingleton<IDacpacDeployer, DacpacDeployer>();
         builder.ApplicationBuilder.Services.TryAddLifecycleHook<PublishSqlProjectLifecycleHook>();
         builder.WithAnnotation(new TargetDatabaseResourceAnnotation(target.Resource.Name), ResourceAnnotationMutationBehavior.Replace);
         return builder;

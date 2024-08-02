@@ -7,12 +7,14 @@ namespace MSBuild.Sdk.SqlProj.Aspire;
 
 public class PublishSqlProjectLifecycleHook : IDistributedApplicationLifecycleHook
 {
+    private readonly IDacpacDeployer _deployer;
     private readonly ResourceLoggerService _resourceLoggerService;
     private readonly ResourceNotificationService _resourceNotificationService;
 
-    public PublishSqlProjectLifecycleHook(ResourceLoggerService resourceLoggerService,
+    public PublishSqlProjectLifecycleHook(IDacpacDeployer deployer, ResourceLoggerService resourceLoggerService,
         ResourceNotificationService resourceNotificationService)
     {
+        _deployer = deployer ?? throw new ArgumentNullException(nameof(deployer));
         _resourceLoggerService = resourceLoggerService ?? throw new ArgumentNullException(nameof(resourceLoggerService));
         _resourceNotificationService = resourceNotificationService ?? throw new ArgumentNullException(nameof(resourceNotificationService));
     }
@@ -35,17 +37,20 @@ public class PublishSqlProjectLifecycleHook : IDistributedApplicationLifecycleHo
             var targetDatabaseResourceName = sqlProject.Annotations.OfType<TargetDatabaseResourceAnnotation>().Single().TargetDatabaseResourceName;
             var targetDatabaseResource = application.Resources.OfType<SqlServerDatabaseResource>().Single(r => r.Name == targetDatabaseResourceName);
             var connectionString = await targetDatabaseResource.ConnectionStringExpression.GetValueAsync(cancellationToken);
+            if (connectionString == null)
+            {
+                logger.LogError("Failed to retrieve connection string for target database {TargetDatabaseResourceName}.", targetDatabaseResourceName);
+                await _resourceNotificationService.PublishUpdateAsync(sqlProject,
+                    state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
+                continue;
+            }
 
             await _resourceNotificationService.PublishUpdateAsync(sqlProject,
                 state => state with { State = new ResourceStateSnapshot("Publishing", KnownResourceStateStyles.Info) });
 
             try
             {
-                var dacServices = new DacServices(connectionString);
-                dacServices.Message += (sender, args) => logger.LogInformation(args.Message.ToString());
-
-                var dacpacPackage = DacPackage.Load(dacpacPath, DacSchemaModelStorageType.Memory);
-                dacServices.Deploy(dacpacPackage, targetDatabaseResource.Name, true, new DacDeployOptions(), cancellationToken);
+                _deployer.Deploy(dacpacPath, connectionString, targetDatabaseResource.DatabaseName, logger, cancellationToken);
 
                 await _resourceNotificationService.PublishUpdateAsync(sqlProject,
                     state => state with { State = new ResourceStateSnapshot("Published", KnownResourceStateStyles.Success) });

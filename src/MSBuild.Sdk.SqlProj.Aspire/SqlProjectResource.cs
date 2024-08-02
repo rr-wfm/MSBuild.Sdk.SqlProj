@@ -12,7 +12,8 @@ public sealed class SqlProjectResource(string name) : Resource(name)
         if (projectMetadata != null)
         {
             var projectPath = projectMetadata.ProjectPath;
-            var project = new Project(projectPath);
+            using var projectCollection = new ProjectCollection();
+            var project = projectCollection.LoadProject(projectPath);
             return project.GetPropertyValue("TargetPath");
         }
 
