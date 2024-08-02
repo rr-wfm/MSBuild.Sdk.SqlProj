@@ -309,7 +309,7 @@ Microsoft has recently released NuGet packages containing the definitions of the
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.1" DacpacName="master" />
+        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.1" DacpacName="master" DatabaseVariableLiteralValue="master" />
     </ItemGroup>
 </Project>
 ```
