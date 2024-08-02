@@ -86,7 +86,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             WaitForDebuggerToAttach(options);
 
             // Set metadata for the package
-            using var packageBuilder = new PackageBuilder();
+            using var packageBuilder = new PackageBuilder(new ActualConsole());
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)

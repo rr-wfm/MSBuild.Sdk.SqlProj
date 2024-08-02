@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void UsingVersion()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
 
             // Act
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
@@ -31,7 +31,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void AddInputFile_FileDoesNotExist()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -42,7 +42,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void AddInputFile_FileExists()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -57,21 +57,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void AddInputFile_FileExists_WithInvalidSyntax()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var console = new TestConsole();
+            var packageBuilder = new PackageBuilder(console);
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
             var result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProjectWithExceptions/Tables/MyTable.sql"));
+            result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProjectWithExceptions/Tables/MyTable2.sql"));
 
             // Assert
             result.ShouldBe(false);
+            console.Lines.Count.ShouldBe(5);
+            console.Lines[4].ShouldBe("MyTable2.sql(1,1): Error SQL71006: Only one statement is allowed per batch. A batch separator, such as 'GO', might be required between statements.");
         }
 
         [TestMethod]
         public void AddReference_FileDoesNotExist()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
@@ -87,7 +91,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
                 .SaveAsPackage(".dll");
 
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act & Assert
@@ -105,7 +109,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var reference = new TestModelBuilder()
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
                 .SaveAsPackage();
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -125,7 +129,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var reference = new TestModelBuilder()
                 .AddStoredProcedure("MyStoredProcedure", "SELECT 1;")
                 .SaveAsPackage();
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -152,7 +156,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             model1.AddReference(model2File, "Model2", true);
             model1.AddView("View1", "SELECT Col2 FROM [Model2].[dbo].[Table2]");
             var model1File = model1.SaveAsPackage();
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -180,7 +184,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             model1.AddReference(model2File, "Model2", false);
             model1.AddView("View1", "SELECT Col2 FROM [Model2].[dbo].[Table2]");
             var model1File = model1.SaveAsPackage();
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
             // Act
@@ -204,7 +208,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var first = "DbReader";
             var second = "DbWriter";
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
@@ -243,7 +247,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var first = "DbReader=dbReaderValue";
             var second = "DbWriter=dbWriterValue";
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
@@ -280,7 +284,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -325,7 +329,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -359,7 +363,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -388,7 +392,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -414,7 +418,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
@@ -428,7 +432,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
@@ -442,7 +446,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -462,7 +466,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -482,7 +486,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.ValidateModel();
@@ -499,7 +503,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetProperty_Valid(PropertyInfo property, string value, object expected)
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
 
             // Act
             packageBuilder.SetProperty(property.Name, value);
@@ -512,7 +516,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetProperty_UnknownProperty()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
 
             // Act & Assert
             Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("MyUnknownProperty", "MyValue"));
@@ -522,7 +526,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetProperty_InvalidValue()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
 
             // Act
             Should.Throw<ArgumentException>(() => packageBuilder.SetProperty("QueryStoreIntervalLength", "MyFancyText"));
@@ -532,7 +536,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void SetMetadata()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
 
             // Act
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
@@ -546,7 +550,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_ValidModel()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT 1 END");
@@ -562,7 +566,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_Warnings()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
@@ -578,7 +582,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_WarningsAsErrors()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.TreatTSqlWarningsAsErrors = true;
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
@@ -596,7 +600,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_WarningsAsErrorsSuppressGlobal()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.TreatTSqlWarningsAsErrors = true;
             packageBuilder.AddWarningsToSuppress("71502");
@@ -614,7 +618,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_WarningsAsErrorsSuppressSpecific()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.TreatTSqlWarningsAsErrors = true;
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
@@ -636,7 +640,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ValidateModel_Errors()
         {
             // Arrange
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] @p_Parameter [dbo].[CustomType] AS BEGIN SELECT 1 END");
@@ -653,7 +657,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.ValidateModel();
@@ -675,7 +679,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageName = "MyPackage";
 
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata(packageName, "1.0.0.0");
             packageBuilder.ValidateModel();
@@ -707,7 +711,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             .SaveAsPackage();
 
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata(packageName, "1.0.0.0");
             packageBuilder.AddReference(firstReference);
@@ -748,7 +752,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder();
+            var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.SetMetadata(null, "1.0.0.0");
             packageBuilder.ValidateModel();
