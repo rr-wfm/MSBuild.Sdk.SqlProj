@@ -1,3 +1,4 @@
+-- This file has deliberate errors (a GO is missing)
 CREATE TABLE [dbo].[MyTable2]
 (
     Column1 nvarchar(100),
