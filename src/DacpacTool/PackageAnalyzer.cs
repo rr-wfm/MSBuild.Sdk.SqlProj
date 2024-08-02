@@ -7,12 +7,13 @@ using System.Linq;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageAnalyzer
+    internal sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
         private readonly HashSet<string> _ignoredRules = new();
         private readonly HashSet<string> _ignoredRuleSets = new();
         private readonly HashSet<string> _errorRuleSets = new();
+        private readonly char[] separator = new[] { ';' };
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
         {
@@ -48,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     service.SetProblemSuppressor(p => 
                         _ignoredRules.Contains(p.Rule.RuleId) 
-                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s)));
+                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 var result = service.Analyze(model);
@@ -82,13 +83,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (!string.IsNullOrWhiteSpace(rulesExpression))
             {
-                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                foreach (var rule in rulesExpression.Split(separator,
                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                         .Where(rule => rule
-                            .StartsWith("-", StringComparison.OrdinalIgnoreCase)
+                            .StartsWith('-')
                                 && rule.Length > 1))
                 {
-                    if (rule.Length > 2 && rule.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                    if (rule.Length > 2 && rule.EndsWith('*'))
                     {
                         _ignoredRuleSets.Add(rule[1..^1]);
                     }
@@ -97,7 +98,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         _ignoredRules.Add(rule[1..]);
                     }
                 }
-                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                foreach (var rule in rulesExpression.Split(separator,
                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                         .Where(rule => rule
                             .StartsWith("+!", StringComparison.OrdinalIgnoreCase)

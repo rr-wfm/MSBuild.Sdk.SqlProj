@@ -9,7 +9,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// <summary>
     /// A wrapper for <see cref="SqlRuleProblem" /> that provides MSBuild compatible output and source document information.
     /// </summary>
-    public static class SqlRuleProblemExtensions
+    internal static class SqlRuleProblemExtensions
     {
         public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules)
         {
@@ -23,8 +23,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             var wildCardErrorRules = errorRules
-                .Where(r => r.EndsWith("*", StringComparison.OrdinalIgnoreCase));
-            if (wildCardErrorRules.Any(s => sqlRuleProblem.RuleId.StartsWith(s[..^1])))
+                .Where(r => r.EndsWith('*'));
+            if (wildCardErrorRules.Any(s => sqlRuleProblem.RuleId.StartsWith(s[..^1], StringComparison.OrdinalIgnoreCase)))
             {
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }

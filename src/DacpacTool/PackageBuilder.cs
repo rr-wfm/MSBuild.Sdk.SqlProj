@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -10,7 +11,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageBuilder : IDisposable
+    internal sealed class PackageBuilder : IDisposable
     {
         private readonly IConsole _console;
         private bool? _modelValid;
@@ -40,7 +41,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
-        private void ValidateReference(string referenceFile)
+        private static void ValidateReference(string referenceFile)
         {
             // Make sure the file exists
             if (!File.Exists(referenceFile))
@@ -50,7 +51,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             // Make sure the file is a .dacpac file
             string fileType = Path.GetExtension(referenceFile);
-            if (fileType.ToLower() != ".dacpac")
+            if (!fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac", nameof(referenceFile));
             }
@@ -200,13 +201,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 // Convert value into the appropriate type depending on the key
                 var propertyValue = key switch
                 {
-                    "QueryStoreIntervalLength" => int.Parse(value),
-                    "QueryStoreFlushInterval" => int.Parse(value),
+                    "QueryStoreIntervalLength" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "QueryStoreFlushInterval" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QueryStoreDesiredState" => Enum.Parse(typeof(QueryStoreDesiredState), value),
                     "QueryStoreCaptureMode" => Enum.Parse(typeof(QueryStoreCaptureMode), value),
                     "ParameterizationOption" => Enum.Parse(typeof(ParameterizationOption), value),
                     "PageVerifyMode" => Enum.Parse(typeof(PageVerifyMode), value),
-                    "QueryStoreMaxStorageSize" => int.Parse(value),
+                    "QueryStoreMaxStorageSize" => int.Parse(value, CultureInfo.InvariantCulture),
                     "NumericRoundAbortOn" => bool.Parse(value),
                     "NestedTriggersOn" => bool.Parse(value),
                     "HonorBrokerPriority" => bool.Parse(value),
@@ -216,16 +217,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "DbScopedConfigQueryOptimizerHotfixes" => bool.Parse(value),
                     "NonTransactedFileStreamAccess" => Enum.Parse(typeof(NonTransactedFileStreamAccess), value),
                     "DbScopedConfigParameterSniffingSecondary" => bool.Parse(value),
-                    "QueryStoreMaxPlansPerQuery" => int.Parse(value),
+                    "QueryStoreMaxPlansPerQuery" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QuotedIdentifierOn" => bool.Parse(value),
                     "VardecimalStorageFormatOn" => bool.Parse(value),
-                    "TwoDigitYearCutoff" => short.Parse(value),
+                    "TwoDigitYearCutoff" => short.Parse(value, CultureInfo.InvariantCulture),
                     "Trustworthy" => bool.Parse(value),
                     "TransformNoiseWords" => bool.Parse(value),
                     "TornPageProtectionOn" => bool.Parse(value),
                     "TargetRecoveryTimeUnit" => Enum.Parse(typeof(TimeUnit), value),
-                    "QueryStoreStaleQueryThreshold" => int.Parse(value),
-                    "TargetRecoveryTimePeriod" => int.Parse(value),
+                    "QueryStoreStaleQueryThreshold" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "TargetRecoveryTimePeriod" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ServiceBrokerOption" => Enum.Parse(typeof(ServiceBrokerOption), value),
                     "RecursiveTriggersOn" => bool.Parse(value),
                     "DelayedDurabilityMode" => Enum.Parse(typeof(DelayedDurabilityMode), value),
@@ -233,8 +234,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "ReadOnly" => bool.Parse(value),
                     "SupplementalLoggingOn" => bool.Parse(value),
                     "DbScopedConfigParameterSniffing" => bool.Parse(value),
-                    "DbScopedConfigMaxDOPSecondary" => int.Parse(value),
-                    "DbScopedConfigMaxDOP" => int.Parse(value),
+                    "DbScopedConfigMaxDOPSecondary" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "DbScopedConfigMaxDOP" => int.Parse(value, CultureInfo.InvariantCulture),
                     "AutoShrink" => bool.Parse(value),
                     "AutoCreateStatisticsIncremental" => bool.Parse(value),
                     "AutoCreateStatistics" => bool.Parse(value),
@@ -263,9 +264,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "CursorCloseOnCommit" => bool.Parse(value),
                     "Containment" => Enum.Parse(typeof(Containment), value),
                     "ConcatNullYieldsNull" => bool.Parse(value),
-                    "CompatibilityLevel" => int.Parse(value),
+                    "CompatibilityLevel" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ChangeTrackingRetentionUnit" => Enum.Parse(typeof(TimeUnit), value),
-                    "ChangeTrackingRetentionPeriod" => int.Parse(value),
+                    "ChangeTrackingRetentionPeriod" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ChangeTrackingEnabled" => bool.Parse(value),
                     "UserAccessOption" => Enum.Parse(typeof(UserAccessOption), value),
                     "WithEncryption" => bool.Parse(value),
@@ -344,13 +345,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private void WritePart(FileInfo file, Package package, string path)
+        private static void WritePart(FileInfo file, Package package, string path)
         {
             var part = package.CreatePart(new Uri(path, UriKind.Relative), "text/plain");
 
             using (var stream = part.GetStream())
             {
-                var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
+                using var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
                 var buffer = Encoding.UTF8.GetBytes(parser.GenerateScript());
                 stream.Write(buffer, 0, buffer.Length);
             }
@@ -380,7 +381,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         }
 
-        private List<int> ParseSuppressionList(string suppressionList)
+        private static List<int> ParseSuppressionList(string suppressionList)
         {
             var result = new List<int>();
             if (!string.IsNullOrEmpty(suppressionList))

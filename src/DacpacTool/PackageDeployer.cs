@@ -8,7 +8,7 @@ using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public sealed class PackageDeployer : IBatchEventsHandler
+    internal sealed class PackageDeployer : IBatchEventsHandler
     {
         private readonly IConsole _console;
         private string _currentSource;
@@ -125,9 +125,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private void RunDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName, bool isPreDeploy)
         {
             using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
-            var references = model.GetReferencedDacPackages();
+            var references = model.GetReferencedDacPackages().ToList();
 
-            if (!references.Any())
+            if (references.Count == 0)
             {
                 return;
             }

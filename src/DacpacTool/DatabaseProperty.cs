@@ -2,7 +2,7 @@
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class DatabaseProperty
+    internal class DatabaseProperty
     {
         private DatabaseProperty(string name, string value)
         {
