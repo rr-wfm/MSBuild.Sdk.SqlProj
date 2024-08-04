@@ -1,13 +1,21 @@
-var builder = DistributedApplication.CreateBuilder(args);
+﻿var builder = DistributedApplication.CreateBuilder(args);
 
-var sql = builder.AddSqlServer("sql")
-                 .AddDatabase("test");
+var sqlPassword = builder.AddParameter("sql-password");
+var sqlServer = builder
+    .AddSqlServer("sql", sqlPassword, port: 1234)
+    .WithDataVolume("MyDataVolume");
 
-builder.AddSqlProject<Projects.TestProject>("testproject")
-       .PublishTo(sql);
+var sqlDatabase = sqlServer.AddDatabase("Database");
 
-builder.AddSqlProject("testprojectwithwarnings")
-       .FromDacpac("../TestProjectWithWarnings/bin/Debug/netstandard2.0/TestProjectWithWarnings.dacpac")
-       .PublishTo(sql);
+var sqlProject = builder.AddSqlProject<Projects.TestProject>("testproject")
+    .PublishTo(sqlDatabase);
+
+var dabConfig = "./dab-config.json";
+var dabServer = builder
+    .AddContainer("data-api", "mcr.microsoft.com/azure-databases/data-api-builder")
+    .WithBindMount(dabConfig, "/App/dab-config.json")
+    .WithHttpEndpoint(port: 5000, targetPort: 5000, name: "http")
+    .WithReference(sqlDatabase)
+    .WaitForSqlProject(sqlProject);
 
 builder.Build().Run();

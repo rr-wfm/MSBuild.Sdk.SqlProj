@@ -1,7 +1,6 @@
-using Aspire.Hosting.ApplicationModel;
+﻿using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Microsoft.Build.Locator;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MSBuild.Sdk.SqlProj.Aspire;
 
@@ -72,5 +71,20 @@ public static class SqlProjectBuilderExtensions
         builder.ApplicationBuilder.Services.TryAddLifecycleHook<PublishSqlProjectLifecycleHook>();
         builder.WithAnnotation(new TargetDatabaseResourceAnnotation(target.Resource.Name), ResourceAnnotationMutationBehavior.Replace);
         return builder;
+    }
+
+    /// <summary>
+    /// Mark the given resource as a dependency or the speciefied SQL Project. 
+    /// The current resource will wait for the SQL Project dependency to be in the "Published" state before starting.
+    /// 
+    /// </summary>
+    /// <typeparam name="T">The resource type.</typeparam>
+    /// <param name="builder">The resource builder.</param>
+    /// <param name="sqlProject">The SQL Project resource to wait for.</param>
+    public static IResourceBuilder<T> WaitForSqlProject<T>(this IResourceBuilder<T> builder, IResourceBuilder<SqlProjectResource> sqlProject)
+        where T : IResource
+    {
+        builder.ApplicationBuilder.Services.TryAddLifecycleHook<WaitForSqlProjectLifecycleHook>();
+        return builder.WithAnnotation(new WaitForSqlProjectAnnotation(sqlProject.Resource));
     }
 }
