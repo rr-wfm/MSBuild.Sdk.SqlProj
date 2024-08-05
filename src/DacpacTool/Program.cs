@@ -11,7 +11,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    class Program
+    sealed class Program
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Not called repeatedly")]
         static async Task<int> Main(string[] args)

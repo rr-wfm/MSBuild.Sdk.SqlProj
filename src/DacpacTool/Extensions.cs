@@ -12,7 +12,9 @@ using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
+#pragma warning disable CA1724 // Type names should not match namespaces
     public static class Extensions
+#pragma warning restore CA1724 // Type names should not match namespaces
     {
         public static string Format(this BatchErrorEventArgs args, string source)
         {

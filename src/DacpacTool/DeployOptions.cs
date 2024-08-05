@@ -2,7 +2,9 @@
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    internal class DeployOptions : BaseOptions
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+    internal sealed class DeployOptions : BaseOptions
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
     {
         public FileInfo Input { get; set; }
         public string TargetServerName { get; set; }
