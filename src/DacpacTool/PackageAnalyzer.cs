@@ -24,6 +24,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddRulesFile(FileInfo inputFile)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             // Make sure the file exists
             if (!inputFile.Exists)
             {
@@ -39,6 +41,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void Analyze(TSqlModel model, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
@@ -73,10 +78,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 _console.WriteLine($"Successfully analyzed package '{outputFile}'");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex}");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private void BuildRuleLists(string rulesExpression)

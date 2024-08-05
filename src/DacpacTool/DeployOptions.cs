@@ -2,7 +2,7 @@
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class DeployOptions : BaseOptions
+    internal class DeployOptions : BaseOptions
     {
         public FileInfo Input { get; set; }
         public string TargetServerName { get; set; }

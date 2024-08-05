@@ -13,6 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     class Program
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Not called repeatedly")]
         static async Task<int> Main(string[] args)
         {
             var buildCommand = new Command("build")
@@ -77,7 +78,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             var processed = rootCommand.Parse(args);
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
             return await processed.InvokeAsync();
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         }
 
         private static int BuildDacpac(BuildOptions options)
@@ -301,11 +304,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 Console.WriteLine($"ERROR: An error occured while validating arguments: {ex.Message}");
                 return 1;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
                 return 1;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         [Conditional("DEBUG")]
@@ -313,12 +318,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (options.Debug)
             {
-                Console.WriteLine($"Waiting for debugger to attach ({System.Diagnostics.Process.GetCurrentProcess().Id})");
+                Console.WriteLine($"Waiting for debugger to attach ({Environment.ProcessId})");
                 while (!Debugger.IsAttached)
                 {
                     Thread.Sleep(100);
                 }
-                Console.WriteLine("Debugger attached");
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                Console.WriteLine(@"Debugger attached");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
             }
         }
     }

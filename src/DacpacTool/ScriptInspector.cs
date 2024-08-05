@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Collections.Generic;
+using System;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -13,11 +14,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddPreDeploymentScript(FileInfo script)
         {
+            ArgumentNullException.ThrowIfNull(script);
+
             AddIncludedFiles(script);
         }
 
         public void AddPostDeploymentScript(FileInfo script)
         {
+            ArgumentNullException.ThrowIfNull(script);
+
             AddIncludedFiles(script);
         }
 

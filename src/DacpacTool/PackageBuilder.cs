@@ -67,6 +67,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public bool AddInputFile(FileInfo inputFile)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             // Ensure that the model has been created
             EnsureModelCreated();
 
@@ -100,11 +102,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             AddScript(script, outputFile, "/predeploy.sql");
         }
 
         public void AddPostDeploymentScript(FileInfo script, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             AddScript(script, outputFile, "/postdeploy.sql");
         }
 
@@ -166,6 +172,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             // Ensure that the model has been created and metadata has been set
             EnsureModelCreated();
             EnsureModelValidated();
@@ -359,6 +367,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public bool TreatTSqlWarningsAsErrors { get; set; }
 
+        private static readonly char[] separator = new [] { ',', ';' };
+
         public void AddWarningsToSuppress(string suppressionList)
         {
             _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
@@ -366,6 +376,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddFileWarningsToSuppress(FileInfo inputFile, string suppressionList)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             var warningList = ParseSuppressionList(suppressionList);
             if (warningList.Count > 0)
             {
@@ -386,7 +398,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var result = new List<int>();
             if (!string.IsNullOrEmpty(suppressionList))
             {
-                foreach (var str in suppressionList.Split(new [] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var str in suppressionList.Split(separator, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (int.TryParse(str.Trim(), out var value))
                     {
@@ -400,6 +412,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, DacDeployOptions deployOptions)
         {
+            ArgumentNullException.ThrowIfNull(dacpacFile);
+
             if (string.IsNullOrWhiteSpace(databaseName))
             {
                 throw new ArgumentException("The database name is mandatory.", nameof(databaseName));
