@@ -13,6 +13,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string[] Property { get; set; }
         public string[] SqlCmdVar { get; set; }
         public bool RunScriptsFromReferences { get; set; }
-        public bool Encrypt { get; set; } = false;
+        public bool Encrypt { get; set; }
     }
 }

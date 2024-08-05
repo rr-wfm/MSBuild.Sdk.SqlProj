@@ -21,9 +21,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public ModelValidationError(DacModelError modelError, string sourceName)
         {
             modelError = modelError ?? throw new ArgumentNullException(nameof(modelError));
-            _sourceName = String.IsNullOrEmpty(sourceName) ? 
+            _sourceName = string.IsNullOrEmpty(sourceName) ? 
                             modelError.SourceName : 
-                            sourceName.Replace("MSSQL::", string.Empty);
+                            sourceName.Replace("MSSQL::", string.Empty, StringComparison.OrdinalIgnoreCase);
             _line = modelError.Line;
             _column = modelError.Column;
             _errorType = modelError.ErrorType;

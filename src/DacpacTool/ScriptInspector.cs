@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -24,7 +23,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private void AddIncludedFiles(FileInfo file)
         {
-            var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
+            using var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
             _includedFiles.AddRange(parser.CollectFileNames());
         }
     }

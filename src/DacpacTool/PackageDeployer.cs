@@ -125,9 +125,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private void RunDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName, bool isPreDeploy)
         {
             using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
-            var references = model.GetReferencedDacPackages();
+            var references = model.GetReferencedDacPackages().ToList();
 
-            if (!references.Any())
+            if (references.Count == 0)
             {
                 return;
             }
