@@ -1,4 +1,5 @@
-﻿using Aspire.Hosting.ApplicationModel;
+﻿using System.Net.Sockets;
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Lifecycle;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -75,7 +76,7 @@ internal sealed class PublishSqlProjectLifecycleHook
                     if (!serverReadyAnnotation.Connected)
                     {
                         await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                            state => state with { State = new ResourceStateSnapshot($"Checking server readiness{new string('.', serverReadyAnnotation.Attempt)}", KnownResourceStateStyles.Info) });
+                            state => state with { State = new ResourceStateSnapshot($"Checking server readiness", KnownResourceStateStyles.Info) });
 
                         try
                         {
@@ -96,13 +97,19 @@ internal sealed class PublishSqlProjectLifecycleHook
                         catch (InvalidOperationException invalid)
                         {
                             serverReadyAnnotation.Attempt++;
-                            logger.LogWarning(invalid, "Transient error, probably due to endpoints not up yet. Backing off to retry.");
+                            logger.LogWarning(invalid.Message, "Transient error, probably due to endpoints not up yet. Backing off to retry.");
+                            throw;
+                        }
+                        catch (SocketException sockex)
+                        {
+                            serverReadyAnnotation.Attempt++;
+                            logger.LogWarning(sockex.Message, "Transient error, probably due to SQL Server listener not ready yet. Backing off to retry.");
                             throw;
                         }
                         catch (SqlException sqlexception)
                         {
                             serverReadyAnnotation.Attempt++;
-                            logger.LogWarning(sqlexception, "Transient error, probably due to sql server not ready yet. Backing off to retry.");
+                            logger.LogWarning(sqlexception.Message, "Transient error, probably due to SQL Server not ready yet. Backing off to retry.");
                             throw;
                         }
                         catch (Exception ex)
