@@ -29,6 +29,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         /// <returns>The <see cref="DacDeployOptions"/> object</returns>
         public static DacDeployOptions ExtractDeployOptions(this BuildOptions options)
         {
+            ArgumentNullException.ThrowIfNull(options);
+
             var deployOptions = new DacDeployOptions();
 
             if (options.DeployProperty != null)
@@ -49,6 +51,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static ObjectType[] ParseObjectTypes(string value)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected object types to be comma-seperated instead of semi-colon separated");
@@ -72,6 +76,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected database specification to be comma-seperated instead of semi-colon separated");
