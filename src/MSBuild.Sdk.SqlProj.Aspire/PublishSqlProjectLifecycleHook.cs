@@ -51,9 +51,10 @@ internal sealed class PublishSqlProjectLifecycleHook
                     if (!File.Exists(dacpacPath))
                     {
                         logger.LogError("SQL Server Database project package not found at path {DacpacPath}.", dacpacPath);
+                        
                         await _resourceNotificationService.PublishUpdateAsync(sqlProject,
                             state => state with { State = new ResourceStateSnapshot(KnownResourceStates.FailedToStart, KnownResourceStateStyles.Error) });
-                        continue;
+                        break;
                     }
 
                     var targetDatabaseResourceName = sqlProject.Annotations.OfType<TargetDatabaseResourceAnnotation>().Single().TargetDatabaseResourceName;
@@ -63,9 +64,8 @@ internal sealed class PublishSqlProjectLifecycleHook
                     if (connectionString == null)
                     {
                         logger.LogError($"Failed to retrieve connection string for target database {targetDatabaseResourceName}.", targetDatabaseResourceName);
-                        await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                            state => state with { State = new ResourceStateSnapshot(KnownResourceStates.FailedToStart, KnownResourceStateStyles.Error) });
-                        continue;
+
+                        throw new InvalidOperationException($"Failed to retrieve connection string for target database {targetDatabaseResourceName}.");
                     }
 
                     if (!sqlProject.TryGetLastAnnotation(out ServerReadyAnnotation? serverReadyAnnotation))

@@ -60,6 +60,12 @@ public class WaitForSqlProjectLifecycleHook(
                         pendingAnnotations.TryRemove(waitOn, out _);
                         tcs.TrySetResult();
                     }
+
+                    if (resourceEvent.Snapshot.State?.Text == "FailedToStart")
+                    {
+                        pendingAnnotations.TryRemove(waitOn, out _);
+                        tcs.TrySetException(new Exception("Resource failed to start"));
+                    }
                 }
             }
         }
