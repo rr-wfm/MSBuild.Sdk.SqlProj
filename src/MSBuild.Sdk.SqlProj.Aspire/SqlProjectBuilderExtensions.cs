@@ -74,7 +74,7 @@ public static class SqlProjectBuilderExtensions
     }
 
     /// <summary>
-    /// Mark the given resource as a dependency or the speciefied SQL Project. 
+    /// Mark the given resource as a dependency of the specified SQL Project. 
     /// The current resource will wait for the SQL Project dependency to be in the "Published" state before starting.
     /// 
     /// </summary>
