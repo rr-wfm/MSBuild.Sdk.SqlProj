@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,6 +17,12 @@
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" />
     <ProjectReference Include="..\..\src\MSBuild.Sdk.SqlProj.Aspire\MSBuild.Sdk.SqlProj.Aspire.csproj" IsAspireProjectResource="False" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

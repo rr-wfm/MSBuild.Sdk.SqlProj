@@ -1,4 +1,4 @@
-using Aspire.Hosting;
+﻿using Aspire.Hosting;
 using Aspire.Hosting.Lifecycle;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -8,7 +8,7 @@ namespace MSBuild.Sdk.SqlProj.Aspire.Tests;
 public class PublishSqlProjectLifecycleHookTests
 {
     [Fact]
-    public async Task AfterResourcesCreatedAsync_PublishesDacpacToTargetDatabase()
+    public async Task BeforeStartAsync_PublishesDacpacToTargetDatabase()
     {
         // Arrange
         var dacDeployerMock = Substitute.For<IDacpacDeployer>();
@@ -25,7 +25,7 @@ public class PublishSqlProjectLifecycleHookTests
         using var app = appBuilder.Build();
         var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
         var lifecycleHook = Assert.Single(app.Services.GetServices<IDistributedApplicationLifecycleHook>().OfType<PublishSqlProjectLifecycleHook>());
-        await lifecycleHook.AfterResourcesCreatedAsync(appModel, CancellationToken.None);
+        await lifecycleHook.BeforeStartAsync(appModel, CancellationToken.None);
         
         // Assert
         var expectedPath = Path.GetFullPath(Path.Combine(appBuilder.AppHostDirectory, "../../../../TestProject/bin/Debug/netstandard2.0/TestProject.dacpac"));

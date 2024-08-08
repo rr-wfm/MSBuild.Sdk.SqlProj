@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.SqlServer.Dac;
 
 namespace MSBuild.Sdk.SqlProj.Aspire;
@@ -9,7 +9,7 @@ namespace MSBuild.Sdk.SqlProj.Aspire;
 internal class DacpacDeployer : IDacpacDeployer
 {
     /// <inheritdoc cref="IDacpacDeployer.Deploy(string, string, string, ILogger, CancellationToken)">
-    public void Deploy(string dacpacPath, string targetConnectionString, string targetDatabaseName, ILogger deploymentLogger, CancellationToken cancellationToken)
+    public void Deploy(string dacpacPath, string? targetConnectionString, string targetDatabaseName, ILogger deploymentLogger, CancellationToken cancellationToken)
     {
         var dacPackage = DacPackage.Load(dacpacPath, DacSchemaModelStorageType.Memory);
         var dacServices = new DacServices(targetConnectionString);

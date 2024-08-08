@@ -1,0 +1,61 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.1.7/dab.draft.schema.json",
+  "data-source": {
+    "database-type": "mssql",
+    "connection-string": "@env('ConnectionStrings__Database')",
+    "options": {
+      "set-session-context": false
+    }
+  },
+  "runtime": {
+    "rest": {
+      "enabled": true,
+      "path": "/api",
+      "request-body-strict": true
+    },
+    "graphql": {
+      "enabled": true,
+      "path": "/graphql",
+      "allow-introspection": true
+    },
+    "host": {
+      "cors": {
+        "origins": [],
+        "allow-credentials": false
+      },
+      "authentication": {
+        "provider": "StaticWebApps"
+      },
+      "mode": "development"
+    }
+  },
+  "entities": {
+    "User": {
+      "source": {
+        "object": "[dbo].[MyTable]",
+        "type": "table",
+        "key-fields": [ "Column2" ]
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "User",
+          "plural": "Users"
+        }
+      },
+      "rest": {
+        "enabled": true
+      },
+      "permissions": [
+        {
+          "role": "anonymous",
+          "actions": [
+            {
+              "action": "*"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
