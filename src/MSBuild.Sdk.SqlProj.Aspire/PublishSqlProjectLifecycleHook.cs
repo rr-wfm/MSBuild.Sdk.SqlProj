@@ -66,8 +66,9 @@ public sealed class PublishSqlProjectLifecycleHook
 
                     await Publish(sqlProject, logger, dacpacPath, targetDatabaseResource, connectionString, serverReadyAnnotation, cancellationToken);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    logger.LogError(ex, "Failed to deploy database project. Retrying...");
                     if (i == retryCount - 1)
                     {
                         await _resourceNotificationService.PublishUpdateAsync(sqlProject,
