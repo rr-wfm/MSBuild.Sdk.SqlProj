@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Collections.Generic;
+using System;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -14,17 +14,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddPreDeploymentScript(FileInfo script)
         {
+            ArgumentNullException.ThrowIfNull(script);
+
             AddIncludedFiles(script);
         }
 
         public void AddPostDeploymentScript(FileInfo script)
         {
+            ArgumentNullException.ThrowIfNull(script);
+
             AddIncludedFiles(script);
         }
 
         private void AddIncludedFiles(FileInfo file)
         {
-            var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
+            using var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
             _includedFiles.AddRange(parser.CollectFileNames());
         }
     }

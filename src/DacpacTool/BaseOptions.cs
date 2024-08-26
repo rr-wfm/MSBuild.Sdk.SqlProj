@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Microsoft.SqlServer.Dac.Model;
-
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+﻿namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public abstract class BaseOptions
     {

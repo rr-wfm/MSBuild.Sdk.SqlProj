@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Globalization;
 using System.Text;
 using Microsoft.SqlTools.ServiceLayer.BatchParser;
 using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
@@ -26,7 +25,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void SetVariable(PositionStruct pos, string name, string value)
         {
-            outputString.AppendFormat("Setting variable {0} to [{1}]\n", name, value);
+            outputString.AppendFormat(CultureInfo.InvariantCulture, "Setting variable {0} to [{1}]\n", name, value);
             batchParserSqlCmd.SetVariable(pos, name, value);
         }
     }

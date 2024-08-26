@@ -78,11 +78,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void RunPreDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
         {
+            ArgumentNullException.ThrowIfNull(dacpacPackage);
+
             RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, true);
         }
 
         public void Deploy(FileInfo dacpacPackage, string targetDatabaseName)
         {
+            ArgumentNullException.ThrowIfNull(dacpacPackage);
+
             EnsureConnectionStringComplete();
 
             if (!dacpacPackage.Exists)
@@ -111,23 +115,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _console.WriteLine($"ERROR: Deployment of database '{targetDatabaseName}' failed: {ex.Message}");
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 _console.WriteLine($"ERROR: An unknown error occurred while deploying database '{targetDatabaseName}': {ex.Message}");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         public void RunPostDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName)
         {
+            ArgumentNullException.ThrowIfNull(dacpacPackage);
+
             RunDeploymentScriptFromReferences(dacpacPackage, targetDatabaseName, false);
         }
 
         private void RunDeploymentScriptFromReferences(FileInfo dacpacPackage, string targetDatabaseName, bool isPreDeploy)
         {
             using var model = new TSqlModel(dacpacPackage.FullName, DacSchemaModelStorageType.Memory);
-            var references = model.GetReferencedDacPackages();
+            var references = model.GetReferencedDacPackages().ToList();
 
-            if (!references.Any())
+            if (references.Count == 0)
             {
                 return;
             }

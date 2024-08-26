@@ -12,10 +12,14 @@ using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
+#pragma warning disable CA1724 // Type names should not match namespaces
     public static class Extensions
+#pragma warning restore CA1724 // Type names should not match namespaces
     {
         public static string Format(this BatchErrorEventArgs args, string source)
         {
+            ArgumentNullException.ThrowIfNull(args);
+
             var outputMessageBuilder = new StringBuilder();
             outputMessageBuilder.Append(source);
             outputMessageBuilder.Append('(');
@@ -42,6 +46,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static string Format(this BatchParserExecutionErrorEventArgs args, string source)
         {
+            ArgumentNullException.ThrowIfNull(args);
+
             var outputMessageBuilder = new StringBuilder();
             outputMessageBuilder.Append(source);
             outputMessageBuilder.Append('(');
@@ -72,8 +78,36 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return outputMessageBuilder.ToString();
         }
 
+        public static string Format(this DacModelException exception, string fileName)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            var stringBuilder = new StringBuilder();
+
+            foreach (var modelError in exception.Messages)
+            {
+                stringBuilder.Append(fileName);
+                stringBuilder.Append('(');
+                stringBuilder.Append('1');
+                stringBuilder.Append(',');
+                stringBuilder.Append('1');
+                stringBuilder.Append("):");
+                stringBuilder.Append(' ');
+                stringBuilder.Append("Error");
+                stringBuilder.Append(' ');
+                stringBuilder.Append(modelError.Prefix);
+                stringBuilder.Append(modelError.Number);
+                stringBuilder.Append(": ");
+                stringBuilder.Append(modelError.Message);
+            }
+
+            return stringBuilder.ToString();
+        }
+
         public static string GetPreDeploymentScript(this DacPackage package)
         {
+            ArgumentNullException.ThrowIfNull(package);
+
             var stream = package.PreDeploymentScript;
             if (stream == null)
             {
@@ -86,6 +120,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static string GetPostDeploymentScript(this DacPackage package)
         {
+            ArgumentNullException.ThrowIfNull(package);
+
             var stream = package.PostDeploymentScript;
             if (stream == null)
             {
@@ -98,6 +134,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static void AddReference(this TSqlModel model, string referencePath, string externalParts, bool suppressErrorsForMissingDependencies)
         {
+            ArgumentNullException.ThrowIfNull(model);
+
             var dataSchemaModel = GetDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "Reference", "SqlSchema");
@@ -126,7 +164,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             string databaseVariableLiteralValue = null;
 
             // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
-            if (externalParts.Contains('='))
+            if (externalParts.Contains('=', StringComparison.OrdinalIgnoreCase))
             {
                 foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)",
                     RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
@@ -163,7 +201,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         /// <summary>
         /// Cached method info for FileUtils.EnsureIsDelimited
         /// </summary>
-        private static MethodInfo _ensureIsDelimitedMethod = null;
+        private static MethodInfo _ensureIsDelimitedMethod;
         /// <summary>
         /// This method found in Microsoft.Data.Tools.Utilities in class FileUtils. because of it is internal we do call through Reflection
         /// </summary>
@@ -180,6 +218,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static IEnumerable<string> GetReferencedDacPackages(this TSqlModel model)
         {
+            ArgumentNullException.ThrowIfNull(model);
+
             var result = new List<string>();
             var dataSchemaModel = GetDataSchemaModel(model);
 
@@ -206,6 +246,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static void AddSqlCmdVariables(this TSqlModel model, string[] variables)
         {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(variables);
+
             var dataSchemaModel = GetDataSchemaModel(model);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "SqlCmdVariables", "SqlCmdVariable");
@@ -216,7 +259,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var variableName = varWithValue[0];
                 string variableDefaultValue = string.Empty;
 
-                if (varWithValue.Length > 1 && varWithValue[1] != string.Empty)
+                if (varWithValue.Length > 1 && !string.IsNullOrEmpty(varWithValue[1]))
                 {
                     variableDefaultValue = varWithValue[1];
                     Console.WriteLine($"Adding SqlCmd variable {variableName} with default value {variableDefaultValue}");
@@ -233,6 +276,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static IEnumerable<ModelValidationError> GetModelValidationErrors(this TSqlModel model, IEnumerable<string> ignoreValidationErrrors)
         {
+            ArgumentNullException.ThrowIfNull(model);
+
             var service = model.GetType().GetField("_service", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(model);
             var getModelValidationErrorsMethod = service.GetType().GetMethod("GetModelValidationErrors", BindingFlags.NonPublic | BindingFlags.Instance);
             var modelValidationErrors = getModelValidationErrorsMethod.Invoke(service, new object[] { ignoreValidationErrrors }) as IEnumerable<object>;

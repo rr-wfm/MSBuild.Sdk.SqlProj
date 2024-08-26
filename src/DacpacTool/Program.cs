@@ -11,8 +11,9 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    class Program
+    sealed class Program
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1861:Avoid constant arrays as arguments", Justification = "Not called repeatedly")]
         static async Task<int> Main(string[] args)
         {
             var buildCommand = new Command("build")
@@ -77,7 +78,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             var processed = rootCommand.Parse(args);
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
             return await processed.InvokeAsync();
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
         }
 
         private static int BuildDacpac(BuildOptions options)
@@ -86,7 +89,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             WaitForDebuggerToAttach(options);
 
             // Set metadata for the package
-            using var packageBuilder = new PackageBuilder();
+            using var packageBuilder = new PackageBuilder(new ActualConsole());
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)
@@ -134,6 +137,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
             }
 
+            var modelExceptions = false;
+
             // Add input files by iterating through $Project.InputFiles.txt
             if (options.InputFile != null)
             {
@@ -142,7 +147,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     foreach (var line in File.ReadLines(options.InputFile.FullName))
                     {
                         FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
-                        packageBuilder.AddInputFile(inputFile);
+                        if (!packageBuilder.AddInputFile(inputFile))
+                        {
+                            modelExceptions = true;
+                        }
                     }
                 }
                 else
@@ -176,7 +184,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Validate the model
-            if (!packageBuilder.ValidateModel())
+            if (modelExceptions || !packageBuilder.ValidateModel())
             {
                 return 1;
             }
@@ -296,11 +304,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 Console.WriteLine($"ERROR: An error occured while validating arguments: {ex.Message}");
                 return 1;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
                 return 1;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         [Conditional("DEBUG")]
@@ -308,12 +318,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (options.Debug)
             {
-                Console.WriteLine($"Waiting for debugger to attach ({System.Diagnostics.Process.GetCurrentProcess().Id})");
+                Console.WriteLine($"Waiting for debugger to attach ({Environment.ProcessId})");
                 while (!Debugger.IsAttached)
                 {
                     Thread.Sleep(100);
                 }
-                Console.WriteLine("Debugger attached");
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                Console.WriteLine(@"Debugger attached");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
             }
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -8,7 +8,7 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-    public class ScriptParser : ICommandHandler
+    public sealed class ScriptParser : ICommandHandler, IDisposable
     {
         private readonly Parser _parser;
         private bool _parsed;
@@ -95,6 +95,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Console.Error.WriteLine(error.ToString());
 
             return action == OnErrorAction.Ignore ? BatchParserAction.Continue : BatchParserAction.Abort;
+        }
+
+        public void Dispose()
+        {
+            _parser?.Dispose();
         }
     }
 }

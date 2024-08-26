@@ -13,6 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly HashSet<string> _ignoredRules = new();
         private readonly HashSet<string> _ignoredRuleSets = new();
         private readonly HashSet<string> _errorRuleSets = new();
+        private readonly char[] separator = new[] { ';' };
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
         {
@@ -23,6 +24,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddRulesFile(FileInfo inputFile)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             // Make sure the file exists
             if (!inputFile.Exists)
             {
@@ -38,6 +41,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void Analyze(TSqlModel model, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
@@ -48,7 +54,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     service.SetProblemSuppressor(p => 
                         _ignoredRules.Contains(p.Rule.RuleId) 
-                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s)));
+                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 var result = service.Analyze(model);
@@ -72,23 +78,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 _console.WriteLine($"Successfully analyzed package '{outputFile}'");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex}");
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private void BuildRuleLists(string rulesExpression)
         {
             if (!string.IsNullOrWhiteSpace(rulesExpression))
             {
-                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                foreach (var rule in rulesExpression.Split(separator,
                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                         .Where(rule => rule
-                            .StartsWith("-", StringComparison.OrdinalIgnoreCase)
+                            .StartsWith('-')
                                 && rule.Length > 1))
                 {
-                    if (rule.Length > 2 && rule.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+                    if (rule.Length > 2 && rule.EndsWith('*'))
                     {
                         _ignoredRuleSets.Add(rule[1..^1]);
                     }
@@ -97,7 +105,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         _ignoredRules.Add(rule[1..]);
                     }
                 }
-                foreach (var rule in rulesExpression.Split(new[] { ';' },
+                foreach (var rule in rulesExpression.Split(separator,
                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                         .Where(rule => rule
                             .StartsWith("+!", StringComparison.OrdinalIgnoreCase)

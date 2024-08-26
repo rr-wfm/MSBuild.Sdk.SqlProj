@@ -26,16 +26,11 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         submodules: 'true' # need to check out the SqlTools submodule to build successfully.
 
-    # Install .NET SDK's for 6.0 and 7.0
+    # Install .NET SDK's for 6.0 and 8.0
     - name: Setup dotnet 6.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
-
-    - name: Setup dotnet 7.0
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '7.0.x'
 
     - name: Setup dotnet 8.0
       uses: actions/setup-dotnet@v4
@@ -112,7 +107,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-22.04", "macos-13", "windows-2022" ]
-        dotnet: [ '6.0.x', '7.0.x', '8.0.x' ]
+        dotnet: [ '6.0.x', '8.0.x' ]
       fail-fast: false
 
     steps:
@@ -214,7 +209,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
           --health-interval 10s
           --health-timeout 3s
           --health-retries 10
@@ -267,7 +262,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
           --health-interval 10s
           --health-timeout 3s
           --health-retries 10

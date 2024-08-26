@@ -13,7 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     public static class PropertyParser
     {
-        private static readonly IDictionary<string, Func<string, object>> CustomParsers = new Dictionary<string, Func<string, object>>();
+        private static readonly Dictionary<string, Func<string, object>> CustomParsers = new Dictionary<string, Func<string, object>>();
 
         static PropertyParser()
         {
@@ -29,6 +29,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         /// <returns>The <see cref="DacDeployOptions"/> object</returns>
         public static DacDeployOptions ExtractDeployOptions(this BuildOptions options)
         {
+            ArgumentNullException.ThrowIfNull(options);
+
             var deployOptions = new DacDeployOptions();
 
             if (options.DeployProperty != null)
@@ -42,13 +44,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private static PropertyInfo GetDacDeployOptionsProperty(string propertyName)
         {
             var property = typeof(DacDeployOptions).GetProperties()
-                .SingleOrDefault(p => string.Compare(p.Name, propertyName, StringComparison.OrdinalIgnoreCase) == 0);
+                .SingleOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase));
 
             return property;
         }
 
         public static ObjectType[] ParseObjectTypes(string value)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected object types to be comma-seperated instead of semi-colon separated");
@@ -72,6 +76,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public static DacAzureDatabaseSpecification ParseDatabaseSpecification(string value)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Expected database specification to be comma-seperated instead of semi-colon separated");
@@ -106,7 +112,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             foreach (var deployProperty in deployProperties.Where(p => string.IsNullOrWhiteSpace(p) == false))
             {
                 var databaseProperty = DatabaseProperty.Create(deployProperty);
-                var propertyValue =deployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
+                var propertyValue = deployOptions.SetDeployProperty(databaseProperty.Name, databaseProperty.Value);
 
                 if (console != null)
                 {
@@ -114,7 +120,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     {
                         ObjectType[] o => string.Join(',', o),
                         DacAzureDatabaseSpecification s => $"{s.Edition},{s.MaximumSize},{s.ServiceObjective}",
-                        _ => propertyValue == null ? "null" : propertyValue.ToString()
+                        _ => propertyValue.ToString()
                     };
 
                     console.WriteLine($"Setting property {databaseProperty.Name} to value {parsedValue}");

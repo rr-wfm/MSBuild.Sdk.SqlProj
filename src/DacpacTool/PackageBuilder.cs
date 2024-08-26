@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -12,15 +13,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class PackageBuilder : IDisposable
     {
+        private readonly IConsole _console;
         private bool? _modelValid;
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
 
+        public PackageBuilder(IConsole console)
+        {
+            _console = console ?? throw new ArgumentNullException(nameof(console));
+        }
+
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
-            Console.WriteLine($"Using SQL Server version {version}");
+            _console.WriteLine($"Using SQL Server version {version}");
         }
 
         public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
@@ -30,11 +37,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             ValidateReference(referenceFile);
 
-            Console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
             Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
-        private void ValidateReference(string referenceFile)
+        private static void ValidateReference(string referenceFile)
         {
             // Make sure the file exists
             if (!File.Exists(referenceFile))
@@ -44,7 +51,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             // Make sure the file is a .dacpac file
             string fileType = Path.GetExtension(referenceFile);
-            if (fileType.ToLower() != ".dacpac")
+            if (!fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac", nameof(referenceFile));
             }
@@ -58,8 +65,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Model.AddSqlCmdVariables(variables);
         }
 
-        public void AddInputFile(FileInfo inputFile)
+        public bool AddInputFile(FileInfo inputFile)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             // Ensure that the model has been created
             EnsureModelCreated();
 
@@ -73,20 +82,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
                 && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
             {
-                return;
+                return true;
             }
 
-            Console.WriteLine($"Adding {inputFile.FullName} to the model");
-            Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+            _console.WriteLine($"Adding {inputFile.FullName} to the model");
+
+            try
+            {
+                TSqlObjectOptions sqlObjectOptions = new TSqlObjectOptions();
+                Model.AddOrUpdateObjects(File.ReadAllText(inputFile.FullName), inputFile.FullName, new TSqlObjectOptions());
+                return true;
+            }
+            catch (DacModelException dex)
+            {
+                _console.WriteLine(dex.Format(inputFile.Name));
+                return false;
+            }
         }
 
         public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             AddScript(script, outputFile, "/predeploy.sql");
         }
 
         public void AddPostDeploymentScript(FileInfo script, FileInfo outputFile)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             AddScript(script, outputFile, "/postdeploy.sql");
         }
 
@@ -103,7 +127,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
-                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
+                    _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
                 }
                 else if (modelError.Severity == ModelErrorSeverity.Warning)
                 {
@@ -111,14 +135,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 else
                 {
-                    Console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
+                    _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
                 }
             }
 
             if (validationErrors > 0)
             {
                 _modelValid = false;
-                Console.WriteLine($"Found {validationErrors} error(s), skip building package");
+                _console.WriteLine($"Found {validationErrors} error(s), skip building package");
             }
             else
             {
@@ -140,7 +164,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     validationErrors++;
                 }
 
-                Console.WriteLine(modelError.GetOutputMessage(TreatTSqlWarningsAsErrors
+                _console.WriteLine(modelError.GetOutputMessage(TreatTSqlWarningsAsErrors
                     ? ModelErrorSeverity.Error
                     : ModelErrorSeverity.Warning));
             }
@@ -148,6 +172,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
         {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
             // Ensure that the model has been created and metadata has been set
             EnsureModelCreated();
             EnsureModelValidated();
@@ -157,11 +183,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (outputFile.Exists)
             {
                 // Delete the existing file
-                Console.WriteLine($"Deleting existing file {outputFile.FullName}");
+                _console.WriteLine($"Deleting existing file {outputFile.FullName}");
                 outputFile.Delete();
             }
 
-            Console.WriteLine($"Writing model to {outputFile.FullName}");
+            _console.WriteLine($"Writing model to {outputFile.FullName}");
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
@@ -173,7 +199,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 Version = version,
             };
 
-            Console.WriteLine($"Using package name {name} and version {version}");
+            _console.WriteLine($"Using package name {name} and version {version}");
         }
 
         public void SetProperty(string key, string value)
@@ -183,13 +209,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 // Convert value into the appropriate type depending on the key
                 var propertyValue = key switch
                 {
-                    "QueryStoreIntervalLength" => int.Parse(value),
-                    "QueryStoreFlushInterval" => int.Parse(value),
+                    "QueryStoreIntervalLength" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "QueryStoreFlushInterval" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QueryStoreDesiredState" => Enum.Parse(typeof(QueryStoreDesiredState), value),
                     "QueryStoreCaptureMode" => Enum.Parse(typeof(QueryStoreCaptureMode), value),
                     "ParameterizationOption" => Enum.Parse(typeof(ParameterizationOption), value),
                     "PageVerifyMode" => Enum.Parse(typeof(PageVerifyMode), value),
-                    "QueryStoreMaxStorageSize" => int.Parse(value),
+                    "QueryStoreMaxStorageSize" => int.Parse(value, CultureInfo.InvariantCulture),
                     "NumericRoundAbortOn" => bool.Parse(value),
                     "NestedTriggersOn" => bool.Parse(value),
                     "HonorBrokerPriority" => bool.Parse(value),
@@ -199,16 +225,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "DbScopedConfigQueryOptimizerHotfixes" => bool.Parse(value),
                     "NonTransactedFileStreamAccess" => Enum.Parse(typeof(NonTransactedFileStreamAccess), value),
                     "DbScopedConfigParameterSniffingSecondary" => bool.Parse(value),
-                    "QueryStoreMaxPlansPerQuery" => int.Parse(value),
+                    "QueryStoreMaxPlansPerQuery" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QuotedIdentifierOn" => bool.Parse(value),
                     "VardecimalStorageFormatOn" => bool.Parse(value),
-                    "TwoDigitYearCutoff" => short.Parse(value),
+                    "TwoDigitYearCutoff" => short.Parse(value, CultureInfo.InvariantCulture),
                     "Trustworthy" => bool.Parse(value),
                     "TransformNoiseWords" => bool.Parse(value),
                     "TornPageProtectionOn" => bool.Parse(value),
                     "TargetRecoveryTimeUnit" => Enum.Parse(typeof(TimeUnit), value),
-                    "QueryStoreStaleQueryThreshold" => int.Parse(value),
-                    "TargetRecoveryTimePeriod" => int.Parse(value),
+                    "QueryStoreStaleQueryThreshold" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "TargetRecoveryTimePeriod" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ServiceBrokerOption" => Enum.Parse(typeof(ServiceBrokerOption), value),
                     "RecursiveTriggersOn" => bool.Parse(value),
                     "DelayedDurabilityMode" => Enum.Parse(typeof(DelayedDurabilityMode), value),
@@ -216,8 +242,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "ReadOnly" => bool.Parse(value),
                     "SupplementalLoggingOn" => bool.Parse(value),
                     "DbScopedConfigParameterSniffing" => bool.Parse(value),
-                    "DbScopedConfigMaxDOPSecondary" => int.Parse(value),
-                    "DbScopedConfigMaxDOP" => int.Parse(value),
+                    "DbScopedConfigMaxDOPSecondary" => int.Parse(value, CultureInfo.InvariantCulture),
+                    "DbScopedConfigMaxDOP" => int.Parse(value, CultureInfo.InvariantCulture),
                     "AutoShrink" => bool.Parse(value),
                     "AutoCreateStatisticsIncremental" => bool.Parse(value),
                     "AutoCreateStatistics" => bool.Parse(value),
@@ -246,9 +272,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "CursorCloseOnCommit" => bool.Parse(value),
                     "Containment" => Enum.Parse(typeof(Containment), value),
                     "ConcatNullYieldsNull" => bool.Parse(value),
-                    "CompatibilityLevel" => int.Parse(value),
+                    "CompatibilityLevel" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ChangeTrackingRetentionUnit" => Enum.Parse(typeof(TimeUnit), value),
-                    "ChangeTrackingRetentionPeriod" => int.Parse(value),
+                    "ChangeTrackingRetentionPeriod" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ChangeTrackingEnabled" => bool.Parse(value),
                     "UserAccessOption" => Enum.Parse(typeof(UserAccessOption), value),
                     "WithEncryption" => bool.Parse(value),
@@ -258,7 +284,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
                 property.SetValue(Options, propertyValue);
 
-                Console.WriteLine($"Setting property {key} to value {value}");
+                _console.WriteLine($"Setting property {key} to value {value}");
             }
             catch (FormatException)
             {
@@ -320,26 +346,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
             {
-                Console.WriteLine($"Adding {script.FullName} to package");
+                _console.WriteLine($"Adding {script.FullName} to package");
                 WritePart(script, package, path);
 
                 package.Close();
             }
         }
 
-        private void WritePart(FileInfo file, Package package, string path)
+        private static void WritePart(FileInfo file, Package package, string path)
         {
             var part = package.CreatePart(new Uri(path, UriKind.Relative), "text/plain");
 
             using (var stream = part.GetStream())
             {
-                var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
+                using var parser = new ScriptParser(file.FullName, new IncludeVariableResolver());
                 var buffer = Encoding.UTF8.GetBytes(parser.GenerateScript());
                 stream.Write(buffer, 0, buffer.Length);
             }
         }
 
         public bool TreatTSqlWarningsAsErrors { get; set; }
+
+        private static readonly char[] separator = new [] { ',', ';' };
 
         public void AddWarningsToSuppress(string suppressionList)
         {
@@ -348,6 +376,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void AddFileWarningsToSuppress(FileInfo inputFile, string suppressionList)
         {
+            ArgumentNullException.ThrowIfNull(inputFile);
+
             var warningList = ParseSuppressionList(suppressionList);
             if (warningList.Count > 0)
             {
@@ -363,12 +393,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         }
 
-        private List<int> ParseSuppressionList(string suppressionList)
+        private static List<int> ParseSuppressionList(string suppressionList)
         {
             var result = new List<int>();
             if (!string.IsNullOrEmpty(suppressionList))
             {
-                foreach (var str in suppressionList.Split(new [] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var str in suppressionList.Split(separator, StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (int.TryParse(str.Trim(), out var value))
                     {
@@ -382,13 +412,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void GenerateCreateScript(FileInfo dacpacFile, string databaseName, DacDeployOptions deployOptions)
         {
+            ArgumentNullException.ThrowIfNull(dacpacFile);
+
             if (string.IsNullOrWhiteSpace(databaseName))
             {
                 throw new ArgumentException("The database name is mandatory.", nameof(databaseName));
             }
 
             var scriptFileName = $"{databaseName}_Create.sql";
-            Console.WriteLine($"Generating create script {scriptFileName}");
+            _console.WriteLine($"Generating create script {scriptFileName}");
 
             using var package = DacPackage.Load(dacpacFile.FullName);
             using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
