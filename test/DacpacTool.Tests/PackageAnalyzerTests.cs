@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.SqlServer.Dac.Model;
@@ -22,7 +23,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
             
             // Assert
             testConsole.Lines.Count.ShouldBe(15);
@@ -32,6 +33,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SML005 : Smells : Avoid use of 'Select *'");
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
+
+        
 
         [TestMethod]
         public void RunsAnalyzerWithSupressions()
@@ -43,7 +46,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(13);
@@ -65,7 +68,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(13);
@@ -85,7 +88,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(15);
@@ -106,7 +109,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(15);
@@ -128,6 +131,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packagePath = tmodel.SaveAsPackage();
 
             return (new FileInfo(packagePath), model);
+        }
+
+        private FileInfo[] CollectAssemblyPaths()
+        {
+            var result = new List<FileInfo>();
+            var path = Path.GetDirectoryName(Path.Combine(System.Reflection.Assembly.GetAssembly(typeof(PackageAnalyzerTests)).Location));
+            result.Add(new FileInfo(Path.Combine(path, "SqlServer.Dac.dll")));
+            result.Add(new FileInfo(Path.Combine(path, "SqlServer.Rules.dll")));
+            result.Add(new FileInfo(Path.Combine(path, "TSQLSmellSCA.dll")));
+
+            return result.ToArray();
         }
     }
 }
