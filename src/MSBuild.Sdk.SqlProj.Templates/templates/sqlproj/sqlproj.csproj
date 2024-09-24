@@ -6,6 +6,12 @@
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
     </PropertyGroup>
 
+    <ItemGroup>
+        <!-- These packages adds additional code analysis rules -->
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
+        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.0" />
+    </ItemGroup>
+
     <PropertyGroup>
         <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
     </PropertyGroup>
