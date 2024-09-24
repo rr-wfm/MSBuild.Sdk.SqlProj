@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,7 +22,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo);
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
             
             // Assert
             testConsole.Lines.Count.ShouldBe(15);
@@ -42,7 +43,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo);
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(13);
@@ -64,7 +65,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo);
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(13);
@@ -84,7 +85,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo);
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(15);
@@ -105,7 +106,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo);
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(15);

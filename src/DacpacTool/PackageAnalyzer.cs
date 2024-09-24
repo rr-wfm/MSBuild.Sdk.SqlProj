@@ -39,7 +39,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void Analyze(TSqlModel model, FileInfo outputFile)
+        public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(outputFile);
@@ -48,7 +48,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             try
             {
                 var factory = new CodeAnalysisServiceFactory();
-                var service = factory.CreateAnalysisService(model);
+                var settings = new CodeAnalysisServiceSettings
+                {
+                    AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName)),
+                };
+
+                var service = factory.CreateAnalysisService(model, settings);
 
                 if (_ignoredRules.Count > 0 || _ignoredRuleSets.Count > 0)
                 {
