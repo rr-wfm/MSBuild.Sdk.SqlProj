@@ -22,23 +22,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             BuildRuleLists(rulesExpression);
         }
 
-        public void AddRulesFile(FileInfo inputFile)
-        {
-            ArgumentNullException.ThrowIfNull(inputFile);
-
-            // Make sure the file exists
-            if (!inputFile.Exists)
-            {
-                throw new ArgumentException($"Unable to find rules file {inputFile}", nameof(inputFile));
-            }
-
-            if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
-                && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            {
-                CopyAdditionalRulesFile(inputFile);
-            }
-        }
-
         public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
         {
             ArgumentNullException.ThrowIfNull(model);
