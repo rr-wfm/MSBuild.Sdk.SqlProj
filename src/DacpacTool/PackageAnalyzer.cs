@@ -26,15 +26,24 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(outputFile);
+            ArgumentNullException.ThrowIfNull(analyzers);
 
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
                 var factory = new CodeAnalysisServiceFactory();
-                var settings = new CodeAnalysisServiceSettings
+                var settings = new CodeAnalysisServiceSettings();
+
+                if (analyzers.Length == 0)
                 {
-                    AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName)),
-                };
+                    // warning SR0016: Microsoft.Rules.Data : Stored procedure(sp_Test) includes sp_ prefix in its name.
+                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+                }
+                else
+                {
+                    _console.WriteLine("Loading analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
+                    settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
+                }
 
                 var service = factory.CreateAnalysisService(model, settings);
 

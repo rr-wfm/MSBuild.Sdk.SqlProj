@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.SqlServer.Dac.Model;
@@ -25,7 +26,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
             
             // Assert
-            testConsole.Lines.Count.ShouldBe(15);
+            testConsole.Lines.Count.ShouldBe(16);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
@@ -48,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(13);
+            testConsole.Lines.Count.ShouldBe(14);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
@@ -70,7 +71,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(13);
+            testConsole.Lines.Count.ShouldBe(14);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Any(l => l.Contains("SRD")).ShouldBeFalse();
@@ -90,7 +91,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(15);
+            testConsole.Lines.Count.ShouldBe(16);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
@@ -111,12 +112,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(15);
+            testConsole.Lines.Count.ShouldBe(16);
 
+            testConsole.Lines.Count(l => l.Contains("Loading analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithoutAdditionalAnalyzers()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+
+            // Assert
+            testConsole.Lines.Count.ShouldBe(16);
+
+            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
