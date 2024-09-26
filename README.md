@@ -521,7 +521,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 </Project>
 ```
 
-> Notice that the target framework should be set to `netstandard2.1` if you add NuGet based additional rules.
+> Notice that the target framework should be set to `netstandard2.1` if you add additional NuGet-based rules.
 
 A xml file with the analysis results is created in the output folder.
 
