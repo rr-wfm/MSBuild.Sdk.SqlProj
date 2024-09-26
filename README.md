@@ -542,7 +542,7 @@ Individual rule violations or groups of rules can be configured to be reported a
 
 You can also build your own rules. For an example of how to build a custom rule, see [this blog post](https://erikej.github.io/dacfx/dotnet/2024/04/04/dacfx-rules.html).
 
-To publish your own custom rules, pack your rule .dll in a NuGet package as shown in the rule project file[here](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj.
+To publish your own custom rules, pack your rule .dll in a NuGet package as shown in the rule project file [here](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj).
 
 We know of the following public rules NuGet packages, that you can add to your project. 
 
