@@ -36,12 +36,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (analyzers.Length == 0)
                 {
-                    // warning SR0016: Microsoft.Rules.Data : Stored procedure(sp_Test) includes sp_ prefix in its name.
                     _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
                 }
                 else
                 {
-                    _console.WriteLine("Loading analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
+                    _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
                     settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
                 }
 
@@ -121,17 +120,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 outputFileName = outputFile.FullName[..^7];
             }
             return outputFileName + ".CodeAnalysis.xml";
-        }
-
-        private void CopyAdditionalRulesFile(FileInfo rulesFile)
-        {
-            var destPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            var dest = Path.Combine(destPath, rulesFile.Name);
-                    
-            rulesFile.CopyTo(dest, overwrite: true);
-
-            _console.WriteLine($"Adding additional rules file from '{rulesFile.FullName}' to '{dest}'");
         }
     }
 }
