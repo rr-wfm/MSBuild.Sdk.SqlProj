@@ -55,8 +55,7 @@ You should now have a project file with the following contents:
 </Project>
 ```
 
-Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\netstandard2.1
-` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
+Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\netstandard2.1` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
 
 > Note: For PackageReferences this SDK currently assumes that the `.dacpac` file has the same name as the package. If you plan to create a NuGet package out of your project (see [below](#packaging-support)) then make sure that `<TargetName>` matches the ID of your package.
 
