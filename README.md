@@ -523,7 +523,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 </Project>
 ```
 
-> Notice that the target framework should be set to `netstandard2.1` if you add NuGet based additional rules.
+> Notice that the target framework should be set to `netstandard2.1` if you add additional NuGet-based rules.
 
 A xml file with the analysis results is created in the output folder.
 
@@ -544,7 +544,7 @@ Individual rule violations or groups of rules can be configured to be reported a
 
 You can also build your own rules. For an example of how to build a custom rule, see [this blog post](https://erikej.github.io/dacfx/dotnet/2024/04/04/dacfx-rules.html).
 
-To publish your own custom rules, pack your rule .dll in a NuGet package as shown in the rule project file[here](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj.
+To publish your own custom rules, pack your rule .dll in a NuGet package as shown in the rule project file [here](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj).
 
 We know of the following public rules NuGet packages, that you can add to your project. 
 
@@ -568,7 +568,7 @@ They are based on these older repositories:
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
-- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and variuos diagrams directly from your `MSBuild.Sdk.SqlProj` project.
+- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your `MSBuild.Sdk.SqlProj` project.
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
