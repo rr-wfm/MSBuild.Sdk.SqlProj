@@ -44,7 +44,7 @@ You should now have a project file with the following contents:
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <SqlServerVersion>Sql130</SqlServerVersion>
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
     </PropertyGroup>
@@ -55,11 +55,13 @@ You should now have a project file with the following contents:
 </Project>
 ```
 
-Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\netstandard2.0` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
+Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\netstandard2.1
+` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
 
 > Note: For PackageReferences this SDK currently assumes that the `.dacpac` file has the same name as the package. If you plan to create a NuGet package out of your project (see [below](#packaging-support)) then make sure that `<TargetName>` matches the ID of your package.
 
-> Note: Ensure you **do not** change the `TargetFramework` element from `netstandard2.0` to anything else. Otherwise, you will see errors like `The "CopyRefAssembly" task was not given a value for the required parameter "SourcePath"`.
+> Note: Ensure you **do not** change the `TargetFramework` element from `netstandard2.1
+` to anything else. Otherwise, you will see errors like `The "CopyRefAssembly" task was not given a value for the required parameter "SourcePath"`.
 
 ## Editing the Project file
 The project file can have extension `.csproj` or `.fsproj`.
@@ -96,7 +98,7 @@ There are a lot of properties that can be set on the model in the resulting `.da
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
         <SqlServerVersion>SqlAzure</SqlServerVersion>
     </PropertyGroup>
@@ -215,7 +217,7 @@ Especially when using pre- and post-deployment scripts, but also in other scenar
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -229,7 +231,7 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <SqlServerVersion>Sql160</SqlServerVersion>
     </PropertyGroup>
 
@@ -246,7 +248,7 @@ By default, the package reference is treated as being part of the same database.
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -263,7 +265,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -304,7 +306,7 @@ Microsoft has recently released NuGet packages containing the definitions of the
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <SqlServerVersion>160</SqlServerVersion>
     </PropertyGroup>
 
@@ -324,7 +326,7 @@ Similar to package references you can also reference another project by using a 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -338,7 +340,7 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -372,7 +374,7 @@ In order to solve circular references between databases that may have been incor
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
