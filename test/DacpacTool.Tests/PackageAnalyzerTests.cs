@@ -114,7 +114,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
-            testConsole.Lines.Count(l => l.Contains("Loading analyzers: ")).ShouldBe(1);
+            testConsole.Lines.Count(l => l.Contains("Using additional analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
