@@ -33,7 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 
                 new Option<bool>(new string[] { "--runcodeanalysis", "-an" }, "Run static code analysis"),
                 new Option<string>(new string[] { "--codeanalysisrules", "-ar" }, "List of rules to suppress in format '-Microsoft.Rules.Data.SR0001;-Microsoft.Rules.Data.SR0008'"),
-                new Option<FileInfo[]>(new string[] { "--codeanalysisassembly", "-aa" }, "Custom code analysis rule assembly to use"),
+                new Option<FileInfo[]>(new string[] { "--codeanalysisassemblies", "-aa" }, "Custom code analysis rule assemblies to use"),
 
                 new Option<bool>(new string[] { "--warnaserror" }, "Treat T-SQL Warnings As Errors"),
                 new Option<bool>(new string[] { "--generatecreatescript", "-gcs" }, "Generate create script for package"),
@@ -207,7 +207,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
-                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssembly ?? Array.Empty<FileInfo>());
+                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
 
             return 0;

@@ -160,7 +160,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             var result = new List<FileInfo>();
             var path = Path.GetDirectoryName(Path.Combine(System.Reflection.Assembly.GetAssembly(typeof(PackageAnalyzerTests)).Location));
-            result.Add(new FileInfo(Path.Combine(path, "SqlServer.Dac.dll")));
             result.Add(new FileInfo(Path.Combine(path, "SqlServer.Rules.dll")));
             result.Add(new FileInfo(Path.Combine(path, "TSQLSmellSCA.dll")));
 

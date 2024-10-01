@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.0.1" />
+      <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
