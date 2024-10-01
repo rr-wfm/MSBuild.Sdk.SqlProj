@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <SqlServerVersion>Sql150</SqlServerVersion>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*;+!SqlServer.Rules.SRN0002</CodeAnalysisRules>
+    <RunSqlCodeAnalysis>true</RunSqlCodeAnalysis>
   </PropertyGroup>
 
   <ItemGroup>

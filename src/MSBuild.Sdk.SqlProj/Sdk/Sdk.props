@@ -10,7 +10,6 @@
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <SqlServerVersion>Sql150</SqlServerVersion>
     <TargetExt>.dacpac</TargetExt>
-    <RunSqlCodeAnalysis Condition="'$(RunSqlCodeAnalysis)' == ''">True</RunSqlCodeAnalysis>
   </PropertyGroup>
 
   <PropertyGroup>
