@@ -22,33 +22,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             BuildRuleLists(rulesExpression);
         }
 
-        public void AddRulesFile(FileInfo inputFile)
-        {
-            ArgumentNullException.ThrowIfNull(inputFile);
-
-            // Make sure the file exists
-            if (!inputFile.Exists)
-            {
-                throw new ArgumentException($"Unable to find rules file {inputFile}", nameof(inputFile));
-            }
-
-            if (inputFile.Directory.Name.Equals("rules", StringComparison.OrdinalIgnoreCase)
-                && inputFile.Extension.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            {
-                CopyAdditionalRulesFile(inputFile);
-            }
-        }
-
-        public void Analyze(TSqlModel model, FileInfo outputFile)
+        public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(outputFile);
+            ArgumentNullException.ThrowIfNull(analyzers);
 
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
                 var factory = new CodeAnalysisServiceFactory();
-                var service = factory.CreateAnalysisService(model);
+                var settings = new CodeAnalysisServiceSettings();
+
+                if (analyzers.Length == 0)
+                {
+                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+                }
+                else
+                {
+                    _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
+                    settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
+                }
+
+                var service = factory.CreateAnalysisService(model, settings);
 
                 if (_ignoredRules.Count > 0 || _ignoredRuleSets.Count > 0)
                 {
@@ -124,17 +120,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 outputFileName = outputFile.FullName[..^7];
             }
             return outputFileName + ".CodeAnalysis.xml";
-        }
-
-        private void CopyAdditionalRulesFile(FileInfo rulesFile)
-        {
-            var destPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
-            var dest = Path.Combine(destPath, rulesFile.Name);
-                    
-            rulesFile.CopyTo(dest, overwrite: true);
-
-            _console.WriteLine($"Adding additional rules file from '{rulesFile.FullName}' to '{dest}'");
         }
     }
 }
