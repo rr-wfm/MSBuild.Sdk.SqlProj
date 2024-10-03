@@ -89,8 +89,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options);
 
-            // Set metadata for the package
             using var packageBuilder = new PackageBuilder(new ActualConsole());
+            var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
+
+            // Set metadata for the package
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)
@@ -209,6 +211,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
+
+            versionChecker.CheckForPackageUpdateAsync().GetAwaiter().GetResult();
 
             return 0;
         }
