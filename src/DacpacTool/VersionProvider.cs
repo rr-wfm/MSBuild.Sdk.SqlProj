@@ -8,8 +8,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public NuGetVersion CurrentPackageVersion()
         {
             return new NuGetVersion(
-                Assembly
-                .GetEntryAssembly()!
+                typeof(VersionProvider)
+                .Assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
                 .InformationalVersion);
         }
