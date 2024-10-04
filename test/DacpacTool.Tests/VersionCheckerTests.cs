@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using System.Diagnostics;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
@@ -37,12 +38,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             testConsole.Lines.Clear();
 
+            var stopWatch = Stopwatch.StartNew();
+
             // Act
             await versionChecker.CheckForPackageUpdateAsync();
+            
+            stopWatch.Stop();
 
             testConsole.Lines.Count.ShouldBe(1);
             testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: Your are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
             File.Exists(cacheFile).ShouldBeTrue();
+            stopWatch.ElapsedMilliseconds.ShouldBeLessThan(100);
         }
 
         [TestMethod]
