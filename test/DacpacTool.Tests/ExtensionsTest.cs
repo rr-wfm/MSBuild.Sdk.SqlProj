@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -51,7 +52,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             references.Any().ShouldBeTrue();
-            references.First().ShouldBe(referencePackage);
+            references.First().ShouldBe(Path.GetFileName(referencePackage));
         }
 
         /// <summary>

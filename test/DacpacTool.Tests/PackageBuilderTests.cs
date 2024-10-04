@@ -4,9 +4,11 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
+using EmptyFiles;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
@@ -117,6 +119,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
+
+            var references = packageBuilder.Model.GetReferencedDacPackages();
+
+            references.Count().ShouldBe(1);
+            references.First().ShouldBe(Path.GetFileName(reference));
 
             // Cleanup
             File.Delete(reference);

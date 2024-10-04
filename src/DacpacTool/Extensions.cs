@@ -140,7 +140,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "Reference", "SqlSchema");
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-            setMetadataMethod.Invoke(customData, new object[] { "FileName", referencePath });
+            setMetadataMethod.Invoke(customData, new object[] { "FileName", Path.GetFileName(referencePath) });
             setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(referencePath) });
             setMetadataMethod.Invoke(customData,
                 new object[] { "SuppressMissingDependenciesErrors", suppressErrorsForMissingDependencies.ToString() });
@@ -153,6 +153,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     setMetadataMethod.Invoke(customData, new object[] {"ExternalParts", parts});
                 }
             }
+
+            File.Copy(referencePath, Path.Combine(Path.GetDirectoryName(typeof(PackageBuilder).Assembly.Location), Path.GetFileName(referencePath)), true);
 
             AddCustomData(dataSchemaModel, customData);
         }
