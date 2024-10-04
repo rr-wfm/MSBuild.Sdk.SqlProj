@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
-using NuGet.Common;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
+using System.Net.Http.Json;
+using NuGet.Versioning;
+using System.IO;
+using System.Globalization;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -14,7 +14,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly IConsole _console;
         private readonly IVersionProvider _versionProvider;
 
-        public VersionChecker(IConsole console, IVersionProvider versionProvider) 
+        public VersionChecker(IConsole console, IVersionProvider versionProvider)
         {
             _versionProvider = versionProvider;
             _console = console;
@@ -24,23 +24,43 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             try
             {
-                var logger = new NullLogger();
+                var timeOut = TimeSpan.FromSeconds(2);
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var cts = new CancellationTokenSource(timeOut);
 
-                using var cache = new SourceCacheContext();
-                var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-                var resource = await repository.GetResourceAsync<PackageMetadataResource>().ConfigureAwait(false);
+                var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag-" + DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
-                var packages = await resource.GetMetadataAsync(
-                    "MSBuild.Sdk.SqlProj",
-                    includePrerelease: false,
-                    includeUnlisted: false,
-                    cache,
-                    logger,
-                    cts.Token).ConfigureAwait(false);
+                NuGetVersion latestVersion = null;
 
-                var latestVersion = packages.Select(v => v.Identity.Version).MaxBy(v => v);
+                if (File.Exists(cacheFile))
+                {
+                    var cache = await File.ReadAllTextAsync(cacheFile, cts.Token).ConfigureAwait(false);
+                    latestVersion = NuGetVersion.Parse(cache);
+                }
+                else
+                {
+                    using var httpClient = new System.Net.Http.HttpClient
+                    {
+                        DefaultRequestHeaders = { { "User-Agent", "MSBuild.Sdk.SqlProj" } },
+                        Timeout = timeOut,
+                    };
+
+                    var response = await httpClient.GetFromJsonAsync<Release>("https://api.github.com/repos/rr-wfm/MSBuild.Sdk.SqlProj/releases/latest").ConfigureAwait(false);
+                    if (response is null || response.tag_name is null || response.draft || response.prerelease)
+                    {
+                        return;
+                    }
+
+                    latestVersion = NuGetVersion.Parse(response.tag_name.TrimStart('v'));
+
+                    await File.WriteAllTextAsync(cacheFile, latestVersion.ToNormalizedString(), cts.Token).ConfigureAwait(false);
+                }
+
+                if (latestVersion is null)
+                {
+                    return;
+                }
+
                 if (latestVersion > _versionProvider.CurrentPackageVersion())
                 {
                     _console.WriteLine($"DacpacTool warning SQLPROJ0002: Your are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">')");
@@ -53,5 +73,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 #pragma warning restore CA1031
         }
+    }
+
+
+    internal class Release
+    {
+        public string tag_name { get; set; }
+        public bool draft { get; set; }
+        public bool prerelease { get; set; }
     }
 }
