@@ -1,8 +1,8 @@
 ﻿
-<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Provides targets for projects that result into a data-tier application package (DACPAC).</Description>
     <PackageTags>MSBuild MSBuildSdk sql dacpac</PackageTags>
     <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
@@ -31,7 +31,7 @@
 
   <Target Name="IncludeDacpacTool" AfterTargets="Build">
     <PropertyGroup>
-      <_DacpacToolSupportedTfms>net6.0;net8.0</_DacpacToolSupportedTfms>
+      <_DacpacToolSupportedTfms>net8.0;net9.0</_DacpacToolSupportedTfms>
     </PropertyGroup>
     <ItemGroup>
       <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
