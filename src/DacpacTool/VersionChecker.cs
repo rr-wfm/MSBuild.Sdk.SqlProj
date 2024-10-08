@@ -80,7 +80,5 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     internal class Release
     {
         public string tag_name { get; set; }
-        public bool draft { get; set; }
-        public bool prerelease { get; set; }
     }
 }
