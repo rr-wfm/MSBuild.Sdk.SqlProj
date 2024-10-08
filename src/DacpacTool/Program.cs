@@ -45,9 +45,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
             };
-            buildCommand.Handler = CommandHandler.Create<BuildOptions>(async (x) =>
+            buildCommand.Handler = CommandHandler.Create<BuildOptions>(async (buildOptions) =>
             {
-                await BuildDacpac(x).ConfigureAwait(false);
+                await BuildDacpac(buildOptions).ConfigureAwait(false);
             });
 
             var collectIncludesCommand = new Command("collect-includes")

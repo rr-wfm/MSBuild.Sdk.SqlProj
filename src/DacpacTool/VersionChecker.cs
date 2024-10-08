@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using NuGet.Versioning;
 using System.IO;
 using System.Globalization;
+using System.Net.Http;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -24,9 +25,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             try
             {
-                var timeOut = TimeSpan.FromSeconds(2);
+                var timeout = TimeSpan.FromSeconds(2);
 
-                using var cts = new CancellationTokenSource(timeOut);
+                using var cts = new CancellationTokenSource(timeout);
 
                 var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag-" + DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
@@ -39,10 +40,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 else
                 {
-                    using var httpClient = new System.Net.Http.HttpClient
+                    using var httpClient = new HttpClient
                     {
                         DefaultRequestHeaders = { { "User-Agent", "MSBuild.Sdk.SqlProj" } },
-                        Timeout = timeOut,
+                        Timeout = timeout,
                     };
 
                     var response = await httpClient.GetFromJsonAsync<Release>("https://api.github.com/repos/rr-wfm/MSBuild.Sdk.SqlProj/releases/latest").ConfigureAwait(false);
@@ -63,7 +64,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (latestVersion > _versionProvider.CurrentPackageVersion())
                 {
-                    _console.WriteLine($"DacpacTool warning SQLPROJ0002: Your are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">')");
+                    _console.WriteLine($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">')");
                 }
             }
 #pragma warning disable CA1031
