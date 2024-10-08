@@ -33,7 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             testConsole.Lines.Count.ShouldBe(1);
-            testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: Your are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
+            testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
 
             // Arrange
             testConsole.Lines.Clear();
@@ -46,7 +46,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             stopWatch.Stop();
 
             testConsole.Lines.Count.ShouldBe(1);
-            testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: Your are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
+            testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
             File.Exists(cacheFile).ShouldBeTrue();
             stopWatch.ElapsedMilliseconds.ShouldBeLessThan(100);
         }
