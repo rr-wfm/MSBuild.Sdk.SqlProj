@@ -47,7 +47,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     };
 
                     var response = await httpClient.GetFromJsonAsync<Release>("https://api.github.com/repos/rr-wfm/MSBuild.Sdk.SqlProj/releases/latest").ConfigureAwait(false);
-                    if (response is null || response.tag_name is null || response.draft || response.prerelease)
+                    if (response is null || response.tag_name is null)
                     {
                         return;
                     }
