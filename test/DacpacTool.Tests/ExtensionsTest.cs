@@ -51,7 +51,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             references.Any().ShouldBeTrue();
-            references.First().ShouldBe(referencePackage);
+            references.First().ShouldBe(referencePackage.Replace('\\', '/'));
         }
 
         /// <summary>
