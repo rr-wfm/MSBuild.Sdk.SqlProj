@@ -135,13 +135,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public static void AddReference(this TSqlModel model, string referencePath, string externalParts, bool suppressErrorsForMissingDependencies)
         {
             ArgumentNullException.ThrowIfNull(model);
+            ArgumentNullException.ThrowIfNull(referencePath);
 
             var dataSchemaModel = GetDataSchemaModel(model);
 
+            var crossPlatformPath = referencePath.Replace('\\', '/');
+
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "Reference", "SqlSchema");
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-            setMetadataMethod.Invoke(customData, new object[] { "FileName", referencePath });
-            setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(referencePath) });
+            setMetadataMethod.Invoke(customData, new object[] { "FileName", crossPlatformPath });
+            setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(crossPlatformPath) });
             setMetadataMethod.Invoke(customData,
                 new object[] { "SuppressMissingDependenciesErrors", suppressErrorsForMissingDependencies.ToString() });
 
