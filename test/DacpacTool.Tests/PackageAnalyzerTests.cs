@@ -34,8 +34,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
-        
-
         [TestMethod]
         public void RunsAnalyzerWithSupressions()
         {

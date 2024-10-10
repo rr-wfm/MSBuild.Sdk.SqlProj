@@ -45,7 +45,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<bool>(new string[] { "--debug" }, "Waits for a debugger to attach")
 #endif
             };
-            buildCommand.Handler = CommandHandler.Create<BuildOptions>(BuildDacpac);
+            buildCommand.Handler = CommandHandler.Create<BuildOptions>(async (buildOptions) =>
+            {
+                await BuildDacpac(buildOptions).ConfigureAwait(false);
+            });
 
             var collectIncludesCommand = new Command("collect-includes")
             {
@@ -79,18 +82,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             rootCommand.Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)";
 
             var processed = rootCommand.Parse(args);
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-            return await processed.InvokeAsync();
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+            return await processed.InvokeAsync().ConfigureAwait(false);
         }
 
-        private static int BuildDacpac(BuildOptions options)
+        private static async Task<int> BuildDacpac(BuildOptions options)
         {
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options);
 
-            // Set metadata for the package
             using var packageBuilder = new PackageBuilder(new ActualConsole());
+            var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
+
+            await versionChecker.CheckForPackageUpdateAsync().ConfigureAwait(false);
+
+            // Set metadata for the package
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)
@@ -145,6 +150,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 if (options.InputFile.Exists)
                 {
+#pragma warning disable CA1849 // Call async methods when in an async method - must wait for .NET 6 to be removed
                     foreach (var line in File.ReadLines(options.InputFile.FullName))
                     {
                         FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
@@ -153,6 +159,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                             modelExceptions = true;
                         }
                     }
+#pragma warning restore CA1849 // Call async methods when in an async method
                 }
                 else
                 {
@@ -172,6 +179,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 if (options.SuppressWarningsListFile.Exists)
                 {
+#pragma warning disable CA1849 // Call async methods when in an async method
                     foreach (var line in File.ReadLines(options.SuppressWarningsListFile.FullName))
                     {
                         //Checks if there are suppression warnings list
@@ -181,6 +189,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         FileInfo inputFile = new FileInfo(parts[0]); // Validation occurs in AddInputFile
                         packageBuilder.AddFileWarningsToSuppress(inputFile, warningList);
                     }
+#pragma warning restore CA1849 // Call async methods when in an async method
                 }
             }
 
