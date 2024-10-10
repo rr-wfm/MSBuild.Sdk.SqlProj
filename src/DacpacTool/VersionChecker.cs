@@ -4,7 +4,6 @@ using System.Threading;
 using System.Net.Http.Json;
 using NuGet.Versioning;
 using System.IO;
-using System.Globalization;
 using System.Net.Http;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -14,6 +13,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     {
         private readonly IConsole _console;
         private readonly IVersionProvider _versionProvider;
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
+        private sealed record Release(string tag_name);
+#pragma warning restore CA1812
 
         public VersionChecker(IConsole console, IVersionProvider versionProvider)
         {
@@ -23,17 +25,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public async Task CheckForPackageUpdateAsync()
         {
+            
+
             try
             {
                 var timeout = TimeSpan.FromSeconds(2);
 
                 using var cts = new CancellationTokenSource(timeout);
 
-                var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag-" + DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+                var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt");
 
                 NuGetVersion latestVersion = null;
 
-                if (File.Exists(cacheFile))
+                if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) > DateTime.UtcNow.AddDays(-1))
                 {
                     var cache = await File.ReadAllTextAsync(cacheFile, cts.Token).ConfigureAwait(false);
                     latestVersion = NuGetVersion.Parse(cache);
@@ -67,18 +71,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _console.WriteLine($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">')");
                 }
             }
-#pragma warning disable CA1031
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception)
             {
                 // Ignore
             }
 #pragma warning restore CA1031
         }
-    }
-
-
-    internal class Release
-    {
-        public string tag_name { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.IO;
-using System;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -21,7 +19,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Clear();
             var versionChecker = new VersionChecker(_console, new VersionProvider("1.17.0+4c0175a82e"));
 
-            var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag-" + DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt");
 
             if (File.Exists(cacheFile))
             {
@@ -48,7 +46,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(1);
             testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
             File.Exists(cacheFile).ShouldBeTrue();
-            stopWatch.ElapsedMilliseconds.ShouldBeLessThan(100);
+            stopWatch.ElapsedMilliseconds.ShouldBeLessThan(20);
         }
 
         [TestMethod]
