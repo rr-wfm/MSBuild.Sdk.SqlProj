@@ -81,6 +81,6 @@ public class AddSqlProjectTests
 
         // Assert
         var lifecycleHooks = app.Services.GetServices<IDistributedApplicationLifecycleHook>();
-        Assert.Single(lifecycleHooks.OfType<PublishSqlProjectLifecycleHook>());
+        Assert.Single(lifecycleHooks.OfType<SqlProjectPublisher>());
     }
 }

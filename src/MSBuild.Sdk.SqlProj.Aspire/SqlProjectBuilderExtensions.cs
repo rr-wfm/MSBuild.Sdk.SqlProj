@@ -69,8 +69,20 @@ public static class SqlProjectBuilderExtensions
         this IResourceBuilder<SqlProjectResource> builder, IResourceBuilder<SqlServerDatabaseResource> target)
     {
         builder.ApplicationBuilder.Services.TryAddSingleton<IDacpacDeployer, DacpacDeployer>();
-        builder.ApplicationBuilder.Services.TryAddLifecycleHook<PublishSqlProjectLifecycleHook>();
-        builder.WithAnnotation(new TargetDatabaseResourceAnnotation(target.Resource.Name), ResourceAnnotationMutationBehavior.Replace);
+        builder.ApplicationBuilder.Services.TryAddSingleton<SqlProjectPublisher>();
+
+        builder.ApplicationBuilder.Eventing.Subscribe<ResourceReadyEvent>(target.Resource, (resourceReady, ct) =>
+        {
+            var service = resourceReady.Services.GetRequiredService<SqlProjectPublisher>();
+            return service.PublishSqlProject(builder.Resource, target.Resource, ct);
+        });
+
+        builder.WithInitialState(new CustomResourceSnapshot
+        {
+            Properties = [],
+            ResourceType = "SqlProject",
+            State = new ResourceStateSnapshot("Pending", KnownResourceStateStyles.Info)
+        });
         return builder;
     }
 }

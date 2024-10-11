@@ -24,7 +24,7 @@ public class PublishSqlProjectLifecycleHookTests
         // Act
         using var app = appBuilder.Build();
         var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var lifecycleHook = Assert.Single(app.Services.GetServices<IDistributedApplicationLifecycleHook>().OfType<PublishSqlProjectLifecycleHook>());
+        var lifecycleHook = Assert.Single(app.Services.GetServices<IDistributedApplicationLifecycleHook>().OfType<SqlProjectPublisher>());
         await lifecycleHook.AfterResourcesCreatedAsync(appModel, CancellationToken.None);
         
         // Assert
