@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="8.1.0" />
-    <PackageReference Include="Microsoft.Build" Version="17.10.4" ExcludeAssets="runtime" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="8.2.1" />
+    <PackageReference Include="Microsoft.Build" Version="17.11.4" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.7.8" />
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.3.566" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.4.92" />
   </ItemGroup>
 
   <ItemGroup>
