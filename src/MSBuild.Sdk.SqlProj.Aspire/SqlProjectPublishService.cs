@@ -21,29 +21,29 @@ public class SqlProjectPublishService
     {
         var logger = _resourceLoggerService.GetLogger(sqlProject);
 
-        var dacpacPath = sqlProject.GetDacpacPath();
-        if (!File.Exists(dacpacPath))
-        {
-            logger.LogError("SQL Server Database project package not found at path {DacpacPath}.", dacpacPath);
-            await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
-            return;
-        }
-
-        var connectionString = await target.ConnectionStringExpression.GetValueAsync(cancellationToken);
-        if (connectionString == null)
-        {
-            logger.LogError("Failed to retrieve connection string for target database {TargetDatabaseResourceName}.", target.Name);
-            await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
-            return;
-        }
-
-        await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-            state => state with { State = new ResourceStateSnapshot("Publishing", KnownResourceStateStyles.Info) });
-
         try
         {
+            var dacpacPath = sqlProject.GetDacpacPath();
+            if (!File.Exists(dacpacPath))
+            {
+                logger.LogError("SQL Server Database project package not found at path {DacpacPath}.", dacpacPath);
+                await _resourceNotificationService.PublishUpdateAsync(sqlProject,
+                    state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
+                return;
+            }
+
+            var connectionString = await target.ConnectionStringExpression.GetValueAsync(cancellationToken);
+            if (connectionString == null)
+            {
+                logger.LogError("Failed to retrieve connection string for target database {TargetDatabaseResourceName}.", target.Name);
+                await _resourceNotificationService.PublishUpdateAsync(sqlProject,
+                    state => state with { State = new ResourceStateSnapshot("Failed", KnownResourceStateStyles.Error) });
+                return;
+            }
+
+            await _resourceNotificationService.PublishUpdateAsync(sqlProject,
+                state => state with { State = new ResourceStateSnapshot("Publishing", KnownResourceStateStyles.Info) });
+
             _deployer.Deploy(dacpacPath, connectionString, target.DatabaseName, logger, cancellationToken);
 
             await _resourceNotificationService.PublishUpdateAsync(sqlProject,
