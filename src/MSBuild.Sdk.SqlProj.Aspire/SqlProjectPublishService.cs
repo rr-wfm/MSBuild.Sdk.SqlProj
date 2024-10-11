@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace MSBuild.Sdk.SqlProj.Aspire;
 
-public class SqlProjectPublisher
+public class SqlProjectPublishService
 {
     private readonly IDacpacDeployer _deployer;
     private readonly ResourceLoggerService _resourceLoggerService;
     private readonly ResourceNotificationService _resourceNotificationService;
 
-    public SqlProjectPublisher(IDacpacDeployer deployer, ResourceLoggerService resourceLoggerService,
+    public SqlProjectPublishService(IDacpacDeployer deployer, ResourceLoggerService resourceLoggerService,
         ResourceNotificationService resourceNotificationService)
     {
         _deployer = deployer ?? throw new ArgumentNullException(nameof(deployer));

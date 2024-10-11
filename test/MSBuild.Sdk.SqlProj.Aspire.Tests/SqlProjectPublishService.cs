@@ -5,10 +5,10 @@ using NSubstitute;
 
 namespace MSBuild.Sdk.SqlProj.Aspire.Tests;
 
-public class PublishSqlProjectLifecycleHookTests
+public class SqlProjectPublisherServiceTests
 {
     [Fact]
-    public async Task AfterResourcesCreatedAsync_PublishesDacpacToTargetDatabase()
+    public async Task PublishesDacpacToTargetDatabase()
     {
         // Arrange
         var dacDeployerMock = Substitute.For<IDacpacDeployer>();
@@ -18,14 +18,14 @@ public class PublishSqlProjectLifecycleHookTests
         var targetDatabase = appBuilder.AddSqlServer("sql")
                                        .WithEndpoint("tcp", e => e.AllocatedEndpoint = new AllocatedEndpoint(e, "localhost", 1433)) // Simulated endpoint
                                        .AddDatabase("test");
-        appBuilder.AddSqlProject<TestProject>("MySqlProject")
+        var project = appBuilder.AddSqlProject<TestProject>("MySqlProject")
                   .PublishTo(targetDatabase);
         
         // Act
         using var app = appBuilder.Build();
         var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var lifecycleHook = Assert.Single(app.Services.GetServices<IDistributedApplicationLifecycleHook>().OfType<SqlProjectPublisher>());
-        await lifecycleHook.AfterResourcesCreatedAsync(appModel, CancellationToken.None);
+        var service = Assert.Single(app.Services.GetServices<SqlProjectPublishService>());
+        await service.PublishSqlProject(project.Resource, targetDatabase.Resource, CancellationToken.None);
         
         // Assert
         var expectedPath = Path.GetFullPath(Path.Combine(appBuilder.AppHostDirectory, "../../../../TestProject/bin/Debug/netstandard2.0/TestProject.dacpac"));

@@ -49,26 +49,7 @@ public class AddSqlProjectTests
     }
 
     [Fact]
-    public void PublishTo_AddsAnnotation()
-    {
-        // Arrange
-        var appBuilder = DistributedApplication.CreateBuilder();
-        var targetDatabase = appBuilder.AddSqlServer("sql").AddDatabase("test");
-        appBuilder.AddSqlProject<TestProject>("MySqlProject")
-                  .PublishTo(targetDatabase);
-        
-        // Act
-        using var app = appBuilder.Build();
-        var appModel = app.Services.GetRequiredService<DistributedApplicationModel>();
-
-        // Assert
-        var sqlProjectResource = Assert.Single(appModel.Resources.OfType<SqlProjectResource>());
-        var annotation = Assert.Single(sqlProjectResource.Annotations.OfType<TargetDatabaseResourceAnnotation>());
-        Assert.Equal("test", annotation.TargetDatabaseResourceName);
-    }
-
-    [Fact]
-    public void PublishTo_AddsLifecycleHook()
+    public void PublishTo_AddsRequiredServices()
     {
         // Arrange
         var appBuilder = DistributedApplication.CreateBuilder();
@@ -80,7 +61,7 @@ public class AddSqlProjectTests
         using var app = appBuilder.Build();
 
         // Assert
-        var lifecycleHooks = app.Services.GetServices<IDistributedApplicationLifecycleHook>();
-        Assert.Single(lifecycleHooks.OfType<SqlProjectPublisher>());
+        Assert.Single(app.Services.GetServices<SqlProjectPublishService>());
+        Assert.Single(app.Services.GetServices<IDacpacDeployer>());
     }
 }

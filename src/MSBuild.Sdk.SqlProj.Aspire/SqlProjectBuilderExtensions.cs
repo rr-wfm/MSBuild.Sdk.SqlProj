@@ -69,11 +69,11 @@ public static class SqlProjectBuilderExtensions
         this IResourceBuilder<SqlProjectResource> builder, IResourceBuilder<SqlServerDatabaseResource> target)
     {
         builder.ApplicationBuilder.Services.TryAddSingleton<IDacpacDeployer, DacpacDeployer>();
-        builder.ApplicationBuilder.Services.TryAddSingleton<SqlProjectPublisher>();
+        builder.ApplicationBuilder.Services.TryAddSingleton<SqlProjectPublishService>();
 
         builder.ApplicationBuilder.Eventing.Subscribe<ResourceReadyEvent>(target.Resource, (resourceReady, ct) =>
         {
-            var service = resourceReady.Services.GetRequiredService<SqlProjectPublisher>();
+            var service = resourceReady.Services.GetRequiredService<SqlProjectPublishService>();
             return service.PublishSqlProject(builder.Resource, target.Resource, ct);
         });
 
