@@ -14,7 +14,15 @@ public sealed class SqlProjectResource(string name) : Resource(name)
             var projectPath = projectMetadata.ProjectPath;
             using var projectCollection = new ProjectCollection();
             var project = projectCollection.LoadProject(projectPath);
-            return project.GetPropertyValue("TargetPath");
+
+            // .sqlprojx has a SqlTargetPath property, so try that first
+            var targetPath = project.GetPropertyValue("SqlTargetPath");
+            if (string.IsNullOrWhiteSpace(targetPath))
+            {
+                targetPath = project.GetPropertyValue("TargetPath");
+            }
+
+            return targetPath;
         }
 
         var dacpacMetadata = Annotations.OfType<DacpacMetadataAnnotation>().FirstOrDefault();
