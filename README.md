@@ -583,7 +583,8 @@ EXEC (@Query)
 
 ## Reference `MSBuild.Sdk.SqlProj` from class library
 The output of `MSBuild.Sdk.SqlProj` is not an assembly, but a `.dacpac`. In order to correctly reference a `MSBuild.Sdk.SqlProj` based project from a class library, the `ReferenceOutputAssembly` hint needs to be set to `False`:
-```
+
+```xml
 <ItemGroup>
     <ProjectReference
       Include="../MyDacpacProj/MyDacpacProj.csproj"
@@ -591,6 +592,16 @@ The output of `MSBuild.Sdk.SqlProj` is not an assembly, but a `.dacpac`. In orde
 </ItemGroup>
 ```
 Now, upon compilation of the class library, the relevant `.dacpac` files get copied to the output directory.
+
+## Refactor Log support
+
+While the SDK does not help you maintain a [refactor log](https://learn.microsoft.com/sql/ssdt/how-to-use-rename-and-refactoring-to-make-changes-to-your-database-objects), you can use an existing one during build by referring to it in your project:
+
+```xml
+<ItemGroup>
+    <RefactorLog Include="RefactorLog\TestProjectWithPrePost.refactorlog" />
+</ItemGroup>
+```
 
 ## Known limitations
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
