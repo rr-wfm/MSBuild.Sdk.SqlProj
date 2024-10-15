@@ -34,14 +34,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var factory = new CodeAnalysisServiceFactory();
                 var settings = new CodeAnalysisServiceSettings();
 
-                if (analyzers.Length == 0)
+                if (!analyzers.Any(f => f.Name == "SqlServer.Rules.dll" || f.Name == "TSQLSmellSCA.dll"))
                 {
-                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
                 }
-                else
-                {
-                    _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
-                    settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
+                else 
+                { 
+                    _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.Name)));
+                    settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName).Distinct());
                 }
 
                 var projectDir = Environment.CurrentDirectory;
