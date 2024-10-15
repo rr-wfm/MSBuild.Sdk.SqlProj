@@ -136,7 +136,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
-            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
