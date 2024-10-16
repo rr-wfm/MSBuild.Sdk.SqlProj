@@ -38,8 +38,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
                 }
-                else 
-                { 
+                else
+                {
                     _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.Name)));
                     settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName).Distinct());
                 }
