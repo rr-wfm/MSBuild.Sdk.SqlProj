@@ -83,6 +83,18 @@ public static class SqlProjectBuilderExtensions
             ResourceType = "SqlProject",
             State = new ResourceStateSnapshot("Pending", KnownResourceStateStyles.Info)
         });
+
+        builder.WithCommand("redeploy", "Redeploy", async (context) =>
+        {
+            var service = context.ServiceProvider.GetRequiredService<SqlProjectPublishService>();
+            await service.PublishSqlProject(builder.Resource, target.Resource, context.CancellationToken);
+            return new ExecuteCommandResult { Success = true };
+        }, updateState: (context) => context.ResourceSnapshot?.State?.Text == KnownResourceStates.Finished ? ResourceCommandState.Enabled : ResourceCommandState.Disabled,
+           displayDescription: "Redeploys the SQL Server Database project to the target database.",
+           iconName: "ArrowReset",
+           iconVariant: IconVariant.Filled,
+           isHighlighted: true);
+
         return builder;
     }
 }
