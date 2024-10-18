@@ -526,7 +526,18 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 
 A xml file with the analysis results is created in the output folder.
 
-The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules.
+The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules for the entire project.
+
+Starting with version 3.0.0 of the SDK, you can also disable rules per file. Add a `StaticCodeAnalysis.SuppressMessages.xml` file to the project root, with contents similar to this:
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<StaticCodeAnalysis version="2" xmlns="urn:Microsoft.Data.Tools.Schema.StaticCodeAnalysis">
+  <SuppressedFile FilePath="Procedures\sp_Test.sql">
+	<SuppressedRule Category="Microsoft.Rules.Data" RuleId="SR0001" />
+  </SuppressedFile>
+</StaticCodeAnalysis>
+```
 
 Any rule violations found during analysis are reported as build warnings.
 

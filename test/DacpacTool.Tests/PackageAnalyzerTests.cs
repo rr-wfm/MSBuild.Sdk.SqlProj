@@ -142,12 +142,50 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
+        [TestMethod]
+        public void RunsAnalyzerWithSuppressionFile()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var path = new FileInfo(Path.GetTempFileName() + ".dacpac");
+
+            var packageBuilder = new PackageBuilder(testConsole);
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
+            packageBuilder.SetMetadata("TestSuppression", "1.0.0");
+
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(path);
+
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+
+            try
+            {
+                //Set the current directory.
+                Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
+                // Act
+                packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+            }
+            finally
+            {
+                //Reset the current directory.
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+            }
+
+            // Assert
+            testConsole.Lines.Count.ShouldBe(25);
+
+            testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
+        }
+
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()
                 .AddTable("TestTable", ("Column1", "nvarchar(100)"))
                 .AddStoredProcedure("sp_GetData", "SELECT * FROM dbo.TestTable", "proc1.sql");
-                
+
             var model = tmodel.Build();
             var packagePath = tmodel.SaveAsPackage();
 

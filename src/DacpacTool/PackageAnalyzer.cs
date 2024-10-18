@@ -44,12 +44,33 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
                 }
 
+                var projectDir = Environment.CurrentDirectory;
+                var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
+                List<SuppressedProblemInfo> suppressedProblems = new();
+
+                if (File.Exists(suppressorPath))
+                {
+                    _console.WriteLine($"Using suppressor file: {suppressorPath}");
+                    var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
+
+                    suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
+
+                    foreach (var problem in suppressedProblems)
+                    {
+                        _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
+                    }
+                }
+
                 var service = factory.CreateAnalysisService(model, settings);
 
-                if (_ignoredRules.Count > 0 || _ignoredRuleSets.Count > 0)
+                if (_ignoredRules.Count > 0 
+                    || _ignoredRuleSets.Count > 0
+                    || suppressedProblems.Count > 0)
                 {
                     service.SetProblemSuppressor(p => 
-                        _ignoredRules.Contains(p.Rule.RuleId) 
+                        suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
+                            && Path.Combine(projectDir, s.SourceName) == p.Problem.SourceName)
+                        || _ignoredRules.Contains(p.Rule.RuleId)
                         || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }
 

@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Procedures\sp_TestUnsuppressed.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
       <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
   </ItemGroup>
 
