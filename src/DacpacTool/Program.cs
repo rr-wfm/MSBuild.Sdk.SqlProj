@@ -21,6 +21,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 new Option<string>(new string[] { "--name", "-n" }, "Name of the package") { IsRequired = true },
                 new Option<string>(new string[] { "--version", "-v" }, "Version of the package"),
                 new Option<FileInfo>(new string[] { "--output", "-o" }, "Filename of the output package"),
+                new Option<FileInfo>(new string[] { "--projectpath", "-pp" }, "Filename of the project"),
                 new Option<SqlServerVersion>(new string[] { "--sqlServerVersion", "-sv" }, () => SqlServerVersion.Sql150, description: "Target version of the model"),
                 new Option<FileInfo>(new string[] { "--inputfile", "-i" }, "Text file listing all input files"),
                 new Option<string[]>(new string[] { "--reference", "-r" }, "Reference(s) to include"),
@@ -216,7 +217,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
-                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
+                analyzer.Analyze(packageBuilder.Model, options.Output, options.ProjectPath, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
 
             return 0;

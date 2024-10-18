@@ -9,6 +9,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string Name { get; set; }
         public string Version { get; set; }
         public FileInfo Output { get; set; }
+        public FileInfo ProjectPath { get; set; }
         public SqlServerVersion SqlServerVersion { get; set; }
         public FileInfo InputFile { get; set; }
         
