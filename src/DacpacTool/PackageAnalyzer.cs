@@ -22,12 +22,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             BuildRuleLists(rulesExpression);
         }
 
-        public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo projectPath, FileInfo[] analyzers)
+        public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(outputFile);
             ArgumentNullException.ThrowIfNull(analyzers);
-            ArgumentNullException.ThrowIfNull(projectPath);
 
             _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
             try
@@ -45,7 +44,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
                 }
 
-                var projectDir = Path.GetDirectoryName(projectPath.FullName);
+                var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
                 List<SuppressedProblemInfo> suppressedProblems = new();
 

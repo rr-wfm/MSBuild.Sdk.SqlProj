@@ -23,7 +23,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), CollectAssemblyPaths());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
             
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
@@ -44,7 +44,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), CollectAssemblyPaths());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(14);
@@ -66,7 +66,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), CollectAssemblyPaths());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(14);
@@ -86,7 +86,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), CollectAssemblyPaths());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
@@ -107,7 +107,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), CollectAssemblyPaths());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
@@ -131,7 +131,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, new FileInfo("x"), Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
@@ -154,15 +154,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
-            packageBuilder.SetMetadata("TestSupression", "1.0.0");
+            packageBuilder.SetMetadata("TestSuppression", "1.0.0");
 
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(path);
 
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
-            // Act
-            packageAnalyzer.Analyze(packageBuilder.Model, path, new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression", "TestSuppression.csproj")), Array.Empty<FileInfo>());
+            try
+            {
+                //Set the current directory.
+                Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
+                // Act
+                packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+            }
+            finally
+            {
+                //Reset the current directory.
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+            }
 
             // Assert
             testConsole.Lines.Count.ShouldBe(25);
