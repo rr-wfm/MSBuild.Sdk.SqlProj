@@ -52,7 +52,7 @@ public class SqlProjectPublishService
             _deployer.Deploy(dacpacPath, connectionString, target.DatabaseName, logger, cancellationToken);
 
             await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                state => state with { State = new ResourceStateSnapshot("Finished", KnownResourceStateStyles.Success) });
+                state => state with { State = new ResourceStateSnapshot(KnownResourceStates.Finished, KnownResourceStateStyles.Success) });
 
             await _eventing.PublishAsync(new ResourceReadyEvent(sqlProject, _serviceProvider), cancellationToken);
         }
