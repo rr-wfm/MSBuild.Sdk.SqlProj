@@ -1,4 +1,5 @@
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Eventing;
 using Microsoft.Extensions.Logging;
 
 namespace MSBuild.Sdk.SqlProj.Aspire;
@@ -8,13 +9,17 @@ public class SqlProjectPublishService
     private readonly IDacpacDeployer _deployer;
     private readonly ResourceLoggerService _resourceLoggerService;
     private readonly ResourceNotificationService _resourceNotificationService;
+    private readonly IDistributedApplicationEventing _eventing;
+    private readonly IServiceProvider _serviceProvider;
 
     public SqlProjectPublishService(IDacpacDeployer deployer, ResourceLoggerService resourceLoggerService,
-        ResourceNotificationService resourceNotificationService)
+        ResourceNotificationService resourceNotificationService, IDistributedApplicationEventing eventing, IServiceProvider serviceProvider)
     {
         _deployer = deployer ?? throw new ArgumentNullException(nameof(deployer));
         _resourceLoggerService = resourceLoggerService ?? throw new ArgumentNullException(nameof(resourceLoggerService));
         _resourceNotificationService = resourceNotificationService ?? throw new ArgumentNullException(nameof(resourceNotificationService));
+        _eventing = eventing ?? throw new ArgumentNullException(nameof(eventing));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     public async Task PublishSqlProject(SqlProjectResource sqlProject, SqlServerDatabaseResource target, CancellationToken cancellationToken)
@@ -47,7 +52,9 @@ public class SqlProjectPublishService
             _deployer.Deploy(dacpacPath, connectionString, target.DatabaseName, logger, cancellationToken);
 
             await _resourceNotificationService.PublishUpdateAsync(sqlProject,
-                state => state with { State = new ResourceStateSnapshot("Published", KnownResourceStateStyles.Success) });
+                state => state with { State = new ResourceStateSnapshot("Finished", KnownResourceStateStyles.Success) });
+
+            await _eventing.PublishAsync(new ResourceReadyEvent(sqlProject, _serviceProvider), cancellationToken);
         }
         catch (Exception ex)
         {
