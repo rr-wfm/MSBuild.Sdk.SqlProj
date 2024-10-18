@@ -51,7 +51,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (File.Exists(suppressorPath))
                 {
-                    _console.WriteLine($"Using supressor file: {suppressorPath}");
+                    _console.WriteLine($"Using suppressor file: {suppressorPath}");
                     var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
 
                     suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();

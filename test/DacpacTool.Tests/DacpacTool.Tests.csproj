@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <None Remove="StaticCodeAnalysis.SuppressMessages.xml" />
-    <None Remove="Supression\proc1.sql" />
-    <None Remove="Supression\proc2.sql" />
+    <None Remove="Suppression\proc1.sql" />
+    <None Remove="Suppression\proc2.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,13 +21,13 @@
     <Content Include="SqlServer.Rules.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Supression\proc1.sql">
+    <Content Include="Suppression\proc1.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Supression\proc2.sql">
+    <Content Include="Suppression\proc2.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Supression\StaticCodeAnalysis.SuppressMessages.xml">
+    <Content Include="Suppression\StaticCodeAnalysis.SuppressMessages.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TSQLSmellSCA.dll">

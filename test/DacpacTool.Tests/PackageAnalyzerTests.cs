@@ -143,7 +143,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void RunsAnalyzerWithSupressionFile()
+        public void RunsAnalyzerWithSuppressionFile()
         {
             // Arrange
             var testConsole = (TestConsole)_console;
@@ -152,8 +152,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             var packageBuilder = new PackageBuilder(testConsole);
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
-            packageBuilder.AddInputFile(new FileInfo("./Supression/proc1.sql"));
-            packageBuilder.AddInputFile(new FileInfo("./Supression/proc2.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
             packageBuilder.SetMetadata("TestSupression", "1.0.0");
 
             packageBuilder.ValidateModel();
@@ -162,7 +162,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(packageBuilder.Model, path, new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Supression", "TestSupression.csproj")), Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(packageBuilder.Model, path, new FileInfo(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression", "TestSuppression.csproj")), Array.Empty<FileInfo>());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(25);
