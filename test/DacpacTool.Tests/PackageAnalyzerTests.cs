@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
@@ -112,9 +113,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
-            testConsole.Lines.Count(l => l.Contains("Using additional analyzers: ")).ShouldBe(1);
+            testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
-            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
+            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
@@ -134,7 +135,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(16);
+            testConsole.Lines.Count.ShouldBe(5);
 
             testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
@@ -195,11 +196,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private FileInfo[] CollectAssemblyPaths()
         {
             var result = new List<FileInfo>();
-            var path = Path.GetDirectoryName(Path.Combine(System.Reflection.Assembly.GetAssembly(typeof(PackageAnalyzerTests)).Location));
+            var path = ProjectSource.ProjectDirectory();
             result.Add(new FileInfo(Path.Combine(path, "SqlServer.Rules.dll")));
             result.Add(new FileInfo(Path.Combine(path, "TSQLSmellSCA.dll")));
 
             return result.ToArray();
         }
+    }
+
+    internal static class ProjectSource
+    {
+        private static string CallerFilePath([CallerFilePath] string callerFilePath = null) =>
+            callerFilePath ?? throw new ArgumentNullException(nameof(callerFilePath));
+
+        public static string ProjectDirectory() => Path.GetDirectoryName(CallerFilePath())!;
     }
 }

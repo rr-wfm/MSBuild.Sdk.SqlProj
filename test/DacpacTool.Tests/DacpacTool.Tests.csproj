@@ -52,4 +52,16 @@
     <ProjectReference Include="..\..\src\DacpacTool\DacpacTool.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SqlServer.Dac.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="SqlServer.Rules.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="TSQLSmellSCA.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
