@@ -135,10 +135,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(5);
+            testConsole.Lines.Count.ShouldBe(6);
 
             testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }

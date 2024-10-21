@@ -48,10 +48,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
                 }
-                else
-                {
-                    _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
-                }
+                    
+                _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
 
                 var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
