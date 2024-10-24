@@ -68,8 +68,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     }
                 }
 
-                var service = factory.CreateAnalysisService(model, settings);
-
                 if (_ignoredRules.Count > 0 
                     || _ignoredRuleSets.Count > 0
                     || suppressedProblems.Count > 0)

@@ -177,7 +177,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(25);
+            testConsole.Lines.Count.ShouldBe(16);
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
         }
