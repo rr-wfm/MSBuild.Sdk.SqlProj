@@ -242,6 +242,7 @@
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)"
+          WorkingDirectory="$(ProjectDir)"
           Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
 
     <!-- Copy any referenced .dacpac packages to the output folder -->
