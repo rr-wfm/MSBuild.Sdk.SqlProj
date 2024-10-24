@@ -34,15 +34,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var factory = new CodeAnalysisServiceFactory();
                 var settings = new CodeAnalysisServiceSettings();
 
-                if (analyzers.Length == 0)
+
+                if (analyzers.Length > 0)
                 {
-                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj.");
-                }
-                else
-                {
-                    _console.WriteLine("Using additional analyzers: " + string.Join(", ", analyzers.Select(a => a.FullName)));
                     settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
                 }
+
+                var service = factory.CreateAnalysisService(model, settings);
+
+                var rules = service.GetRules();
+
+                if (!rules.Any(r => r.Namespace == "SqlServer.Rules" || r.Namespace == "Smells"))
+                {
+                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis");
+                }
+                    
+                _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
 
                 var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
@@ -60,8 +67,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
                     }
                 }
-
-                var service = factory.CreateAnalysisService(model, settings);
 
                 if (_ignoredRules.Count > 0 
                     || _ignoredRuleSets.Count > 0

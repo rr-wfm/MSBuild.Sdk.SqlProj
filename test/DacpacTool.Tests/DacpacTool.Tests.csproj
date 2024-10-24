@@ -15,12 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="SqlServer.Dac.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServer.Rules.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Suppression\proc1.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -28,9 +22,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Suppression\StaticCodeAnalysis.SuppressMessages.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TSQLSmellSCA.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -50,6 +41,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DacpacTool\DacpacTool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SqlServer.Dac.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="SqlServer.Rules.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="TSQLSmellSCA.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

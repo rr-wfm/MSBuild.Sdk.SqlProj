@@ -558,6 +558,8 @@ To publish your own custom rules, pack your rule .dll in a NuGet package as show
 
 We know of the following public rules NuGet packages, that you can add to your project. 
 
+> These rule sets were included with the SDK in version 2.7.x and 2.8.x, but must be added explicitly with SDK version 2.9.x and later.
+
 ```xml
   <ItemGroup>
     <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
