@@ -26,11 +26,12 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
         submodules: 'true' # need to check out the SqlTools submodule to build successfully.
 
-    # Install .NET SDK's for 6.0 and 8.0
-    - name: Setup dotnet 6.0
+    # Install .NET SDK's for 8.0 and 9.0
+    - name: Setup dotnet 9.0
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '9.0.x'
+        dotnet-quality: 'preview'
 
     - name: Setup dotnet 8.0
       uses: actions/setup-dotnet@v4
@@ -107,7 +108,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-22.04", "macos-13", "windows-2022" ]
-        dotnet: [ '6.0.x', '8.0.x' ]
+        dotnet: [ '8.0.x', '9.0.x' ]
       fail-fast: false
 
     steps:
@@ -183,7 +184,7 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-22.04' && matrix.dotnet == '6.0.x' }}
+      if: ${{ matrix.os == 'ubuntu-22.04' && matrix.dotnet == '8.0.x' }}
       uses: actions/upload-artifact@v4
       with:
         name: dacpac-package
@@ -225,7 +226,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
     # Install Microsoft.SqlPackage
     - name: install microsoft.sqlpackage
@@ -290,7 +291,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -336,7 +337,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: '8.0.x'
 
     # Download SDK package
     - name: download-sdk-package
