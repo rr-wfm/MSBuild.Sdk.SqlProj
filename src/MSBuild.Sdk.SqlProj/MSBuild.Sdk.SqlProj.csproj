@@ -31,7 +31,7 @@
 
   <Target Name="IncludeDacpacTool" AfterTargets="Build">
     <PropertyGroup>
-      <_DacpacToolSupportedTfms>net6.0;net8.0</_DacpacToolSupportedTfms>
+      <_DacpacToolSupportedTfms>net8.0;net9.0</_DacpacToolSupportedTfms>
     </PropertyGroup>
     <ItemGroup>
       <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
