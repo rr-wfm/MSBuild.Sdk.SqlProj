@@ -583,7 +583,7 @@ They are based on these older repositories:
 
 `MSBuild.Sdk.SqlProj` integrates with a number of other technologies and tools. Here are some examples:
 
-- [MSBuild.Sdk.SqlProj.Aspire](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj.Aspire) - Library that provides .NET Aspire integration for MSBuild.Sdk.SqlProj projects. It allows you to publish SQL Database Projects as part of your .NET Aspire AppHost projects.
+- [CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects](https://www.nuget.org/packages/CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects) - Library that provides .NET Aspire integration for MSBuild.Sdk.SqlProj and Microsoft.Sql.Build projects. It allows you to publish SQL Database Projects as part of your .NET Aspire AppHost projects.
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
