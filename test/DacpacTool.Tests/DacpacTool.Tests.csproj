@@ -6,6 +6,7 @@
     <AssemblyName>MSBuild.Sdk.SqlProj.DacpacTool.Tests</AssemblyName>
     <RootNamespace>MSBuild.Sdk.SqlProj.DacpacTool.Tests</RootNamespace>
     <LangVersion>9.0</LangVersion>
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <ItemGroup>

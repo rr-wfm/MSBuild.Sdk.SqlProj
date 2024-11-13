@@ -216,7 +216,7 @@ Especially when using pre- and post-deployment scripts, but also in other scenar
 </Project>
 ```
 
-> Note: The value of `Value` is checked first and if it found to be empty, we'll fall back to `DefaultValue`.
+> Note: With version 3.0.0 of the SDK, the `DefaultValue` is not applied to the build output, in line with the standard `.sqlproj` behaviour.
 
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
