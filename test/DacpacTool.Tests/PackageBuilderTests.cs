@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlServer.Management.HadrModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -264,7 +265,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     && d.Type == "SqlCmdVariable")
                 .SelectMany(d => d.Items)
                 .Where(i => i.Name == "DbReader"
-                    && i.Value == "dbReaderValue")
+                    && i.Value == string.Empty)
                 .ToList().Count.ShouldBe(1);
 
             headerParser.GetCustomData()
@@ -272,7 +273,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     && d.Type == "SqlCmdVariable")
                 .SelectMany(d => d.Items)
                 .Where(i => i.Name == "DbWriter"
-                    && i.Value == "dbWriterValue")
+                    && i.Value == string.Empty)
                 .ToList().Count.ShouldBe(1);
 
             // Cleanup

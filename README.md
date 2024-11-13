@@ -21,7 +21,7 @@ Please take a moment to familiarize yourself with the [code of conduct](CODE_OF_
 The simplest way to get started is to install our templates with `dotnet new` using:
 
 ```
-dotnet new --install MSBuild.Sdk.SqlProj.Templates
+dotnet new install MSBuild.Sdk.SqlProj.Templates
 ```
 
 You can then create a new project file using the following command:
@@ -42,12 +42,20 @@ dotnet new sqlproj -s Sql130
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <SqlServerVersion>Sql130</SqlServerVersion>
+        <SqlServerVersion>Sql150</SqlServerVersion>
+        <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- These packages adds additional code analysis rules -->
+        <!-- We recommend using these, but they can be removed if desired -->
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.1" />
+        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.1" />
+    </ItemGroup>
 
     <PropertyGroup>
         <!-- Refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#publishing-support for supported publishing options -->
@@ -95,7 +103,7 @@ If you already have a SSDT (.sqlproj) project in your solution, you can keep tha
 There are a lot of properties that can be set on the model in the resulting `.dacpac` file which can be influenced by setting those properties in the project file using the same name. For example, the snippet below sets the `RecoveryMode` property to `Simple`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
@@ -113,7 +121,7 @@ Like `.sqlproj` projects  `MSBuild.Sdk.SqlProj` supports controlling T-SQL build
 Treating warnings as errors can be optionally enabled by adding a property `TreatTSqlWarningsAsErrors` to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
         ...
@@ -125,7 +133,7 @@ Treating warnings as errors can be optionally enabled by adding a property `Trea
 To suppress specific warnings from being treated as errors, add a comma-separated list of warning codes to `SuppressTSqlWarnings` property in the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <SuppressTSqlWarnings>71558,71502</SuppressTSqlWarnings>
         <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
@@ -137,7 +145,7 @@ To suppress specific warnings from being treated as errors, add a comma-separate
 You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` for this file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -152,12 +160,12 @@ You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` f
 > Note: Warnings suppressed at the project level are always applied to every file in the project, regardless of what is configured at the file level.
 
 ## Pre- and post deployment scripts
-Support for pre- and post-deployment scripts has been added in version 1.1.0. These scripts will be automatically executed when deploying the `.dacpac` to SQL Server.
+[These scripts](https://learn.microsoft.com/sql/tools/sql-database-projects/concepts/pre-post-deployment-scripts) will be automatically executed when deploying the `.dacpac` to SQL Server.
 
 To include these scripts into your `.dacpac` add the following to your `.csproj`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -171,10 +179,10 @@ To include these scripts into your `.dacpac` add the following to your `.csproj`
 
 It is important to note that scripts in the `Pre-Deployment` and `Post-Deployment` folders are excluded from the build process by default. This is because these scripts typically don't define database objects, such as tables and stored procedure, but perform other tasks that cannot be represented in the model. If these aren't excluded your build might break with a SQL46010 error. Instead, you should create a script file that includes all of those scripts using the `:r <path-to-script>.sql` syntax and then reference that script in your project file (as shown above).
 
-By default the pre- and/or post-deployment script of referenced packages (both [PackageReference](#package-references) and [ProjectReference](#project-references)) are not run when using `dotnet publish`. As of version 1.11.0 this can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
+By default the pre- and/or post-deployment script of referenced packages (both [PackageReference](#package-references) and [ProjectReference](#project-references)) are not run when using `dotnet publish`. This can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <RunScriptsFromReferences>True</RunScriptsFromReferences>
         ...
@@ -187,10 +195,10 @@ By default the pre- and/or post-deployment script of referenced packages (both [
 ```
 
 ## SQLCMD variables
-Especially when using pre- and post-deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables, added in version 1.1.0. These variables can be defined in your project file using the following syntax:
+Especially when using pre- and post-deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables. These variables can be defined in your project file using the following syntax:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         ...
     </PropertyGroup>
@@ -208,13 +216,13 @@ Especially when using pre- and post-deployment scripts, but also in other scenar
 </Project>
 ```
 
-> Note: In versions prior to 1.11.0 the `DefaultValue` element displayed above was not used. As of version 1.11.0 the value of `Value` is checked first and if it found to be empty, we'll fall back to `DefaultValue`.
+> Note: With version 3.0.0 of the SDK, the `DefaultValue` is not applied to the build output, in line with the standard `.sqlproj` behaviour.
 
 ## Package references
 `MSBuild.Sdk.SqlProj` supports referencing NuGet packages that contain `.dacpac` packages. These can be referenced by using the `PackageReference` format familiar to .NET developers. They can also be installed through the NuGet Package Manager in Visual Studio.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -228,7 +236,7 @@ Especially when using pre- and post-deployment scripts, but also in other scenar
 It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference` (introduced in version 2.5.0). For example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <SqlServerVersion>Sql160</SqlServerVersion>
@@ -245,7 +253,7 @@ This will add a reference to the `tools\SomeOtherDacpac.dacpac` file inside the 
 By default, the package reference is treated as being part of the same database. For example, if the reference package contains a `.dacpac` that has a table and a stored procedure and you would `dotnet publish` the project the table and stored procedure from that package will be deployed along with the contents of your project to the same database. If this is not desired, you can add the `DatabaseVariableLiteralValue` item metadata to the `PackageReference` specifying a different database name:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -262,7 +270,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 >Note: Don't forget to define appropriate [SQLCMD variables](#sqlcmd-variables)
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -300,17 +308,17 @@ sqlpackage
 ```
 
 ## Referencing system databases
-Microsoft has recently released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
+Microsoft has released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <SqlServerVersion>160</SqlServerVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.1" DacpacName="master" DatabaseVariableLiteralValue="master" />
+        <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.2" DacpacName="master" DatabaseVariableLiteralValue="master" />
     </ItemGroup>
 </Project>
 ```
@@ -323,7 +331,7 @@ For other variants of SQL Server / Azure SQL Database there are dedicated packag
 Similar to package references you can also reference another project by using a `ProjectReference`. These references can be added manually to the project file or they can be added through Visual Studio. For example, consider the following example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -337,7 +345,7 @@ Similar to package references you can also reference another project by using a 
 This will ensure that `MyOtherProject` is built first and the resulting `.dacpac` will be referenced by this project. This means you can use the objects defined in the other project within the scope of this project. If the other project is representing an entirely different database, you can also use `DatabaseVariableLiteralValue` or SQLCMD variables on the `ProjectReference` similar to `PackageReference`:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -365,13 +373,12 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 
 > Note: We do not support adding a `ProjectReference` to an existing `.sqlproj` file.
 
-
 ## Circular References and SuppressMissingDependenciesErrors
 In order to solve circular references between databases that may have been incorrectly setup, it is possible to add
 `SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [ProjectReferences](#project-references)):
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
@@ -393,7 +400,7 @@ In order to solve circular references between databases that may have been incor
 You'll need to set the `PackageProjectUrl` property in the `.csproj` like this:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
   <PropertyGroup>
     ...
     <PackageProjectUrl>your-project-url</PackageProjectUrl>
@@ -439,7 +446,7 @@ You can now reference your dacpac as a `PackageReference`!
 > Note: To run these commands, you'll need to have the NuGet CLI tools installed. See [these installation instructions](https://docs.microsoft.com/nuget/install-nuget-client-tools#nugetexe-cli). If you use Chocolatey, you can also install by running `choco install nuget.commandline`. On a Mac with Homebrew installed, use `brew install nuget`.
 
 ## Publishing support
-Starting with version 1.2.0 of MSBuild.Sdk.SqlProj there is support for publishing a project to a SQL Server using the `dotnet publish` command. This support is designed to be used by developers to deploy or update their local development database quickly. For more advanced deployment scenario's we suggest using [SqlPackage](https://docs.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver15) instead as it provides more options.
+There is support for publishing a project to a SQL Server using the `dotnet publish` command. This support is designed to be used by developers to deploy or update their local development database quickly. For more advanced deployment scenario's we suggest using [SqlPackage](https://docs.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver15) instead as it provides more options.
 
 There are a couple of properties that control the deployment process which have some defaults to make the experience as smooth as possible for local development. For example, on Windows if you have a default SQL Server instance running on your local machine running `dotnet publish` creates a database with the same name as the project. Unfortunately on Mac and Linux we cannot use Windows authentication, so you'll need to specify a username and password:
 
@@ -465,7 +472,7 @@ To further customize the deployment process, you can use the following propertie
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions) deployment options. These are typically set in the project file, for example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
     <PropertyGroup>
         ...
         <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
@@ -488,7 +495,7 @@ Most of those properties are simple values (like booleans, strings and integers)
 Instead of using `dotnet publish` to deploy changes to a database, you can also have a full SQL script generated that will create the database from scratch and then run that script against a SQL Server. This can be achieved by adding the following to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
   <PropertyGroup>
       <GenerateCreateScript>True</GenerateCreateScript>
       <IncludeCompositeObjects>True</IncludeCompositeObjects>
@@ -512,7 +519,7 @@ Starting with version 2.7.0 of the SDK, there is support for running static code
 Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
   <PropertyGroup>
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -522,7 +529,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 </Project>
 ```
 
-> Notice that the target framework should be set to `netstandard2.1` if you add additional NuGet-based rules.
+> Notice that the target framework must be set to `netstandard2.1` if you add additional NuGet-based rules.
 
 A xml file with the analysis results is created in the output folder.
 
@@ -544,7 +551,7 @@ Any rule violations found during analysis are reported as build warnings.
 Individual rule violations or groups of rules can be configured to be reported as build errors as shown below.
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/2.9.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/3.0.0">
   <PropertyGroup>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <CodeAnalysisRules>+!SqlServer.Rules.SRN0005;+!SqlServer.Rules.SRD*</CodeAnalysisRules>
@@ -562,8 +569,8 @@ We know of the following public rules NuGet packages, that you can add to your p
 
 ```xml
   <ItemGroup>
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
-    <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.0" />
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.1" />
+    <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.1" />
   </ItemGroup>
 ```
 
@@ -576,11 +583,11 @@ They are based on these older repositories:
 
 `MSBuild.Sdk.SqlProj` integrates with a number of other technologies and tools. Here are some examples:
 
-- [MSBuild.Sdk.SqlProj.Aspire](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj.Aspire) - Library that provides .NET Aspire integration for MSBuild.Sdk.SqlPproj projects. It allows you to publish SQL Database Projects as part of your .NET Aspire AppHost projects.
+- [MSBuild.Sdk.SqlProj.Aspire](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj.Aspire) - Library that provides .NET Aspire integration for MSBuild.Sdk.SqlProj projects. It allows you to publish SQL Database Projects as part of your .NET Aspire AppHost projects.
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
-- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your `MSBuild.Sdk.SqlProj` project.
+- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your MSBuild.Sdk.SqlProj project.
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:

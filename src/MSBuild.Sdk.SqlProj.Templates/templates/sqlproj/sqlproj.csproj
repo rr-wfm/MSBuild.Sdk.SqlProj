@@ -9,8 +9,8 @@
     <ItemGroup>
         <!-- These packages adds additional code analysis rules -->
         <!-- We recommend using these, but they can be removed if desired -->
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
-        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.0" />
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.1" />
+        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.1" />
     </ItemGroup>
 
     <PropertyGroup>
