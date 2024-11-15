@@ -92,6 +92,8 @@ sqlpackage /a:Extract /p:ExtractTarget=Flat /scs:"data source=.\SQLEXPRESS;initi
 
 > Note: The /tf parameter is currently required, and must refer to an non-existing folder.
 
+You can read more about the `sqlpackage /a:Extract` command syntax [here](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-extract).
+
 ## Item templates
 To create database objects you can use the following item templates:
 
