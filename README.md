@@ -81,6 +81,25 @@ If you are using Visual Studio, to make files excluded from the package appear i
 
 Wildcards are supported for all nodes (`Content`, `None`, etc.). For example, `<None Include="Directory\**" />`.
 
+
+## Use an existing database
+
+If you want to initialize your project with scripted objects from an existing database, you can do so with the following command:
+
+```
+sqlpackage /Action:Extract /Properties:ExtractTarget=Flat /SourceConnectionString:"<connection_string>" /TargetFile:<target_new_folder>
+```
+
+For example:
+
+```
+sqlpackage /a:Extract /p:ExtractTarget=Flat /scs:"data source=.\SQLEXPRESS;initial catalog=Chinook;Trusted_Connection=true;encrypt=False" /tf:.\Tables
+```
+
+> Note: The /tf parameter is currently required, and must refer to a non-existing folder.
+
+You can read more about the `sqlpackage /a:Extract` command syntax [here](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-extract).
+
 ## Item templates
 To create database objects you can use the following item templates:
 
