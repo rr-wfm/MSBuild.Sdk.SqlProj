@@ -31,7 +31,6 @@
     <None Include="$(ManagedBatchParserPath)/Localization/sr.strings" Link="BatchParser/%(Filename)%(Extension)" />
     <Compile Include="$(ManagedBatchParserPath)/BatchParser/**/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
     <Compile Include="$(ManagedBatchParserPath)/ReliableConnection/**/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
-    <Compile Include="$(SqlToolsPath)/Microsoft.SqlTools.Shared/**/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
