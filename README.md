@@ -53,8 +53,14 @@ You should now have a project file with the following contents:
     <ItemGroup>
         <!-- These packages adds additional code analysis rules -->
         <!-- We recommend using these, but they can be removed if desired -->
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.1" />
-        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.1" />
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <PropertyGroup>
@@ -587,10 +593,16 @@ We know of the following public rules NuGet packages, that you can add to your p
 > These rule sets were included with the SDK in version 2.7.x and 2.8.x, but must be added explicitly with SDK version 2.9.x and later.
 
 ```xml
-  <ItemGroup>
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.1" />
-    <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="1.1.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 ```
 
 They are based on these older repositories:
