@@ -11,12 +11,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PackageAnalyzerTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="StaticCodeAnalysis.SuppressMessages.xml" />
     <None Remove="Suppression\proc1.sql" />
     <None Remove="Suppression\proc2.sql" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="PackageAnalyzerTests.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Suppression\proc1.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -26,6 +33,10 @@
     <Content Include="Suppression\StaticCodeAnalysis.SuppressMessages.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\src\DacpacTool\Microsoft.SqlTools.ManagedBatchParser.dll" Link="Microsoft.SqlTools.ManagedBatchParser.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +54,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DacpacTool\DacpacTool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
+      <HintPath>..\..\src\DacpacTool\binaries\Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
