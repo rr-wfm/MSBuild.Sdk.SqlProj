@@ -11,19 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PackageAnalyzerTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="StaticCodeAnalysis.SuppressMessages.xml" />
     <None Remove="Suppression\proc1.sql" />
     <None Remove="Suppression\proc2.sql" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="PackageAnalyzerTests.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Suppression\proc1.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
