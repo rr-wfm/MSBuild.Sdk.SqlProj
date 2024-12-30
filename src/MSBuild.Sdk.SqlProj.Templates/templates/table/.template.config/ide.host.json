@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "appliesTo": "MSBuild.Sdk.SqlProj.BuildTSqlScript",
+  "defaultItemExtension": "sql",
+  "itemHierarchyPaths": [ "SQL Server" ]
+}
