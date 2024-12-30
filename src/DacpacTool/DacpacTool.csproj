@@ -10,11 +10,6 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Microsoft.SqlTools.ManagedBatchParser.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.5.57" />
@@ -25,6 +20,9 @@
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
   <ItemGroup>
+    <Content Include="Microsoft.SqlTools.ManagedBatchParser.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.52.0" />
     <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
       <HintPath>Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>

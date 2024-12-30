@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\src\DacpacTool\Microsoft.SqlTools.ManagedBatchParser.dll" Link="Microsoft.SqlTools.ManagedBatchParser.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="3.6.3" />
     <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
@@ -58,7 +54,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
-      <HintPath>..\..\src\DacpacTool\binaries\Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
+      <HintPath>..\..\src\DacpacTool\Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
     </Reference>
   </ItemGroup>
 
