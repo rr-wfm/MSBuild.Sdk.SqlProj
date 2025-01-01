@@ -120,7 +120,7 @@ To create database objects you can use the following item templates:
 | uddt | `dotnet new uddt -n <name> [-s <schema-name>]` | Creates a new user-defined data type with the provided name |
 | udtt | `dotnet new udtt -n <name> [-s <schema-name>]` | Creates a new user-defined table type with the provided name |
 
-> Note: In a future update of Visual Studio, you should be able to use both the project template and the item templates directly from Visual Studio. This feature is currently in preview and some of our early testing has revealed that it doesn't work as expected. Stay tuned for updates on this.
+> Note: You can use both the project template and the item templates directly from Visual Studio, via the `File - New Project` and `Add New Item` dialogs.
 
 If you already have a SSDT (.sqlproj) project in your solution, you can keep that as a "companion" project in order to enjoy the Visual Studio designer experience, as described in [this blog post](https://erikej.github.io/efcore/2020/05/11/ssdt-dacpac-netcore.html).
 
