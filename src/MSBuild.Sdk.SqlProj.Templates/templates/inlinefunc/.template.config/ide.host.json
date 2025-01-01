@@ -3,5 +3,5 @@
   "appliesTo": "MSBuild.Sdk.SqlProj.BuildTSqlScript",
   "defaultItemExtension": "sql",
   "itemHierarchyPaths": [ "SQL Server" ],
-  "icon": "ide/table.ico"
+  "icon": "ide/inlinefunc.ico"
 }
