@@ -28,8 +28,8 @@
           "continueOnError": true
       }
     ],
-    "sourceName": "Table1",
     "defaultName": "Table1",
+    "sourceName": "Table1",
     "symbols": {
       "schemaName": {
         "type": "parameter",
