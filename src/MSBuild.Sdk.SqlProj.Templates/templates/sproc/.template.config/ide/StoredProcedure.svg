@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <defs>
+    <style>.canvas{fill: none; opacity: 0;}.light-defaultgrey-10{fill: #212121; opacity: 0.1;}.light-defaultgrey{fill: #212121; opacity: 1;}.cls-1{opacity:0.75;}</style>
+  </defs>
+  <title>StoredProcedure</title>
+  <g id="canvas">
+    <path class="canvas" d="M16,16H0V0H16Z" />
+  </g>
+  <g id="level-1">
+    <g class="cls-1">
+      <path class="light-defaultgrey-10" d="M1.5,5v8H9V11.09L9.09,11l.91-.91V10a2.772,2.772,0,0,1,.18-1,2.973,2.973,0,0,1,.59-1A2.5,2.5,0,0,1,11,7.77,2.984,2.984,0,0,1,13,7a2.772,2.772,0,0,1,1,.18,2.807,2.807,0,0,1,.5.22V5Z" />
+      <path class="light-defaultgrey" d="M14.5,5H1.5L1,5.5v8l.5.5H9V13H2V6H14V7.18a2.807,2.807,0,0,1,.5.22,3.081,3.081,0,0,1,.5.37V5.5Z" />
+    </g>
+    <path class="light-defaultgrey-10" d="M2,3V5H14V3Z" />
+    <path class="light-defaultgrey" d="M14.5,2H1.5L1,2.5v3l.5.5h13l.5-.5v-3ZM2,5V3H14V5Z" />
+    <path class="light-defaultgrey" d="M3,7V8H8V7ZM3,9v1H8V9Zm0,2v1H5V11ZM9,7V8h1.77A2.5,2.5,0,0,1,11,7.77V7ZM9,9v1h1a2.772,2.772,0,0,1,.18-1ZM6,11v1H9v-.91L9.09,11Z" />
+    <path class="light-defaultgrey-10" d="M15.5,11.5v4h-5v-4Z" />
+    <path class="light-defaultgrey" d="M15.5,11H15V10a2,2,0,0,0-4,0v1h-.5l-.5.5v4l.5.5h5l.5-.5v-4ZM12,10a1,1,0,0,1,2,0v1H12Zm3,5H11V12h4Z" />
+  </g>
+</svg>
