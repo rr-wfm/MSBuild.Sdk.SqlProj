@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Data.SqlClient;
@@ -172,8 +173,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 _console.WriteLine($"Running {scriptPrefix}-deployment script for referenced package '{referencedPackage.Name}' version '{referencedPackage.Version}'");
                 _currentSource = $"{referencedPackage.Name}/{scriptPrefix}deploy.sql";
 
-                var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this);
-                AddSqlCmdVariables(scriptExecutionArgs, targetDatabaseName);
+                var scriptExecutionArgs = new ScriptExecutionArgs(script, connection, 0, executionEngineConditions, this, 1, AddSqlCmdVariables(targetDatabaseName));
 
                 engine.BatchParserExecutionError += (sender, args) => _console.WriteLine(args.Format(_currentSource));
                 engine.ScriptExecutionFinished += (sender, args) => _console.WriteLine($"Executed {scriptPrefix}-deployment script for referenced package " +
@@ -182,13 +182,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private void AddSqlCmdVariables(ScriptExecutionArgs args, string targetDatabaseName)
+        private Dictionary<string, string> AddSqlCmdVariables(string targetDatabaseName)
         {
-            args.Variables.Add("DatabaseName", targetDatabaseName);
+            var result = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase)
+            {
+                { "DatabaseName", targetDatabaseName }
+            };
+
             foreach (var variable in DeployOptions.SqlCommandVariableValues)
             {
-                args.Variables.Add(variable.Key, variable.Value);
+                result.Add(variable.Key, variable.Value);
             }
+
+            return result;
         }
 
         private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
