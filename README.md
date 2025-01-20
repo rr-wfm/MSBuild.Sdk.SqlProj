@@ -622,7 +622,7 @@ They are based on these older repositories:
 
 ## .NET runtime support
 
-To use this SDK you need to have a .NET runtime installed. Depending on the SDK version you use, varying versions of the .NET runtime (released once a year) is required.
+MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the version of MSBuild.Sdk.SqlProj you can use varying versions of the .NET SDK (released once a year). The following table lists the supported .NET SDK versions by each MSBuild.Sdk.SqlProj version:
 
 | SDK version  | .NET runtime version |
 | ------------ | -------------------- |
