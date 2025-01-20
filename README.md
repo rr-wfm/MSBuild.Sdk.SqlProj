@@ -620,6 +620,20 @@ They are based on these older repositories:
 
 - [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your MSBuild.Sdk.SqlProj project.
 
+## .NET runtime support
+
+To use this SDK you need to have a .NET runtime installed. Depending on the SDK version you use, varying versions of the .NET runtime (released once a year) is required.
+
+| SDK version  | .NET runtime version |
+| ------------ | -------------------- |
+| 3.0.0  | 8.0, 9.0  |
+| 2.9.0  | 6.0, 8.0  |
+| 2.6.0  | 6.0, 7.0, 8.0  |
+| 2.2.0  | 3.1, 6.0, 7.0  |
+| 2.0.0  | 3.1, 5.0, 6.0  |
+
+> If you have support issues, be prepared for us to ask you to use the latest released version of the SDK.
+
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
 
