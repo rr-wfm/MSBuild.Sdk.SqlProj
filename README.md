@@ -624,7 +624,7 @@ They are based on these older repositories:
 
 MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the version of MSBuild.Sdk.SqlProj you can use varying versions of the .NET SDK (released once a year). The following table lists the supported .NET SDK versions by each MSBuild.Sdk.SqlProj version:
 
-| SDK version  | .NET runtime version |
+| MSBuild.Sdk.SqlProj version | .NET runtime version |
 | ------------ | -------------------- |
 | 3.0.0  | 8.0, 9.0  |
 | 2.9.0  | 6.0, 8.0  |
