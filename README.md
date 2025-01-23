@@ -632,7 +632,7 @@ MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the versio
 | 2.2.0  | 3.1, 6.0, 7.0  |
 | 2.0.0  | 3.1, 5.0, 6.0  |
 
-> If you have support issues, be prepared for us to ask you to use the latest released version of the SDK.
+> If you have support issues, be prepared for us to ask you to use the latest released version of MSBuild.Sdk.SqlProj.
 
 ## Workaround for parser errors (SQL46010)
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:
