@@ -187,8 +187,8 @@ You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` f
         </Content>
     </ItemGroup>
 </Project>
+```
 
-```bash
 > Note: Warnings suppressed at the project level are always applied to every file in the project, regardless of what is configured at the file level.
 
 ## Pre- and post deployment scripts
@@ -324,8 +324,8 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
     </SqlCmdVariable>
   </ItemGroup>
 </Project>
+```
 
-```bash
 In this scenario you can access the objects defined by `MyDatabasePackage` by using the `[$(SomeOtherServer)].[$(SomeOtherDatabase)].[<schema>].[<object>]` syntax.
 Also you can combine `ServerSqlCmdVariable` with `DatabaseVariableLiteralValue` and use  `[$(SomeOtherServer)].[SomeOtherDatabase].[<schema>].[<object>]` syntax.
 
