@@ -256,11 +256,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "SqlCmdVariables", "SqlCmdVariable");
 
-            foreach (var variable in variables)
+            foreach (var variableName in variables)
             {
-                var varWithValue = variable.Split('=', 2);
-                var variableName = varWithValue[0];
-
                 Console.WriteLine($"Adding SqlCmd variable {variableName}");
 
                 var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
