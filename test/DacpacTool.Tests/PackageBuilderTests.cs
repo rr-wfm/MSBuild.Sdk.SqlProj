@@ -245,8 +245,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void AddSqlCmdvariableWithDefaultValue()
         {
             // Arrange
-            var first = "DbReader=dbReaderValue";
-            var second = "DbWriter=dbWriterValue";
+            var first = "DbReader";
+            var second = "DbWriter";
             var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
