@@ -6,9 +6,29 @@
     "name": "Database view",
     "shortName": "view",
     "tags": {
-      "language": "SQL",
+      "language": "C#",
       "type": "item"
     },
+    "primaryOutputs": [
+      {
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+        "path": "View1.sql"
+      }
+    ],
+    "postActions": [
+      {
+          "id": "openInEditor",
+          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "description": "Opens View1.sql in the editor.",
+          "manualInstructions": [],
+          "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+          "args": {
+              "files": "0"
+          },
+          "continueOnError": true
+      }
+    ],
+    "defaultName": "View1",
     "sourceName": "View1",
     "symbols": {
       "schemaName": {

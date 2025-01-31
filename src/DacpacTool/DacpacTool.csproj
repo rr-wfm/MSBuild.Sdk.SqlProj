@@ -10,27 +10,24 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SqlToolsPath>../../sqltoolsservice/src</SqlToolsPath>
-    <ManagedBatchParserPath>$(SqlToolsPath)/Microsoft.SqlTools.ManagedBatchParser</ManagedBatchParserPath>
-  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.4.92" />
-    <PackageReference Include="NuGet.Versioning" Version="6.11.1" />
+    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="162.5.57" />
+    <PackageReference Include="NuGet.Versioning" Version="6.12.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="171.30.0" />
-    <ProjectReference Include="$(SqlToolsPath)/Microsoft.SqlTools.Hosting/Microsoft.SqlTools.Hosting.csproj" />
-    <Compile Include="$(ManagedBatchParserPath)/Localization/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
-    <EmbeddedResource Include="$(ManagedBatchParserPath)/Localization/sr.resx" LogicalName="Microsoft.SqlTools.ManagedBatchParser.Localization.SR.resources" Link="BatchParser/%(Filename)%(Extension)" />
-    <None Include="$(ManagedBatchParserPath)/Localization/sr.strings" Link="BatchParser/%(Filename)%(Extension)" />
-    <Compile Include="$(ManagedBatchParserPath)/BatchParser/**/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
-    <Compile Include="$(ManagedBatchParserPath)/ReliableConnection/**/*.cs" Link="BatchParser/%(Filename)%(Extension)" />
+    <Content Include="Microsoft.SqlTools.ManagedBatchParser.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.52.0" />
+    <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
+      <HintPath>Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

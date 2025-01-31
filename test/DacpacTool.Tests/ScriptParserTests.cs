@@ -17,7 +17,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void CanParseFileWithoutIncludes()
         {
             // Arrange
-            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.sql", _variableResolver);
+            var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.Post Deployment.sql", _variableResolver);
 
             // Act
             var result = collector.CollectFileNames();

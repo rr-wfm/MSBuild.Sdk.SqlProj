@@ -299,7 +299,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 tempFile);
 
             packageBuilder.AddPostDeploymentScript(
-                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.sql"),
+                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql"),
                 tempFile);
 
             // Assert

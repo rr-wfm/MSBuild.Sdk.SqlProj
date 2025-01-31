@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <defs>
+    <style>.canvas{fill: none; opacity: 0;}.light-defaultgrey-10{fill: #212121; opacity: 0.1;}.light-defaultgrey{fill: #212121; opacity: 1;}</style>
+  </defs>
+  <title>IconLightUserDefinedTableType</title>
+  <g id="canvas" class="canvas">
+    <path class="canvas" d="M16,16H0V0H16Z" />
+  </g>
+  <g id="level-1">
+    <path class="light-defaultgrey-10" d="M14,1.5v8H7.675A3.762,3.762,0,0,0,5,6.636V1.5Z" />
+    <path class="light-defaultgrey" d="M14.5,1h-9L5,1.5V6.636A3.754,3.754,0,0,1,7,8H8V9H7.535a3.69,3.69,0,0,1,.206,1H14.5l.5-.5v-8ZM8,7H6V6H8ZM8,5H6V4H8Zm3,4H9V8h2Zm0-2H9V6h2Zm0-2H9V4h2Zm3,4H12V8h2Zm0-2H12V6h2Zm0-2H12V4h2Zm0-2H6V2h8Z" />
+    <path class="light-defaultgrey-10" d="M6.25,10.25A2.25,2.25,0,1,1,4,8,2.25,2.25,0,0,1,6.25,10.25ZM7.5,16a3.5,3.5,0,0,0-7,0Z" />
+    <path class="light-defaultgrey" d="M2.25,10.25A1.75,1.75,0,1,1,4,12,1.752,1.752,0,0,1,2.25,10.25ZM5.7,12.394a2.75,2.75,0,1,0-3.4,0A4,4,0,0,0,0,16H1a3,3,0,0,1,6,0H8A4,4,0,0,0,5.7,12.394Z" />
+  </g>
+</svg>

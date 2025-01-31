@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <defs>
+    <style>.canvas{fill: none; opacity: 0;}.light-defaultgrey-10{fill: #212121; opacity: 0.1;}.light-defaultgrey{fill: #212121; opacity: 1;}</style>
+  </defs>
+  <title>IconLightTable</title>
+  <g id="canvas" class="canvas">
+    <path class="canvas" d="M16,16H0V0H16Z" />
+  </g>
+  <g id="level-1">
+    <path class="light-defaultgrey-10" d="M14.5,13.5H2.5V2.5h12Z" />
+    <path class="light-defaultgrey" d="M14.5,2H2.5L2,2.5v11l.5.5h12l.5-.5V2.5ZM6,13H3V11H6Zm0-3H3V8H6ZM6,7H3V5H6Zm4,6H7V11h3Zm0-3H7V8h3Zm0-3H7V5h3Zm4,6H11V11h3Zm0-3H11V8h3Zm0-3H11V5h3Zm0-3H3V3H14Z" />
+  </g>
+</svg>

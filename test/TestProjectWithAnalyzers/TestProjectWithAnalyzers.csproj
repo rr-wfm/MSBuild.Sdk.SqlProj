@@ -12,9 +12,12 @@
     <None Remove="Procedures\sp_TestUnsuppressed.sql" />
   </ItemGroup>
 
-  <ItemGroup>
-      <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="1.1.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
 </Project>
