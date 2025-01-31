@@ -163,8 +163,8 @@
   <Target Name="GetIncludedFiles" DependsOnTargets="ValidateEnvironment">
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
-      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
-      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
+      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy &quot;%(Identity)&quot;', ' ')</PreDeploymentScriptArgument>
+      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy &quot;%(Identity)&quot;', ' ')</PostDeploymentScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
@@ -225,9 +225,9 @@
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
       <DeployPropertyArguments>@(DeployPropertyNames->'-dp %(Identity)=%(PropertyValue)', ' ')</DeployPropertyArguments>
       <SqlCmdVariableArguments>@(SqlCmdVariable->'-sc %(Identity)=&quot;%(DefaultValue)&quot;', ' ')</SqlCmdVariableArguments>
-      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy %(Identity)', ' ')</PreDeploymentScriptArgument>
-      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy %(Identity)', ' ')</PostDeploymentScriptArgument>
-      <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog %(Identity)', ' ')</RefactorLogScriptArgument>
+      <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy &quot;%(Identity)&quot;', ' ')</PreDeploymentScriptArgument>
+      <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy &quot;%(Identity)&quot;', ' ')</PostDeploymentScriptArgument>
+      <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog &quot;%(Identity)&quot;', ' ')</RefactorLogScriptArgument>
       <RunSqlCodeAnalysisArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">-an</RunSqlCodeAnalysisArgument>
       <CodeAnalysisAssemblyLookupPathsArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">@(Analyzer->'-aa &quot;%(Identity)&quot;', ' ')</CodeAnalysisAssemblyLookupPathsArgument>
       <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar &quot;$(CodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
