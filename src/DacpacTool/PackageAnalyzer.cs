@@ -80,13 +80,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
 
                 var result = service.Analyze(model);
+
+                var errors = result.GetAllErrors();
+                foreach (var err in errors)
+                {
+                    _console.WriteLine(err.GetOutputMessage());
+                }
+
                 if (!result.AnalysisSucceeded)
                 {
-                    var errors = result.GetAllErrors();
-                    foreach (var err in errors)
-                    {
-                        _console.WriteLine(err.GetOutputMessage());
-                    }
+                    _console.WriteLine($"Analysis of package '{outputFile}' failed");
                     return;
                 }
                 else
