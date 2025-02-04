@@ -115,7 +115,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
-            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis");
+            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning with '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' in your project file.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
@@ -137,7 +137,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(6);
 
-            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis");
+            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning with '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' in your project file.");
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);
