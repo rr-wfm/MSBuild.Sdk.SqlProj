@@ -46,7 +46,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (!rules.Any(r => r.Namespace == "SqlServer.Rules" || r.Namespace == "Smells"))
                 {
-                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis");
+                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
                 }
                     
                 _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
