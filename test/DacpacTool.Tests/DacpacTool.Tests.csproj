@@ -47,7 +47,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
-      <HintPath>..\..\src\DacpacTool\Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
+      <HintPath>..\..\src\DacpacTool\Microsoft.SqlTools.ManagedBatchParser\Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
     </Reference>
   </ItemGroup>
 
