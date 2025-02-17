@@ -20,12 +20,12 @@
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
   <ItemGroup>
-    <Content Include="Microsoft.SqlTools.ManagedBatchParser.dll">
+    <Content Include="Microsoft.SqlTools.ManagedBatchParser/Microsoft.SqlTools.ManagedBatchParser.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="172.52.0" />
     <Reference Include="Microsoft.SqlTools.ManagedBatchParser">
-      <HintPath>Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
+      <HintPath>Microsoft.SqlTools.ManagedBatchParser/Microsoft.SqlTools.ManagedBatchParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
