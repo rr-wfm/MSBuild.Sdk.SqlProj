@@ -275,6 +275,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 };
 
                 PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+
+                if (property == null)
+                {
+                    throw new ArgumentException($"Property with name {key} not found", nameof(key));
+                }
+
                 property.SetValue(Options, propertyValue);
 
                 _console.WriteLine($"Setting property {key} to value {value}");
@@ -416,6 +422,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Generating create script {scriptFileName}");
 
             using var package = DacPackage.Load(dacpacFile.FullName);
+
+            if (package == null)
+            {
+                throw new InvalidOperationException($"Unable to load package {dacpacFile.FullName}");
+            }
+
+            if (dacpacFile.DirectoryName == null)
+            {
+                throw new InvalidOperationException($"Unable to determine directory for package {dacpacFile.FullName}");
+            }
+
             using var file = File.Create(Path.Combine(dacpacFile.DirectoryName, scriptFileName));
 
             DacServices.GenerateCreateScript(file, package, databaseName, deployOptions);
