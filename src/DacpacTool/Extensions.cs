@@ -408,7 +408,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("Unable to get _service field value from TSqlModel.");
             }
 
-            var dataSchemaModelProperty = service.GetType().GetProperty("DataSchemaModel", BindingFlags.Public | BindingFlags.Instance);
+            var dataSchemaModelProperty  = service.GetType().GetProperty("DataSchemaModel", BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (dataSchemaModelProperty == null)
             {
@@ -416,6 +416,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             var dataSchemaModel = dataSchemaModelProperty.GetValue(service);
+
+            if (dataSchemaModel == null)
+            {
+                throw new InvalidOperationException("Unable to get DataSchemaModel property value from service.");
+            }
+
             return dataSchemaModel;
         }
 
