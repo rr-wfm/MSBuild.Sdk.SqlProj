@@ -74,7 +74,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (string.IsNullOrEmpty(projectDir))
                 {
-                    throw new InvalidOperationException($"Unable to resolve path for included file '{includedFileName}'");
+                    throw new InvalidOperationException($"Unable to resolve directory for position.Filename '{position.Filename}'");
                 }
 
                 includedFileName = Path.Combine(projectDir, includedFileName);

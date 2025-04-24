@@ -16,21 +16,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public static class Extensions
 #pragma warning restore CA1724 // Type names should not match namespaces
     {
-        private static Type GetCustomSchemaDataType()
+        static Type CustomSchemaDataType;
+
+        static MethodInfo SetMetadataMethod;
+
+#pragma warning disable CA1810 // Initialize reference type static fields inline
+        static Extensions()
+#pragma warning restore CA1810 // Initialize reference type static fields inline
         {
             var customType = Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql");
-
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
             if (customType == null)
             {
                 throw new InvalidOperationException("Unable to load Microsoft.Data.Tools.Schema.Sql assembly.");
             }
 
-            return customType;
-        }
-
-        private static MethodInfo GetSetMetadataMethod()
-        {
-            var customType = GetCustomSchemaDataType();
+            CustomSchemaDataType = customType;
 
             var customData = Activator.CreateInstance(customType, "Reference", "SqlSchema");
 
@@ -45,8 +46,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 throw new InvalidOperationException("Unable to find SetMetadata method on CustomSchemaData.");
             }
-            
-            return setMetadataMethod;
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
+            SetMetadataMethod = setMetadataMethod;
         }
 
         public static string Format(this BatchErrorEventArgs args, string source)
@@ -174,20 +175,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var crossPlatformPath = referencePath.Replace('\\', '/');
 
-            var customType = GetCustomSchemaDataType();
-
-            var customData = Activator.CreateInstance(customType, "Reference", "SqlSchema");
+            var customData = Activator.CreateInstance(CustomSchemaDataType, "Reference", "SqlSchema");
 
             if (customData == null)
             {
                 throw new InvalidOperationException("Unable to create instance of CustomSchemaData.");
             }
 
-            var setMetadataMethod = GetSetMetadataMethod();
-
-            setMetadataMethod.Invoke(customData, new object[] { "FileName", crossPlatformPath });
-            setMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(crossPlatformPath) });
-            setMetadataMethod.Invoke(customData,
+            SetMetadataMethod.Invoke(customData, new object[] { "FileName", crossPlatformPath });
+            SetMetadataMethod.Invoke(customData, new object[] { "LogicalName", Path.GetFileName(crossPlatformPath) });
+            SetMetadataMethod.Invoke(customData,
                 new object[] { "SuppressMissingDependenciesErrors", suppressErrorsForMissingDependencies.ToString() });
 
             if (!string.IsNullOrWhiteSpace(externalParts))
@@ -195,7 +192,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var parts = ParseExternalParts(externalParts);
                 if (!string.IsNullOrEmpty(parts))
                 {
-                    setMetadataMethod.Invoke(customData, new object[] {"ExternalParts", parts});
+                    SetMetadataMethod.Invoke(customData, new object[] {"ExternalParts", parts});
                 }
             }
 
@@ -324,9 +321,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var dataSchemaModel = GetDataSchemaModel(model);
 
-            var customType = GetCustomSchemaDataType();
-
-            var customData = Activator.CreateInstance(customType, "SqlCmdVariables", "SqlCmdVariable");
+            var customData = Activator.CreateInstance(CustomSchemaDataType, "SqlCmdVariables", "SqlCmdVariable");
 
             if (customData == null)
             {
