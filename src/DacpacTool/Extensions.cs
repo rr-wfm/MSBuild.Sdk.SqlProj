@@ -251,14 +251,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (_ensureIsDelimitedMethod == null)
             {
-                var method = Type.GetType("Microsoft.Data.Tools.Schema.Common.FileUtils, Microsoft.Data.Tools.Utilities");
+                var fileUtilsType = Type.GetType("Microsoft.Data.Tools.Schema.Common.FileUtils, Microsoft.Data.Tools.Utilities");
 
-                if (method == null)
+                if (fileUtilsType == null)
                 {
                     throw new InvalidOperationException("Unable to load Microsoft.Data.Tools.Utilities assembly.");
                 }
 
-                _ensureIsDelimitedMethod = method
+                _ensureIsDelimitedMethod = fileUtilsType
                     .GetMethod("EnsureIsDelimited", BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.Public, null, new[]{ typeof(string) }, null);
             }
 
