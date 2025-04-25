@@ -14,7 +14,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
         public void WriteLine(string value)
         {
-            Lines.Add(value);
+            var values = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (var line in values)
+            {
+                Lines.Add(line);
+            }
         }
     }
 }

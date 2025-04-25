@@ -82,11 +82,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             ArgumentNullException.ThrowIfNull(exception);
 
-            var lines = new List<string>();
+            var stringBuilder = new StringBuilder();
 
             foreach (var modelError in exception.Messages)
             {
-                var stringBuilder = new StringBuilder();
                 stringBuilder.Append(fileName);
                 stringBuilder.Append('(');
                 stringBuilder.Append('1');
@@ -99,12 +98,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stringBuilder.Append(modelError.Prefix);
                 stringBuilder.Append(modelError.Number);
                 stringBuilder.Append(": ");
-                stringBuilder.Append(modelError.Message);
-
-                lines.Add(stringBuilder.ToString());
+                stringBuilder.AppendLine(modelError.Message);
             }
 
-            return lines.Count > 0 ? string.Join(Environment.NewLine, lines) : string.Empty;
+            return stringBuilder.ToString().Trim();
         }
 
         public static string GetPreDeploymentScript(this DacPackage package)
