@@ -5,6 +5,8 @@ using System.Net.Http.Json;
 using NuGet.Versioning;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -25,7 +27,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public async Task CheckForPackageUpdateAsync()
         {
-            
+            var fileVersion = FileVersionInfo.GetVersionInfo(typeof(Microsoft.SqlServer.Dac.DacPackage).Assembly.Location).FileVersion; 
+            Console.WriteLine($"Using DacFX version: {fileVersion}");
 
             try
             {
