@@ -69,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             result.ShouldBe(false);
             console.Lines.Count.ShouldBe(5);
-            console.Lines[4].ShouldBe("MyTable2.sql(1,1): Error SQL71006: Only one statement is allowed per batch. A batch separator, such as 'GO', might be required between statements.");
+            console.Lines[4].ShouldEndWith("Tables" + Path.DirectorySeparatorChar + "MyTable2.sql(1,1): Error SQL71006: Only one statement is allowed per batch. A batch separator, such as 'GO', might be required between statements.");
         }
 
         [TestMethod]

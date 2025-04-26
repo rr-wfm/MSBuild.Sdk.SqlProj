@@ -88,7 +88,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             catch (DacModelException dex)
             {
-                _console.WriteLine(dex.Format(inputFile.Name));
+                _console.WriteLine(dex.Format(inputFile.FullName));
                 return false;
             }
         }
