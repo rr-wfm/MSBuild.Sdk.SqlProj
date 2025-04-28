@@ -5,6 +5,8 @@ using System.Net.Http.Json;
 using NuGet.Versioning;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -25,7 +27,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public async Task CheckForPackageUpdateAsync()
         {
-            
+            var fileVersion = FileVersionInfo.GetVersionInfo(typeof(Microsoft.SqlServer.Dac.DacPackage).Assembly.Location).FileVersion; 
+            Console.WriteLine($"Using DacFX version: {fileVersion}");
 
             try
             {
@@ -68,7 +71,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (latestVersion > _versionProvider.CurrentPackageVersion())
                 {
-                    _console.WriteLine($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">')");
+                    _console.WriteLine($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: '<Project Sdk=\"MSBuild.Sdk.SqlProj/{latestVersion}\">'. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0002</NoWarn>' to your project file.");
                 }
             }
 #pragma warning disable CA1031 // Do not catch general exception types

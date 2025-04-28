@@ -98,10 +98,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 stringBuilder.Append(modelError.Prefix);
                 stringBuilder.Append(modelError.Number);
                 stringBuilder.Append(": ");
-                stringBuilder.Append(modelError.Message);
+                stringBuilder.AppendLine(modelError.Message);
             }
 
-            return stringBuilder.ToString();
+            return stringBuilder.ToString().Trim();
         }
 
         public static string GetPreDeploymentScript(this DacPackage package)
