@@ -69,7 +69,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (!Path.IsPathRooted(includedFileName))
             {
                 var position = lineInfo.GetStreamPositionForOffset(0);
-                includedFileName = Path.Combine(Path.GetDirectoryName(position.Filename), includedFileName);
+
+                var projectDir = Path.GetDirectoryName(position.Filename);
+
+                if (string.IsNullOrEmpty(projectDir))
+                {
+                    throw new InvalidOperationException($"Unable to resolve directory for position.Filename '{position.Filename}'");
+                }
+
+                includedFileName = Path.Combine(projectDir, includedFileName);
             }
 
             _includedFileNames.Add(includedFileName);
