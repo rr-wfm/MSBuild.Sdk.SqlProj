@@ -15,9 +15,9 @@
     "symbols": {
       "sqlServerVersion": {
         "type": "parameter",
-        "defaultValue": "Sql150",
+        "defaultValue": "Sql160",
         "replaces": "#{SqlServerVersion}",
-        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql160", "Sql90", "SqlAzure", "SqlDw" ],
+        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql160", "Sql170", "Sql90", "SqlAzure", "SqlDw" ],
         "description": "Version of SQL Server being targeted"
       },
       "codeAnalysis": {
