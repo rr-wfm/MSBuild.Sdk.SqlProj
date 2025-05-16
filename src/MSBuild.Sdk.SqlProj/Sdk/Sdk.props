@@ -26,6 +26,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <NoPackageAnalysis>True</NoPackageAnalysis>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <NuspecFile Condition="Exists('$(MSBuildProjectName).nuspec')">$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
 

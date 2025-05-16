@@ -186,7 +186,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dacpac-package
-        path: ./test/TestProjectWithSDKRef/bin/Debug/netstandard2.0/
+        path: ./test/TestProjectWithSDKRef/bin/Debug/net8.0/
 
     # Upload binary log
     - name: upload
