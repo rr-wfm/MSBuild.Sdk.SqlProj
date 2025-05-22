@@ -17,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Suppression\Folder\proc3.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Suppression\proc1.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
