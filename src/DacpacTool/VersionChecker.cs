@@ -5,7 +5,6 @@ using System.Net.Http.Json;
 using NuGet.Versioning;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Diagnostics;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
@@ -40,7 +39,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 NuGetVersion latestVersion = null;
 
-                if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) > DateTime.UtcNow.AddDays(-1))
+                if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) > DateTime.UtcNow.AddDays(-7))
                 {
                     var cache = await File.ReadAllTextAsync(cacheFile, cts.Token).ConfigureAwait(false);
                     latestVersion = NuGetVersion.Parse(cache);
