@@ -74,7 +74,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     service.SetProblemSuppressor(p => 
                         suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
-                            && Path.Combine(projectDir, s.SourceName) == p.Problem.SourceName)
+                            && Path.Combine(projectDir, s.SourceName).Replace('\\', Path.AltDirectorySeparatorChar) == p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar))
                         || _ignoredRules.Contains(p.Rule.RuleId)
                         || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }

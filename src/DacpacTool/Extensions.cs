@@ -173,7 +173,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var dataSchemaModel = GetDataSchemaModel(model);
 
-            var crossPlatformPath = referencePath.Replace('\\', '/');
+            var crossPlatformPath = referencePath.Replace('\\', Path.AltDirectorySeparatorChar);
 
             var customData = Activator.CreateInstance(CustomSchemaDataType, "Reference", "SqlSchema");
 
