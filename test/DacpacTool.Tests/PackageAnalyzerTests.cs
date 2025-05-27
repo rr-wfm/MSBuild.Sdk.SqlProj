@@ -156,6 +156,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql150);
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/Folder/proc3.sql"));
             packageBuilder.SetMetadata("TestSuppression", "1.0.0");
 
             packageBuilder.ValidateModel();
@@ -177,7 +178,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(16);
+            testConsole.Lines.Count.ShouldBe(20);
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
         }

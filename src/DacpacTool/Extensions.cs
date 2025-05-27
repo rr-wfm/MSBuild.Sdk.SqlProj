@@ -139,7 +139,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var dataSchemaModel = GetDataSchemaModel(model);
 
-            var crossPlatformPath = referencePath.Replace('\\', '/');
+            var crossPlatformPath = referencePath.Replace('\\', Path.AltDirectorySeparatorChar);
 
             var customData = Activator.CreateInstance(Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql"), "Reference", "SqlSchema");
             var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
