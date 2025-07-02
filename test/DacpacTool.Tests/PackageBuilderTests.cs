@@ -405,7 +405,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var package = Package.Open(tempFile.FullName);
 
             package.GetParts()
-                .Where(p => p.Uri == new Uri("/refactor.log", UriKind.Relative))
+                .Where(p => p.Uri == new Uri("/refactor.xml", UriKind.Relative))
                 .FirstOrDefault()
                 .ShouldBeNull();
 
