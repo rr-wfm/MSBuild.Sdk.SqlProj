@@ -154,10 +154,6 @@ jobs:
         name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
-    # Restore packages
-    - name: dotnet restore
-      run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion"
-
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
