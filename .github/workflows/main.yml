@@ -156,7 +156,7 @@ jobs:
 
     # Restore packages
     - name: dotnet restore
-      run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
+      run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion"
 
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)
