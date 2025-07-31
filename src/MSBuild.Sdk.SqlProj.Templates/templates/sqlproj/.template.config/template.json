@@ -15,17 +15,73 @@
     "symbols": {
       "sqlServerVersion": {
         "type": "parameter",
+        "dataType": "choice",
         "defaultValue": "Sql160",
+        "displayName": "SQL Server Engine Version",
         "replaces": "#{SqlServerVersion}",
-        "choices": [ "Sql100", "Sql110", "Sql120", "Sql130", "Sql140", "Sql150", "Sql160", "Sql170", "Sql90", "SqlAzure", "SqlDw" ],
-        "description": "Version of SQL Server being targeted"
+        "choices": [
+          {
+            "choice": "Sql170",
+            "description": "SQL Server 2025"
+          },
+          {
+            "choice": "Sql160",
+            "description": "SQL Server 2022"
+          },
+          {
+            "choice": "Sql150",
+            "description": "SQL Server 2019"
+          },
+          {
+            "choice": "Sql140",
+            "description": "SQL Server 2017"
+          },
+          {
+            "choice": "Sql130",
+            "description": "SQL Server 2016"
+          },
+          {
+            "choice": "Sql120",
+            "description": "SQL Server 2014"
+          },
+          {
+            "choice": "Sql110",
+            "description": "SQL Server 2012"
+          },
+          {
+            "choice": "Sql100",
+            "description": "SQL Server 2008"
+          },
+          {
+            "choice": "Sql90",
+            "description": "SQL Server 2005"
+          },
+          {
+            "choice": "SqlAzure",
+            "description": "Azure SQL Database"
+          },
+          {
+            "choice": "SqlDw",
+            "description": "Azure SQL Data Warehouse (Synapse Analytics)"
+          },
+          {
+            "choice": "SqlServerless",
+            "description": "Sql Serverless data pools"
+          },
+          {
+            "choice": "SqlDwUnified",
+            "description": "Synapse Data Warehouse in Microsoft Fabric"
+          }
+        ],
+        "description": "Version of the SQL Server Engine being targeted"
       },
       "codeAnalysis": {
         "type": "parameter",
-        "defaultValue": "True",
-        "replaces": "#{CodeAnalysis}",
-        "choices": [ "True", "False" ],
-        "description": "Enable code analysis"
+        "dataType": "bool",
+        "defaultValue": "true",
+        "displayName": "Enable Code Analysis",
+        "description": "Enable code analysis for the SQL project",
+        "replaces": "#{CodeAnalysis}"
       }
     }
   }
