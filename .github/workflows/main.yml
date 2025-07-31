@@ -25,7 +25,12 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    # Install .NET SDK's for 8.0 and 9.0
+    # Install .NET SDK's for 8.0, 9.0 and 10.0
+    - name: Setup dotnet 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
     - name: Setup dotnet 9.0
       uses: actions/setup-dotnet@v4
       with:
@@ -106,7 +111,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-22.04", "macos-14", "windows-2022" ]
-        dotnet: [ '8.0.x', '9.0.x' ]
+        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
       fail-fast: false
 
     steps:
@@ -148,10 +153,6 @@ jobs:
       with:
         name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
-
-    # Restore packages
-    - name: dotnet restore
-      run: dotnet restore ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj --verbosity n
 
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)

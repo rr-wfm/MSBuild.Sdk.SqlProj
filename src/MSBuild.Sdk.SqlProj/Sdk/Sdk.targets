@@ -87,18 +87,17 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
   <!--
-    Validates that the environment is setup correctly for the DacpacTool to run. Currently we target .NET Core 3.1, 5.0 or 6.0 and we pick the version based on
+    Validates that the environment is setup correctly for the DacpacTool to run. Currently we target .NET 8.0, 9.0 or 10.0 and we pick the version based on
     the BundledNETCoreAppTargetFrameworkVersion property. This property is set by the SDK, so we'll need to ensure that the SDK that is being used is compatible with one
     of the supported target frameworks.
   -->
   <Target Name="ValidateEnvironment">
     <PropertyGroup>
-      <DacpacToolTfm Condition="'$(BundledNETCoreAppTargetFrameworkVersion)' == '3.1'">netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
-      <DacpacToolTfm Condition="'$(BundledNETCoreAppTargetFrameworkVersion)' != '3.1'">net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
+      <DacpacToolTfm>net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
       <DacpacToolExe>$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
-           Text="The current SDK bundles target framework '$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET SDK that supports 8.0 or 9.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
+           Text="The current SDK bundles target framework '$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET SDK that supports 8.0, 9.0 or 10.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
     <Message Importance="High" Text="Using target framework $(DacpacToolTfm) to run DacpacTool" />
   </Target>
 
