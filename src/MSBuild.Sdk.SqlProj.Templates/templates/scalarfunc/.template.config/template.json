@@ -36,6 +36,10 @@
         "defaultValue": "dbo",
         "replaces": "#{SchemaName}",
         "description": "Name of the schema to place the scalar function in. Defaults to 'dbo'."
+      },
+      "HostIdentifier": {
+          "type": "bind",
+          "binding": "HostIdentifier"
       }
     }
   }
