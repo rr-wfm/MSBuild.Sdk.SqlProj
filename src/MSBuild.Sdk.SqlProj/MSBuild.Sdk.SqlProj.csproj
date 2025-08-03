@@ -12,10 +12,6 @@
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="tools\" />
-  </ItemGroup>
-
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
     <PropertyGroup>
       <NuspecProperties>
