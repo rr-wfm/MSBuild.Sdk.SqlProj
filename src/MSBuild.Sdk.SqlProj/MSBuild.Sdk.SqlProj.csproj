@@ -12,6 +12,10 @@
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="tools\" />
+  </ItemGroup>
+
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
     <PropertyGroup>
       <NuspecProperties>
@@ -35,7 +39,6 @@
     <ItemGroup>
       <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
     </ItemGroup>
-    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)"
-          WorkingDirectory="../DacpacTool" />
+    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)" WorkingDirectory="../DacpacTool" />
   </Target>
 </Project>

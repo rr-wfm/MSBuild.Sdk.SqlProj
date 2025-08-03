@@ -177,10 +177,27 @@
     <Message Importance="low" Text="Included Files: $(IncludedFiles)" />
   </Target>
 
+  <!-- Similar to _GenerateCompileDependencyCache in .NET SDK, this target generates a file to track dependencies between incremental build executions.
+       This handles cases where items are added or removed from a glob and can't otherwise be detected with timestamp comparisons. -->
+  <Target Name="GenerateSqlBuildDependencyCache" DependsOnTargets="ValidateEnvironment">
+    <ItemGroup>
+      <SqlBuildInputItem Include="$(IntermediateOutputPath)SqlBuildInputs.cache" />
+      <SqlBuildCache Include="@(__SqlBuildInputItem)" />
+      <SqlBuildCache Include="@(IncludedFiles)" />
+      <SqlBuildCache Include="@(Content)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(SqlBuildCache)">
+      <Output TaskParameter="HashResult" PropertyName="SqlBuildDependencyHash" />
+    </Hash>
+
+    <WriteLinesToFile Lines="$(SqlBuildDependencyHash)" File="$(IntermediateOutputPath)SqlBuildInputs.cache" Overwrite="True" WriteOnlyWhenDifferent="True" />
+  </Target>
+  
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GenerateSqlBuildDependencyCache"
           Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
