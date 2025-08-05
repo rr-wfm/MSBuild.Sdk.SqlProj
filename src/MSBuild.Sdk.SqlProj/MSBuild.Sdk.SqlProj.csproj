@@ -35,7 +35,6 @@
     <ItemGroup>
       <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
     </ItemGroup>
-    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)"
-          WorkingDirectory="../DacpacTool" />
+    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)" WorkingDirectory="../DacpacTool" />
   </Target>
 </Project>
