@@ -568,7 +568,6 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/3.2.0">
   <PropertyGroup>
-  <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
