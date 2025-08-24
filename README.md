@@ -641,6 +641,8 @@ They are based on these older repositories:
 
 - [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your MSBuild.Sdk.SqlProj project.
 
+- [T-SQL Analyzer](https://marketplace.visualstudio.com/items?itemName=ErikEJ.TSqlAnalyzer) - Visual Studio extension that adds live best practices analysis to your SQL scripts in your MSBuild.Sdk.SqlProj project.
+
 ## .NET runtime support
 
 MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the version of MSBuild.Sdk.SqlProj you can use varying versions of the .NET SDK (released once a year). The following table lists the supported .NET SDK versions by each MSBuild.Sdk.SqlProj version:
