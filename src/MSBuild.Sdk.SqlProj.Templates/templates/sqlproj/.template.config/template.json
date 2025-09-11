@@ -12,6 +12,13 @@
     },
     "sourceName": "sqlproj",
     "preferNameDirectory": true,
+    "sources": [
+        {
+            "source": "./",
+            "target": "./",
+            "include": ["sqlproj.csproj", "README.md"]
+        }
+    ],
     "symbols": {
       "sqlServerVersion": {
         "type": "parameter",
