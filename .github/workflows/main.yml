@@ -11,6 +11,9 @@ on:
     branches: [ master ]
   workflow_dispatch:      
 
+permissions:
+  id-token: write   # required for GitHub OIDC
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # Run the build first
@@ -327,6 +330,8 @@ jobs:
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/heads/release/')
     needs:
@@ -358,7 +363,14 @@ jobs:
       run: ls -R
       working-directory: ${{steps.download-sdk-package.outputs.download-path}}
 
+    # Get a short-lived NuGet API key
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
     # Push
     - name: dotnet nuget push
-      run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push 'MSBuild.Sdk.SqlProj*.nupkg' --api-key ${{steps.login.outputs.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json --skip-duplicate
       working-directory: ${{steps.download-sdk-package.outputs.download-path}}
