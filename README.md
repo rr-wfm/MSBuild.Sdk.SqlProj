@@ -106,7 +106,7 @@ sqlpackage /a:Extract /p:ExtractTarget=Flat /scs:"data source=.\SQLEXPRESS;initi
 
 > Note: The /tf parameter is currently required, and must refer to a non-existing folder.
 
-You can read more about the `sqlpackage /a:Extract` command syntax [here](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-extract).
+You can read more about the `sqlpackage /a:Extract` command syntax [on Microsoft Learn](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-extract).
 
 ## Item templates
 
@@ -531,7 +531,7 @@ Most of those properties are simple values (like booleans, strings and integers)
 | DatabaseSpecification | Hyperscale,1024,P15 | This property is specified in the format [Edition](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazureedition),[Maximum Size](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.maximumsize),[Service Objective](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacazuredatabasespecification.serviceobjective) |
 | DoNotDropObjectTypes | Aggregates,Assemblies | A comma separated list of [Object Types](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.objecttype) that should not be dropped as part of the deployment |
 | ExcludeObjectTypes | Contracts,Endpoints | A comma separated list of [Object Types](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.objecttype) that should not be part of the deployment |
-| SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [here](#sqlcmd-variables) |
+| SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [in this section](#sqlcmd-variables) |
 
 ## Script generation
 
@@ -607,7 +607,7 @@ Individual rule violations or groups of rules can be configured to be reported a
 
 You can also build your own rules. For an example of how to build a custom rule, see [this blog post](https://erikej.github.io/dacfx/dotnet/2024/04/04/dacfx-rules.html).
 
-To publish your own custom rules, pack your rule .dll in a NuGet package as shown in the rule project file [here](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj).
+To publish your own custom rules, pack your rule .dll in a NuGet package as shown in this rule project file [from GitHub](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj).
 
 We know of the following public rules NuGet packages, that you can add to your project.
 
@@ -639,9 +639,11 @@ They are based on these older repositories:
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
-- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your MSBuild.Sdk.SqlProj project.
+- [SQL Project Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools&ssr=false#overview) - Visual Studio extension that enhances the developer expereince for MSBuild.Sdk.SqlProj projects with project and item templates, import of existing databases, E/R diagrams, static analysis reporting and more.
 
 - [T-SQL Analyzer](https://marketplace.visualstudio.com/items?itemName=ErikEJ.TSqlAnalyzer) - Visual Studio extension that adds live best practices analysis to your SQL scripts in your MSBuild.Sdk.SqlProj project.
+
+- [EF Core Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.EFCorePowerTools&ssr=false#overview) - Visual Studio extension that can generate an Entity Framework Core DbContext and model classes, and various diagrams directly from your MSBuild.Sdk.SqlProj project.
 
 ## .NET runtime support
 
