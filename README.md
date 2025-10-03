@@ -639,7 +639,7 @@ They are based on these older repositories:
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
-- [SQL Project Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools&ssr=false#overview) - Visual Studio extension that enhances the developer expereince for MSBuild.Sdk.SqlProj projects with project and item templates, import of existing databases, E/R diagrams, static analysis reporting and more.
+- [SQL Project Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools&ssr=false#overview) - Visual Studio extension that enhances the developer experience for MSBuild.Sdk.SqlProj projects with project and item templates, import of existing databases, E/R diagrams, static analysis reporting and more.
 
 - [T-SQL Analyzer](https://marketplace.visualstudio.com/items?itemName=ErikEJ.TSqlAnalyzer) - Visual Studio extension that adds live best practices analysis to your SQL scripts in your MSBuild.Sdk.SqlProj project.
 
