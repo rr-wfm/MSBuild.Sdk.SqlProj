@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests;
+
+internal class TestConsole : IConsole
 {
-    internal class TestConsole : IConsole
+    public readonly List<string> Lines = new List<string>();
+
+    public string ReadLine()
     {
-        public readonly List<string> Lines = new List<string>();
+        throw new NotImplementedException();
+    }
 
-        public string ReadLine()
+    public void WriteLine(string value)
+    {
+        var values = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        foreach (var line in values)
         {
-            throw new NotImplementedException();
-        }
-
-        public void WriteLine(string value)
-        {
-            var values = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            foreach (var line in values)
-            {
-                Lines.Add(line);
-            }
+            Lines.Add(line);
         }
     }
 }
