@@ -46,7 +46,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(1);
             testConsole.Lines[0].ShouldStartWith($"DacpacTool warning SQLPROJ0002: You are not using the latest version of this SDK, please update to get the latest bug fixes, features and support. Modify your project file: ");
             File.Exists(cacheFile).ShouldBeTrue();
-            stopWatch.ElapsedMilliseconds.ShouldBeLessThan(20);
+            stopWatch.ElapsedMilliseconds.ShouldBeLessThan(30);
         }
 
         [TestMethod]

@@ -194,7 +194,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
             // Assert
-            Assert.ThrowsException<DacModelException>(() =>
+            Assert.ThrowsExactly<DacModelException>(() =>
                 TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions()));
 
             // Cleanup
