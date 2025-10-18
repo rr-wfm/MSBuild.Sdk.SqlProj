@@ -5,150 +5,149 @@ using Microsoft.SqlServer.Dac.CodeAnalysis;
 using Microsoft.SqlServer.Dac.Model;
 using System.Linq;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+namespace MSBuild.Sdk.SqlProj.DacpacTool;
+
+public sealed class PackageAnalyzer
 {
-    public sealed class PackageAnalyzer
+    private readonly IConsole _console;
+    private readonly HashSet<string> _ignoredRules = new();
+    private readonly HashSet<string> _ignoredRuleSets = new();
+    private readonly HashSet<string> _errorRuleSets = new();
+    private readonly char[] separator = new[] { ';' };
+
+    public PackageAnalyzer(IConsole console, string rulesExpression)
     {
-        private readonly IConsole _console;
-        private readonly HashSet<string> _ignoredRules = new();
-        private readonly HashSet<string> _ignoredRuleSets = new();
-        private readonly HashSet<string> _errorRuleSets = new();
-        private readonly char[] separator = new[] { ';' };
+        _console = console ?? throw new ArgumentNullException(nameof(console));
 
-        public PackageAnalyzer(IConsole console, string rulesExpression)
+        BuildRuleLists(rulesExpression);
+    }
+
+    public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(outputFile);
+        ArgumentNullException.ThrowIfNull(analyzers);
+
+        _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
+        try
         {
-            _console = console ?? throw new ArgumentNullException(nameof(console));
+            var factory = new CodeAnalysisServiceFactory();
+            var settings = new CodeAnalysisServiceSettings();
 
-            BuildRuleLists(rulesExpression);
-        }
 
-        public void Analyze(TSqlModel model, FileInfo outputFile, FileInfo[] analyzers)
-        {
-            ArgumentNullException.ThrowIfNull(model);
-            ArgumentNullException.ThrowIfNull(outputFile);
-            ArgumentNullException.ThrowIfNull(analyzers);
-
-            _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
-            try
+            if (analyzers.Length > 0)
             {
-                var factory = new CodeAnalysisServiceFactory();
-                var settings = new CodeAnalysisServiceSettings();
+                settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
+            }
 
+            var service = factory.CreateAnalysisService(model, settings);
 
-                if (analyzers.Length > 0)
+            var rules = service.GetRules();
+
+            if (!rules.Any(r => r.Namespace == "SqlServer.Rules" || r.Namespace == "Smells"))
+            {
+                _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
+            }
+                
+            _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
+
+            var projectDir = Environment.CurrentDirectory;
+            var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
+            List<SuppressedProblemInfo> suppressedProblems = new();
+
+            if (File.Exists(suppressorPath))
+            {
+                _console.WriteLine($"Using suppressor file: {suppressorPath}");
+                var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
+
+                suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
+
+                foreach (var problem in suppressedProblems)
                 {
-                    settings.AssemblyLookupPath = string.Join(';', analyzers.Select(a => a.DirectoryName));
+                    _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
+                }
+            }
+
+            if (_ignoredRules.Count > 0 
+                || _ignoredRuleSets.Count > 0
+                || suppressedProblems.Count > 0)
+            {
+                service.SetProblemSuppressor(p => 
+                    suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
+                        && Path.Combine(projectDir, s.SourceName).Replace('\\', Path.AltDirectorySeparatorChar) == p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar))
+                    || _ignoredRules.Contains(p.Rule.RuleId)
+                    || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            var result = service.Analyze(model);
+
+            var errors = result.GetAllErrors();
+            foreach (var err in errors)
+            {
+                _console.WriteLine(err.GetOutputMessage());
+            }
+
+            if (!result.AnalysisSucceeded)
+            {
+                _console.WriteLine($"Analysis of package '{outputFile}' failed");
+                return;
+            }
+            else
+            {
+                foreach (var err in result.Problems)
+                {
+                    _console.WriteLine(err.GetOutputMessage(_errorRuleSets));
                 }
 
-                var service = factory.CreateAnalysisService(model, settings);
+                result.SerializeResultsToXml(GetOutputFileName(outputFile));
+            }
+            _console.WriteLine($"Successfully analyzed package '{outputFile}'");
+        }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception ex)
+        {
+            _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex}");
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+    }
 
-                var rules = service.GetRules();
-
-                if (!rules.Any(r => r.Namespace == "SqlServer.Rules" || r.Namespace == "Smells"))
+    private void BuildRuleLists(string rulesExpression)
+    {
+        if (!string.IsNullOrWhiteSpace(rulesExpression))
+        {
+            foreach (var rule in rulesExpression.Split(separator,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(rule => rule
+                        .StartsWith('-')
+                            && rule.Length > 1))
+            {
+                if (rule.Length > 2 && rule.EndsWith('*'))
                 {
-                    _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
-                }
-                    
-                _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
-
-                var projectDir = Environment.CurrentDirectory;
-                var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
-                List<SuppressedProblemInfo> suppressedProblems = new();
-
-                if (File.Exists(suppressorPath))
-                {
-                    _console.WriteLine($"Using suppressor file: {suppressorPath}");
-                    var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
-
-                    suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
-
-                    foreach (var problem in suppressedProblems)
-                    {
-                        _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
-                    }
-                }
-
-                if (_ignoredRules.Count > 0 
-                    || _ignoredRuleSets.Count > 0
-                    || suppressedProblems.Count > 0)
-                {
-                    service.SetProblemSuppressor(p => 
-                        suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
-                            && Path.Combine(projectDir, s.SourceName).Replace('\\', Path.AltDirectorySeparatorChar) == p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar))
-                        || _ignoredRules.Contains(p.Rule.RuleId)
-                        || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
-                }
-
-                var result = service.Analyze(model);
-
-                var errors = result.GetAllErrors();
-                foreach (var err in errors)
-                {
-                    _console.WriteLine(err.GetOutputMessage());
-                }
-
-                if (!result.AnalysisSucceeded)
-                {
-                    _console.WriteLine($"Analysis of package '{outputFile}' failed");
-                    return;
+                    _ignoredRuleSets.Add(rule[1..^1]);
                 }
                 else
                 {
-                    foreach (var err in result.Problems)
-                    {
-                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets));
-                    }
-
-                    result.SerializeResultsToXml(GetOutputFileName(outputFile));
+                    _ignoredRules.Add(rule[1..]);
                 }
-                _console.WriteLine($"Successfully analyzed package '{outputFile}'");
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
+            foreach (var rule in rulesExpression.Split(separator,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(rule => rule
+                        .StartsWith("+!", StringComparison.OrdinalIgnoreCase)
+                            && rule.Length > 2))
             {
-                _console.WriteLine($"ERROR: An unknown error occurred while analyzing package '{outputFile.FullName}': {ex}");
+                _errorRuleSets.Add(rule[2..]);
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
+    }
 
-        private void BuildRuleLists(string rulesExpression)
+    private static string GetOutputFileName(FileInfo outputFile)
+    {
+        var outputFileName = outputFile.FullName;
+        if (outputFile.Extension.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
         {
-            if (!string.IsNullOrWhiteSpace(rulesExpression))
-            {
-                foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith('-')
-                                && rule.Length > 1))
-                {
-                    if (rule.Length > 2 && rule.EndsWith('*'))
-                    {
-                        _ignoredRuleSets.Add(rule[1..^1]);
-                    }
-                    else
-                    {
-                        _ignoredRules.Add(rule[1..]);
-                    }
-                }
-                foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith("+!", StringComparison.OrdinalIgnoreCase)
-                                && rule.Length > 2))
-                {
-                    _errorRuleSets.Add(rule[2..]);
-                }
-            }
+            outputFileName = outputFile.FullName[..^7];
         }
-
-        private static string GetOutputFileName(FileInfo outputFile)
-        {
-            var outputFileName = outputFile.FullName;
-            if (outputFile.Extension.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
-            {
-                outputFileName = outputFile.FullName[..^7];
-            }
-            return outputFileName + ".CodeAnalysis.xml";
-        }
+        return outputFileName + ".CodeAnalysis.xml";
     }
 }

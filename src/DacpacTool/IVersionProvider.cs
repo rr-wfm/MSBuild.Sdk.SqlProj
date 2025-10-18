@@ -1,9 +1,8 @@
 ﻿using NuGet.Versioning;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+namespace MSBuild.Sdk.SqlProj.DacpacTool;
+
+public interface IVersionProvider
 {
-    public interface IVersionProvider
-    {
-        NuGetVersion CurrentPackageVersion();
-    }
+    NuGetVersion CurrentPackageVersion();
 }

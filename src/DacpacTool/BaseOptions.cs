@@ -1,7 +1,6 @@
-﻿namespace MSBuild.Sdk.SqlProj.DacpacTool
+﻿namespace MSBuild.Sdk.SqlProj.DacpacTool;
+
+public abstract class BaseOptions
 {
-    public abstract class BaseOptions
-    {
-        public bool Debug { get; set; }
-    }
+    public bool Debug { get; set; }
 }

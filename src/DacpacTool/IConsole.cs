@@ -1,8 +1,7 @@
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+﻿namespace MSBuild.Sdk.SqlProj.DacpacTool;
+
+public interface IConsole
 {
-    public interface IConsole
-    {
-        void WriteLine(string value);
-        string ReadLine();
-    }
+    void WriteLine(string value);
+    string ReadLine();
 }

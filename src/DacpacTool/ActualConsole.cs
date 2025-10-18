@@ -1,17 +1,16 @@
-using System;
+﻿using System;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+namespace MSBuild.Sdk.SqlProj.DacpacTool;
+
+public class ActualConsole : IConsole
 {
-    public class ActualConsole : IConsole
+    public string ReadLine()
     {
-        public string ReadLine()
-        {
-            return Console.ReadLine();
-        }
+        return Console.ReadLine();
+    }
 
-        public void WriteLine(string value)
-        {
-            Console.WriteLine(value);
-        }
+    public void WriteLine(string value)
+    {
+        Console.WriteLine(value);
     }
 }
