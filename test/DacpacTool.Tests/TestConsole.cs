@@ -5,7 +5,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests;
 
 internal class TestConsole : IConsole
 {
-    public readonly List<string> Lines = new List<string>();
+    public readonly List<string> Lines = [];
 
     public string ReadLine()
     {
@@ -14,7 +14,7 @@ internal class TestConsole : IConsole
 
     public void WriteLine(string value)
     {
-        var values = value.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+        var values = value.Split([Environment.NewLine], StringSplitOptions.None);
         foreach (var line in values)
         {
             Lines.Add(line);

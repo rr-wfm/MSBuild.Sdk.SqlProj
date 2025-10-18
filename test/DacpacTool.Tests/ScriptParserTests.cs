@@ -20,11 +20,11 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.Post Deployment.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
-        result.Count().ShouldBe(0);
+        result.Count.ShouldBe(0);
     }
 
     [TestMethod]
@@ -34,15 +34,15 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
-        result.Count().ShouldBe(1);
+        result.Count.ShouldBe(1);
     }
 
     [TestMethod]
-    public void ParserFailsWhenIncludesDontExist()
+    public void ParserFailsWhenIncludesDoNotExist()
     {
         // Arrange
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.MissingScript.sql", _variableResolver);
@@ -58,11 +58,11 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.RelativePathIncludes.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
-        result.Count().ShouldBe(2);
+        result.Count.ShouldBe(2);
         result.ToList().Take(2).Last().Replace("\\", "/").ShouldBe($"{TEST_PROJECT_PATH}/Pre-Deployment/./MoreScripts/Script2.sql");
     }
 
@@ -73,7 +73,7 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedIncludes.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
@@ -87,7 +87,7 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.NestedRelativePaths.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
@@ -101,7 +101,7 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.IgnoredDirective.sql", _variableResolver);
 
         // Act
-        var result = collector.CollectFileNames();
+        var result = collector.CollectFileNames().ToList();
 
         // Assert
         result.ShouldNotBeNull();
@@ -171,7 +171,7 @@ public class ScriptParserTests
         var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Post-Deployment/Script.PostDeployment.SyntaxErrors.sql", _variableResolver);
 
         // Act / Assert
-        Should.Throw<System.InvalidOperationException>(() => collector.CollectFileNames())
+        Should.Throw<InvalidOperationException>(() => collector.CollectFileNames())
             .Message.ShouldBe($"Incorrect syntax was encountered while parsing '{Environment.NewLine}'. File: ScriptWithErrors.sql");
     }
 }

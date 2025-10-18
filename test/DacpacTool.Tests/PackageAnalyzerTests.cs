@@ -167,14 +167,14 @@ public class PackageAnalyzerTests
         try
         {
             //Set the current directory.
-            Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
+            Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location) ?? string.Empty, "Suppression"));
             // Act
             packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
         }
         finally
         {
             //Reset the current directory.
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location) ?? string.Empty);
         }
 
         // Assert
@@ -208,7 +208,7 @@ public class PackageAnalyzerTests
 
 internal static class ProjectSource
 {
-    private static string CallerFilePath([CallerFilePath] string callerFilePath = null) =>
+    private static string CallerFilePath([CallerFilePath] string? callerFilePath = null) =>
         callerFilePath ?? throw new ArgumentNullException(nameof(callerFilePath));
 
     public static string ProjectDirectory() => Path.GetDirectoryName(CallerFilePath())!;

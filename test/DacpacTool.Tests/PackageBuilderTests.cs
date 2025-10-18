@@ -63,6 +63,8 @@ public class PackageBuilderTest
 
         // Act
         var result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProjectWithExceptions/Tables/MyTable.sql"));
+        result.ShouldBeTrue();
+
         result = packageBuilder.AddInputFile(new FileInfo("../../../../TestProjectWithExceptions/Tables/MyTable2.sql"));
 
         // Assert
@@ -181,14 +183,14 @@ public class PackageBuilderTest
         var model2 = new TestModelBuilder()
             .AddTable("Table2", ("Col2", "nvarchar(100)"));
         var model2File = model2.SaveAsPackage();
-        model1.AddReference(model2File, "Model2", false);
+        model1.AddReference(model2File, "Model2", suppressErrors: false);
         model1.AddView("View1", "SELECT Col2 FROM [Model2].[dbo].[Table2]");
         var model1File = model1.SaveAsPackage();
         var packageBuilder = new PackageBuilder(new TestConsole());
         packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
         // Act
-        packageBuilder.AddReference(model1File, "Model1", false);
+        packageBuilder.AddReference(model1File, "Model1", suppressErrorsForMissingDependencies: false);
         packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
         DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
@@ -213,7 +215,7 @@ public class PackageBuilderTest
         packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
         // Act
-        packageBuilder.AddSqlCmdVariables(new string[] { first, second });
+        packageBuilder.AddSqlCmdVariables([first, second]);
 
         // Assert
         packageBuilder.ValidateModel();
@@ -252,7 +254,7 @@ public class PackageBuilderTest
         packageBuilder.UsingVersion(SqlServerVersion.Sql150);
 
         // Act
-        packageBuilder.AddSqlCmdVariables(new string[] { first, second });
+        packageBuilder.AddSqlCmdVariables([first, second]);
 
         // Assert
         packageBuilder.ValidateModel();
@@ -689,7 +691,7 @@ public class PackageBuilderTest
         packageBuilder.GenerateCreateScript(tempFile, packageName, new DacDeployOptions());
 
         // Assert
-        File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
+        (tempFile.DirectoryName != null && File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql"))).ShouldBeTrue();
 
         // Cleanup
         tempFile.Delete();
@@ -727,21 +729,27 @@ public class PackageBuilderTest
         // Act - Generate expected script
         packageBuilder.SaveToDisk(tempFile);
         using var package = DacPackage.Load(tempFile.FullName);
-        using var expectedCreateScriptFile = File.Create(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
-        DacServices.GenerateCreateScript(expectedCreateScriptFile, package, packageName, deployOptions);
-        expectedCreateScriptFile.Close();
+        if (tempFile.DirectoryName != null)
+        {
+            using var expectedCreateScriptFile = File.Create(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            DacServices.GenerateCreateScript(expectedCreateScriptFile, package, packageName, deployOptions);
+            expectedCreateScriptFile.Close();
+        }
 
         // Act - Generate script
         packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
 
         // Assert
-        var expectedScriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
-        expectedScriptContent.ShouldNotBeNullOrEmpty();
+        if (tempFile.DirectoryName != null)
+        {
+            var expectedScriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
+            expectedScriptContent.ShouldNotBeNullOrEmpty();
 
-        var scriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql"));
-        scriptContent.ShouldNotBeNullOrEmpty();
+            var scriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql"));
+            scriptContent.ShouldNotBeNullOrEmpty();
 
-        expectedScriptContent.ShouldBe(scriptContent);
+            expectedScriptContent.ShouldBe(scriptContent);
+        }
 
         // Cleanup
         tempFile.Delete();
@@ -774,81 +782,80 @@ public class PackageBuilderTest
     {
         public IEnumerable<object[]> GetData(MethodInfo methodInfo)
         {
-            var optionsType = typeof(TSqlModelOptions);
             return new List<object[]> {
-                new object[] { optionsType.GetProperty("QueryStoreIntervalLength"), "1", 1 },
-                new object[] { optionsType.GetProperty("QueryStoreFlushInterval"), "2", 2 },
-                new object[] { optionsType.GetProperty("QueryStoreDesiredState"), "ReadWrite", QueryStoreDesiredState.ReadWrite },
-                new object[] { optionsType.GetProperty("QueryStoreCaptureMode"), "Auto", QueryStoreCaptureMode.Auto },
-                new object[] { optionsType.GetProperty("ParameterizationOption"), "Forced", ParameterizationOption.Forced },
-                new object[] { optionsType.GetProperty("PageVerifyMode"), "TornPageDetection", PageVerifyMode.TornPageDetection },
-                new object[] { optionsType.GetProperty("QueryStoreMaxStorageSize"), "3", 3 },
-                new object[] { optionsType.GetProperty("NumericRoundAbortOn"), "True", true },
-                new object[] { optionsType.GetProperty("NestedTriggersOn"), "False", false },
-                new object[] { optionsType.GetProperty("HonorBrokerPriority"), "True", true },
-                new object[] { optionsType.GetProperty("FullTextEnabled"), "False", false },
-                new object[] { optionsType.GetProperty("FileStreamDirectoryName"), "Test", "Test" },
-                new object[] { optionsType.GetProperty("DbScopedConfigQueryOptimizerHotfixesSecondary"), "True", true },
-                new object[] { optionsType.GetProperty("DbScopedConfigQueryOptimizerHotfixes"), "False", false },
-                new object[] { optionsType.GetProperty("NonTransactedFileStreamAccess"), "ReadOnly", NonTransactedFileStreamAccess.ReadOnly },
-                new object[] { optionsType.GetProperty("DbScopedConfigParameterSniffingSecondary"), "True", true },
-                new object[] { optionsType.GetProperty("QueryStoreMaxPlansPerQuery"), "10", 10 },
-                new object[] { optionsType.GetProperty("QuotedIdentifierOn"), "False", false },
-                new object[] { optionsType.GetProperty("VardecimalStorageFormatOn"), "True", true },
-                new object[] { optionsType.GetProperty("TwoDigitYearCutoff"), "10", 10 },
-                new object[] { optionsType.GetProperty("Trustworthy"), "False", false },
-                new object[] { optionsType.GetProperty("TransformNoiseWords"), "True", true },
-                new object[] { optionsType.GetProperty("TornPageProtectionOn"), "False", false },
-                new object[] { optionsType.GetProperty("TargetRecoveryTimeUnit"), "Hours", TimeUnit.Hours },
-                new object[] { optionsType.GetProperty("QueryStoreStaleQueryThreshold"), "42", 42 },
-                new object[] { optionsType.GetProperty("TargetRecoveryTimePeriod"), "11", 11 },
-                new object[] { optionsType.GetProperty("ServiceBrokerOption"), "ErrorBrokerConversations", ServiceBrokerOption.ErrorBrokerConversations },
-                new object[] { optionsType.GetProperty("RecursiveTriggersOn"), "True", true } ,
-                new object[] { optionsType.GetProperty("DelayedDurabilityMode"), "Forced", DelayedDurabilityMode.Forced },
-                new object[] { optionsType.GetProperty("RecoveryMode"), "BulkLogged", RecoveryMode.BulkLogged },
-                new object[] { optionsType.GetProperty("ReadOnly"), "False", false },
-                new object[] { optionsType.GetProperty("SupplementalLoggingOn"), "True", true },
-                new object[] { optionsType.GetProperty("DbScopedConfigParameterSniffing"), "False", false },
-                new object[] { optionsType.GetProperty("DbScopedConfigMaxDOPSecondary"), "12", 12 },
-                new object[] { optionsType.GetProperty("DbScopedConfigMaxDOP"), "13", 13 },
-                new object[] { optionsType.GetProperty("AutoShrink"), "True", true },
-                new object[] { optionsType.GetProperty("AutoCreateStatisticsIncremental"), "False", false },
-                new object[] { optionsType.GetProperty("AutoCreateStatistics"), "True", true },
-                new object[] { optionsType.GetProperty("AutoClose"), "False", false },
-                new object[] { optionsType.GetProperty("ArithAbortOn"), "True", true },
-                new object[] { optionsType.GetProperty("AnsiWarningsOn"), "False", false },
-                new object[] { optionsType.GetProperty("AutoUpdateStatistics"), "True", true },
-                new object[] { optionsType.GetProperty("AnsiPaddingOn"), "False", false },
-                new object[] { optionsType.GetProperty("AnsiNullDefaultOn"), "True", true },
-                new object[] { optionsType.GetProperty("MemoryOptimizedElevateToSnapshot"), "False", false },
-                new object[] { optionsType.GetProperty("TransactionIsolationReadCommittedSnapshot"), "True", true },
-                new object[] { optionsType.GetProperty("AllowSnapshotIsolation"), "False", false },
-                new object[] { optionsType.GetProperty("Collation"), "Test", "Test" },
-                new object[] { optionsType.GetProperty("AnsiNullsOn"), "True", true },
-                new object[] { optionsType.GetProperty("AutoUpdateStatisticsAsync"), "False", false },
-                new object[] { optionsType.GetProperty("CatalogCollation"), "Latin1_General_100_CI_AS_KS_WS_SC", CatalogCollation.Latin1_General_100_CI_AS_KS_WS_SC },
-                new object[] { optionsType.GetProperty("ChangeTrackingAutoCleanup"), "True", true },
-                new object[] { optionsType.GetProperty("DbScopedConfigLegacyCardinalityEstimationSecondary"), "False", false },
-                new object[] { optionsType.GetProperty("DbScopedConfigLegacyCardinalityEstimation"), "True", true },
-                new object[] { optionsType.GetProperty("DBChainingOn"), "False", false },
-                new object[] { optionsType.GetProperty("DefaultLanguage"), "Test", "Test" },
-                new object[] { optionsType.GetProperty("DefaultFullTextLanguage"), "Test", "Test" },
-                new object[] { optionsType.GetProperty("DateCorrelationOptimizationOn"), "True", true },
-                new object[] { optionsType.GetProperty("DatabaseStateOffline"), "False", false },
-                new object[] { optionsType.GetProperty("CursorDefaultGlobalScope"), "True", true },
-                new object[] { optionsType.GetProperty("CursorCloseOnCommit"), "False", false },
-                new object[] { optionsType.GetProperty("Containment"), "Partial", Containment.Partial },
-                new object[] { optionsType.GetProperty("ConcatNullYieldsNull"), "True", true },
-                new object[] { optionsType.GetProperty("CompatibilityLevel"), "9", 9 },
-                new object[] { optionsType.GetProperty("ChangeTrackingRetentionUnit"), "Days", TimeUnit.Days },
-                new object[] { optionsType.GetProperty("ChangeTrackingRetentionPeriod"), "8", 8 },
-                new object[] { optionsType.GetProperty("ChangeTrackingEnabled"), "False", false },
-                new object[] { optionsType.GetProperty("UserAccessOption"), "Restricted", UserAccessOption.Restricted },
-                new object[] { optionsType.GetProperty("WithEncryption"), "True", true },
+                new object[] { RequireOption("QueryStoreIntervalLength"), "1", 1 },
+                new object[] { RequireOption("QueryStoreFlushInterval"), "2", 2 },
+                new object[] { RequireOption("QueryStoreDesiredState"), "ReadWrite", QueryStoreDesiredState.ReadWrite },
+                new object[] { RequireOption("QueryStoreCaptureMode"), "Auto", QueryStoreCaptureMode.Auto },
+                new object[] { RequireOption("ParameterizationOption"), "Forced", ParameterizationOption.Forced },
+                new object[] { RequireOption("PageVerifyMode"), "TornPageDetection", PageVerifyMode.TornPageDetection },
+                new object[] { RequireOption("QueryStoreMaxStorageSize"), "3", 3 },
+                new object[] { RequireOption("NumericRoundAbortOn"), "True", true },
+                new object[] { RequireOption("NestedTriggersOn"), "False", false },
+                new object[] { RequireOption("HonorBrokerPriority"), "True", true },
+                new object[] { RequireOption("FullTextEnabled"), "False", false },
+                new object[] { RequireOption("FileStreamDirectoryName"), "Test", "Test" },
+                new object[] { RequireOption("DbScopedConfigQueryOptimizerHotfixesSecondary"), "True", true },
+                new object[] { RequireOption("DbScopedConfigQueryOptimizerHotfixes"), "False", false },
+                new object[] { RequireOption("NonTransactedFileStreamAccess"), "ReadOnly", NonTransactedFileStreamAccess.ReadOnly },
+                new object[] { RequireOption("DbScopedConfigParameterSniffingSecondary"), "True", true },
+                new object[] { RequireOption("QueryStoreMaxPlansPerQuery"), "10", 10 },
+                new object[] { RequireOption("QuotedIdentifierOn"), "False", false },
+                new object[] { RequireOption("VardecimalStorageFormatOn"), "True", true },
+                new object[] { RequireOption("TwoDigitYearCutoff"), "10", 10 },
+                new object[] { RequireOption("Trustworthy"), "False", false },
+                new object[] { RequireOption("TransformNoiseWords"), "True", true },
+                new object[] { RequireOption("TornPageProtectionOn"), "False", false },
+                new object[] { RequireOption("TargetRecoveryTimeUnit"), "Hours", TimeUnit.Hours },
+                new object[] { RequireOption("QueryStoreStaleQueryThreshold"), "42", 42 },
+                new object[] { RequireOption("TargetRecoveryTimePeriod"), "11", 11 },
+                new object[] { RequireOption("ServiceBrokerOption"), "ErrorBrokerConversations", ServiceBrokerOption.ErrorBrokerConversations },
+                new object[] { RequireOption("RecursiveTriggersOn"), "True", true } ,
+                new object[] { RequireOption("DelayedDurabilityMode"), "Forced", DelayedDurabilityMode.Forced },
+                new object[] { RequireOption("RecoveryMode"), "BulkLogged", RecoveryMode.BulkLogged },
+                new object[] { RequireOption("ReadOnly"), "False", false },
+                new object[] { RequireOption("SupplementalLoggingOn"), "True", true },
+                new object[] { RequireOption("DbScopedConfigParameterSniffing"), "False", false },
+                new object[] { RequireOption("DbScopedConfigMaxDOPSecondary"), "12", 12 },
+                new object[] { RequireOption("DbScopedConfigMaxDOP"), "13", 13 },
+                new object[] { RequireOption("AutoShrink"), "True", true },
+                new object[] { RequireOption("AutoCreateStatisticsIncremental"), "False", false },
+                new object[] { RequireOption("AutoCreateStatistics"), "True", true },
+                new object[] { RequireOption("AutoClose"), "False", false },
+                new object[] { RequireOption("ArithAbortOn"), "True", true },
+                new object[] { RequireOption("AnsiWarningsOn"), "False", false },
+                new object[] { RequireOption("AutoUpdateStatistics"), "True", true },
+                new object[] { RequireOption("AnsiPaddingOn"), "False", false },
+                new object[] { RequireOption("AnsiNullDefaultOn"), "True", true },
+                new object[] { RequireOption("MemoryOptimizedElevateToSnapshot"), "False", false },
+                new object[] { RequireOption("TransactionIsolationReadCommittedSnapshot"), "True", true },
+                new object[] { RequireOption("AllowSnapshotIsolation"), "False", false },
+                new object[] { RequireOption("Collation"), "Test", "Test" },
+                new object[] { RequireOption("AnsiNullsOn"), "True", true },
+                new object[] { RequireOption("AutoUpdateStatisticsAsync"), "False", false },
+                new object[] { RequireOption("CatalogCollation"), "Latin1_General_100_CI_AS_KS_WS_SC", CatalogCollation.Latin1_General_100_CI_AS_KS_WS_SC },
+                new object[] { RequireOption("ChangeTrackingAutoCleanup"), "True", true },
+                new object[] { RequireOption("DbScopedConfigLegacyCardinalityEstimationSecondary"), "False", false },
+                new object[] { RequireOption("DbScopedConfigLegacyCardinalityEstimation"), "True", true },
+                new object[] { RequireOption("DBChainingOn"), "False", false },
+                new object[] { RequireOption("DefaultLanguage"), "Test", "Test" },
+                new object[] { RequireOption("DefaultFullTextLanguage"), "Test", "Test" },
+                new object[] { RequireOption("DateCorrelationOptimizationOn"), "True", true },
+                new object[] { RequireOption("DatabaseStateOffline"), "False", false },
+                new object[] { RequireOption("CursorDefaultGlobalScope"), "True", true },
+                new object[] { RequireOption("CursorCloseOnCommit"), "False", false },
+                new object[] { RequireOption("Containment"), "Partial", Containment.Partial },
+                new object[] { RequireOption("ConcatNullYieldsNull"), "True", true },
+                new object[] { RequireOption("CompatibilityLevel"), "9", 9 },
+                new object[] { RequireOption("ChangeTrackingRetentionUnit"), "Days", TimeUnit.Days },
+                new object[] { RequireOption("ChangeTrackingRetentionPeriod"), "8", 8 },
+                new object[] { RequireOption("ChangeTrackingEnabled"), "False", false },
+                new object[] { RequireOption("UserAccessOption"), "Restricted", UserAccessOption.Restricted },
+                new object[] { RequireOption("WithEncryption"), "True", true },
             };
         }
 
-        public string GetDisplayName(MethodInfo methodInfo, object[] data)
+        public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
         {
             if (data != null)
             {
@@ -858,5 +865,10 @@ public class PackageBuilderTest
 
             return null;
         }
+
+        private static PropertyInfo RequireOption(string name)
+            => typeof(TSqlModelOptions).GetProperty(name)
+               ?? throw new InvalidOperationException($"Property '{name}' not found on {nameof(TSqlModelOptions)}.");
+
     }
 }

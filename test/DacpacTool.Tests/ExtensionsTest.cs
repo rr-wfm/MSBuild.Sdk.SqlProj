@@ -46,12 +46,12 @@ public class ExtensionsTest
         var model = new TestModelBuilder()
             .AddReference(referencePackage)
             .Build();
-        
+
         // Act
-        var references = model.GetReferencedDacPackages();
+        var references = model.GetReferencedDacPackages().ToList();
 
         // Assert
-        references.Any().ShouldBeTrue();
+        references.ShouldNotBeEmpty();
         references.First().ShouldBe(referencePackage.Replace('\\', Path.AltDirectorySeparatorChar));
     }
 
@@ -67,7 +67,7 @@ public class ExtensionsTest
             .Build();
 
         // Act
-        var modelValidationErrors = model.GetModelValidationErrors(Enumerable.Empty<string>());
+        var modelValidationErrors = model.GetModelValidationErrors([]).ToList();
 
         // Assert
         modelValidationErrors.ShouldNotBeEmpty();
@@ -136,7 +136,7 @@ public class ExtensionsTest
         // Act
         var model = new TestModelBuilder()
             .AddReference(referencePackage, "dbv=SomeDatabase")
-            .AddSqlCmdVariables(new string[] { "SomeDatabase" })
+            .AddSqlCmdVariables(["SomeDatabase"])
             .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeDatabase)].dbo.MyTable;")
             .Build();
 
@@ -159,7 +159,7 @@ public class ExtensionsTest
         // Act
         var model = new TestModelBuilder()
             .AddReference(referencePackage, "dbv=SomeDatabase|srv=SomeServer")
-            .AddSqlCmdVariables(new string[] { "SomeDatabase", "SomeServer" })
+            .AddSqlCmdVariables(["SomeDatabase", "SomeServer"])
             .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[$(SomeDatabase)].dbo.MyTable;")
             .Build();
 
@@ -182,7 +182,7 @@ public class ExtensionsTest
         // Act
         var model = new TestModelBuilder()
             .AddReference(referencePackage, "dbl=SomeDatabase|srv=SomeServer")
-            .AddSqlCmdVariables(new string[] { "SomeServer" })
+            .AddSqlCmdVariables(["SomeServer"])
             .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[SomeDatabase].dbo.MyTable;")
             .Build();
 

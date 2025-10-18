@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests;
+
 [TestClass]
 public class ScriptInspectorTests
 {

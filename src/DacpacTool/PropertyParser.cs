@@ -55,7 +55,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Expected object types to be comma-seperated instead of semi-colon separated");
+                throw new ArgumentException("Expected object types to be comma-separated instead of semi-colon separated");
             }
 
             var objectTypes = value.Split(',');
@@ -80,7 +80,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (value.Contains(';', StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("Expected database specification to be comma-seperated instead of semi-colon separated");
+                throw new ArgumentException("Expected database specification to be comma-separated instead of semi-colon separated");
             }
 
             var specification = value.Split(",", 3);

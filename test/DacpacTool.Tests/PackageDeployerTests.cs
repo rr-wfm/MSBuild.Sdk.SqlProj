@@ -219,7 +219,7 @@ public class PackageDeployerTests
         packageDeployer.SetDeployProperty("DoNotDropObjectTypes=Aggregates,Assemblies");
 
         // Assert
-        packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Aggregates, ObjectType.Assemblies });
+        packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldBe([ObjectType.Aggregates, ObjectType.Assemblies]);
     }
 
     [TestMethod]
@@ -232,7 +232,7 @@ public class PackageDeployerTests
         packageDeployer.SetDeployProperty("ExcludeObjectTypes=Contracts,Endpoints");
 
         // Assert
-        packageDeployer.DeployOptions.ExcludeObjectTypes.ShouldBe(new ObjectType[] { ObjectType.Contracts, ObjectType.Endpoints });
+        packageDeployer.DeployOptions.ExcludeObjectTypes.ShouldBe([ObjectType.Contracts, ObjectType.Endpoints]);
     }
 
     [TestMethod]
@@ -255,7 +255,7 @@ public class PackageDeployerTests
     {
         // Arrange
         var packageDeployer = new PackageDeployer(_console);
-        var packagePath = BuildSimpleModel();
+        BuildSimpleModel();
 
         // Act
         Should.Throw<ArgumentException>(() => packageDeployer.SetDeployProperty("DatabaseSpecification=MyFancyEdition;1024;P15"));

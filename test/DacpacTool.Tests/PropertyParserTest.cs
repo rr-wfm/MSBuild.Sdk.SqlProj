@@ -95,14 +95,14 @@ public class PropertyParserTest
     }
 
     [TestMethod]
-    [DataRow("DataWarehouse;20;S3", "Expected database specification to be comma-seperated instead of semi-colon separated", DisplayName = "Incorrect separator")]
+    [DataRow("DataWarehouse;20;S3", "Expected database specification to be comma-separated instead of semi-colon separated", DisplayName = "Incorrect separator")]
     [DataRow("DataWarehouse,20", "Expected at least 3 parameters for", DisplayName = "Incorrect number of parameter")]
     [DataRow("AwesomeEdition,20,S2", "Unknown edition", DisplayName = "Unknown database edition")]
     [DataRow("DataWarehouse,X20,S3", "Unable to parse maximum size", DisplayName = "Incorrect database max size")]
     public void ExtractDeployOptions_WithIncorrectDacAzureDatabaseSpecificationProperty_ShouldThrowException(string propertyValue, string exceptionMessage)
     {
         // Arrange
-        var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
+        var buildOptions = new BuildOptions { DeployProperty = [$"DatabaseSpecification={propertyValue}"] };
 
         // Act
         Action action = () => buildOptions.ExtractDeployOptions();
@@ -115,7 +115,7 @@ public class PropertyParserTest
     public void ExtractDeployOptions_WithIncorrectIntegerProperty_ShouldThrowException()
     {
         // Arrange
-        var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=WrongValue" } };
+        var buildOptions = new BuildOptions { DeployProperty = ["CommandTimeout=WrongValue"] };
 
         // Act
         Action action = () => buildOptions.ExtractDeployOptions();
@@ -128,7 +128,7 @@ public class PropertyParserTest
     public void ExtractDeployOptions_WithIncorrectBooleanProperty_ShouldThrowException()
     {
         // Arrange
-        var buildOptions = new BuildOptions { DeployProperty = new[] { "CreateNewDatabase=WrongValue" } };
+        var buildOptions = new BuildOptions { DeployProperty = ["CreateNewDatabase=WrongValue"] };
 
         // Act
         Action action = () => buildOptions.ExtractDeployOptions();
