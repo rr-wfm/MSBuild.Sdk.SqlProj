@@ -310,4 +310,86 @@
     </ItemGroup>
     <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
   </Target>
+
+  <!-- ===== Container publish (experimental) : configuration ===== -->
+  <PropertyGroup>
+    <!-- Container CLI to invoke (typically 'docker') -->
+    <ContainerRuntime>docker</ContainerRuntime>
+
+    <!-- Dockerfile that builds the publisher image (installs sqlpackage, copies dacpacs) -->
+    <ContainerDockerfile>$(MSBuildThisFileDirectory)..\tools\container\sqlpackage.Dockerfile</ContainerDockerfile>
+
+    <!-- Default image name and tag. Override name & tag in CI as needed.
+       Lowercased and trimmed to comply with Docker naming rules. -->
+    <ContainerImageName Condition="'$(ContainerImageName)'==''">$([System.String]::Copy('$(MSBuildProjectName)').ToLowerInvariant().Trim())-publisher</ContainerImageName>
+    <ContainerImageTag Condition="'$(ContainerImageTag)'==''">$([System.String]::Copy('$(Configuration)').ToLowerInvariant().Trim())</ContainerImageTag>
+
+    <!-- Passed to the Dockerfile as build-arg SQLPACKAGE_VERSION -->
+    <SqlPackageVersion>170.2.70</SqlPackageVersion>
+
+    <!-- Local staging area for the project dacpac and referenced dacpacs -->
+    <ContainerStagingDir>$(MSBuildProjectDirectory)\.container</ContainerStagingDir>
+    <ContainerDacpacName>$(MSBuildProjectName).dacpac</ContainerDacpacName>
+    <ContainerDacpacPath>$(ContainerStagingDir)\$(ContainerDacpacName)</ContainerDacpacPath>
+  </PropertyGroup>
+
+  <!-- ===== Container publish (experimental) : targets ===== -->
+
+  <!--
+    PrepareContainerDacpac
+    Purpose: Build and stage the project dacpac and place all referenced dacpacs next to it for convenience.
+    Runs after a successful Build
+    Guards: Fails fast if the dacpac or Dockerfile is missing.
+    Inputs: $(TargetPath) (built dacpac), @(IncludedDacpacReferenceFiles)
+    Outputs/Side effects: Recreates $(ContainerStagingDir), copies dacpac(s) into it.
+  -->
+  <Target Name="PrepareContainerDacpac"
+      DependsOnTargets="Build;ResolveDatabaseReferences">
+
+    <Error Condition="!Exists('$(TargetPath)')"
+           Text="DACPAC '$(TargetPath)' not found. Build failed." />
+    <Error Condition="!Exists('$(ContainerDockerfile)')"
+           Text="Dockerfile '$(ContainerDockerfile)' not found. Check ContainerDockerfile property." />
+
+    <!-- Reset staging area -->
+    <RemoveDir Directories="$(ContainerStagingDir)" Condition="Exists('$(ContainerStagingDir)')" />
+    <MakeDir Directories="$(ContainerStagingDir)" />
+
+    <!-- Copy the project dacpac to the known staging path -->
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFiles="$(ContainerDacpacPath)"
+          OverWriteReadOnlyFiles="true" />
+
+    <!-- Also stage all referenced dacpacs beside the project dacpac (useful for Docker COPY patterns) -->
+    <Copy SourceFiles="@(IncludedDacpacReferenceFiles)"
+          DestinationFolder="$(ContainerStagingDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!--
+    PublishContainer
+    Purpose: Build the publisher container image from the staged dacpac(s).
+    Runs after PrepareContainerDacpac
+    Behavior: Executes '<runtime> build' with tag and SQLPACKAGE_VERSION build-arg.
+    Output: Local container image $(ContainerImageName):$(ContainerImageTag)
+  -->
+  <Target Name="PublishContainer"
+          DependsOnTargets="PrepareContainerDacpac">
+    <Message Text="Building container $(ContainerImageName):$(ContainerImageTag)"
+             Importance="high" />
+    <Exec Command='"$(ContainerRuntime)" build -f "$(ContainerDockerfile)" -t "$(ContainerImageName):$(ContainerImageTag)" --build-arg SQLPACKAGE_VERSION=$(SqlPackageVersion) --build-arg DACPAC_NAME=$(ContainerDacpacName) "$(MSBuildProjectDirectory)"'
+          IgnoreExitCode="false" />
+  </Target>
+
+  <!--
+    PushContainer
+    Pushes to the registry implied by ContainerImageName (e.g., 'ghcr.io/org/name').
+    Ensure you've run 'docker login' (or equivalent) for that registry first.
+  -->
+  <Target Name="PushContainer">
+    <Message Text="Pushing container $(ContainerImageName):$(ContainerImageTag)"
+             Importance="high" />
+    <Exec Command='"$(ContainerRuntime)" push "$(ContainerImageName):$(ContainerImageTag)"'
+          IgnoreExitCode="false" />
+  </Target>
 </Project>
