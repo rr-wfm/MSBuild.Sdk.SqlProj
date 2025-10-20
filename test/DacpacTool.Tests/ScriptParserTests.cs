@@ -48,7 +48,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var collector = new ScriptParser($"{TEST_PROJECT_PATH}/Pre-Deployment/Script.PreDeployment.MissingScript.sql", _variableResolver);
 
             // Act / Assert
-            Assert.ThrowsException<System.IO.FileNotFoundException>(() => collector.CollectFileNames());
+            Assert.ThrowsExactly<System.IO.FileNotFoundException>(() => collector.CollectFileNames());
         }
 
         [TestMethod]
