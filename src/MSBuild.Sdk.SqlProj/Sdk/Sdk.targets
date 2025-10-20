@@ -313,9 +313,6 @@
 
   <!-- ===== Container publish (experimental) : configuration ===== -->
   <PropertyGroup>
-    <!-- Container CLI to invoke (typically 'docker') -->
-    <ContainerRuntime>docker</ContainerRuntime>
-
     <!-- Dockerfile that builds the publisher image (installs sqlpackage, copies dacpacs) -->
     <ContainerDockerfile>$(MSBuildThisFileDirectory)..\tools\container\sqlpackage.Dockerfile</ContainerDockerfile>
 
@@ -377,19 +374,7 @@
           DependsOnTargets="PrepareContainerDacpac">
     <Message Text="Building container $(ContainerImageName):$(ContainerImageTag)"
              Importance="high" />
-    <Exec Command='"$(ContainerRuntime)" build -f "$(ContainerDockerfile)" -t "$(ContainerImageName):$(ContainerImageTag)" --build-arg SQLPACKAGE_VERSION=$(SqlPackageVersion) --build-arg DACPAC_NAME=$(ContainerDacpacName) "$(MSBuildProjectDirectory)"'
-          IgnoreExitCode="false" />
-  </Target>
-
-  <!--
-    PushContainer
-    Pushes to the registry implied by ContainerImageName (e.g., 'ghcr.io/org/name').
-    Ensure you've run 'docker login' (or equivalent) for that registry first.
-  -->
-  <Target Name="PushContainer">
-    <Message Text="Pushing container $(ContainerImageName):$(ContainerImageTag)"
-             Importance="high" />
-    <Exec Command='"$(ContainerRuntime)" push "$(ContainerImageName):$(ContainerImageTag)"'
+    <Exec Command='docker build -f "$(ContainerDockerfile)" -t "$(ContainerImageName):$(ContainerImageTag)" --build-arg SQLPACKAGE_VERSION=$(SqlPackageVersion) --build-arg DACPAC_NAME=$(ContainerDacpacName) "$(MSBuildProjectDirectory)"'
           IgnoreExitCode="false" />
   </Target>
 </Project>
