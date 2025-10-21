@@ -340,7 +340,8 @@ ASALocalRun/
 healthchecksdb
 
 # Exclude tools folder
-src/MSBuild.Sdk.SqlProj/tools/
+src/MSBuild.Sdk.SqlProj/tools/*
+!src/MSBuild.Sdk.SqlProj/tools/container/
 
 # Exclude generated Dacpac's
 *.dacpac
