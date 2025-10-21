@@ -321,8 +321,11 @@
     <ContainerImageName Condition="'$(ContainerImageName)'==''">$([System.String]::Copy('$(MSBuildProjectName)').ToLowerInvariant().Trim())-publisher</ContainerImageName>
     <ContainerImageTag Condition="'$(ContainerImageTag)'==''">$([System.String]::Copy('$(Configuration)').ToLowerInvariant().Trim())</ContainerImageTag>
 
-    <!-- Passed to the Dockerfile as build-arg SQLPACKAGE_VERSION -->
-    <SqlPackageVersion>170.2.70</SqlPackageVersion>
+    <!--
+      Passed to the Dockerfile as build-arg SQLPACKAGE_VERSION.
+      Using DacFxVersion which is set in Sdk.props so that we keep DacFx and SqlPackage in sync
+    -->
+    <SqlPackageVersion>$(DacFxVersion)</SqlPackageVersion>
 
     <!-- Local staging area for the project dacpac and referenced dacpacs -->
     <ContainerStagingDir>$(MSBuildProjectDirectory)\.container</ContainerStagingDir>
