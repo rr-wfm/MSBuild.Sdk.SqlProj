@@ -323,9 +323,9 @@
 
     <!--
       Passed to the Dockerfile as build-arg SQLPACKAGE_VERSION.
-      Using DacFxVersion which is set in Sdk.props so that we keep DacFx and SqlPackage in sync
+      Using SqlPackageVersion which is set in Sdk.props
     -->
-    <SqlPackageVersion>$(DacFxVersion)</SqlPackageVersion>
+    <SqlPackageVersion>$(SqlPackageVersion)</SqlPackageVersion>
 
     <!-- Local staging area for the project dacpac and referenced dacpacs -->
     <ContainerStagingDir>$(MSBuildProjectDirectory)\.container</ContainerStagingDir>

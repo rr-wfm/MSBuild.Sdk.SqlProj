@@ -10,7 +10,7 @@
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <SqlServerVersion>Sql150</SqlServerVersion>
     <TargetExt>.dacpac</TargetExt>
-    <DacFxVersion>170.2.70</DacFxVersion>
+    <SqlPackageVersion>170.2.70</SqlPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
