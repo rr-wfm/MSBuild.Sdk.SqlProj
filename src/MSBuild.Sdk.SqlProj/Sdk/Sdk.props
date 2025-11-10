@@ -45,6 +45,7 @@
     <Content Remove="Pre-Deployment/**/*.sql" />
     <Content Remove="Post-Deployment/**/*.sql" />
     <Content Remove="bin/**/*.sql" />
+    <None Remove="bin/**" />
     <Content Remove="obj/**/*.sql" />
     <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" />
   </ItemGroup>
