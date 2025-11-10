@@ -25,7 +25,7 @@ If a maintainer asks you to "rebase" your PR, they're saying that a lot of code 
 # Getting started
 In order to get started contributing code, make sure you have the following installed on your machine:
 
-* .NET SDK 6.0 or later (you can get it from [here](https://dotnet.microsoft.com/en-us/download))
+* .NET SDK (you can get it from [here](https://dotnet.microsoft.com/en-us/download))
 * Optionally: A local [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2022) (possibly as a [Docker container](https://hub.docker.com/_/microsoft-mssql-server))
 
 This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.Tests` folder.
