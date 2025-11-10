@@ -44,6 +44,7 @@
     </Content>
     <Content Remove="Pre-Deployment/**/*.sql" />
     <Content Remove="Post-Deployment/**/*.sql" />
+    <!-- GenerateScript adds a .sql file here, and it should not be Content in the .dacpac -->
     <Content Remove="bin/**/*.sql" />
     <None Remove="bin/**" />
     <Content Remove="obj/**/*.sql" />
