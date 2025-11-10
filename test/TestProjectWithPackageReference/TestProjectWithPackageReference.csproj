@@ -1,7 +1,7 @@
 <!-- 
    This test project is designed to test a MSBuild.Sdk.SqlProj project with a PackageReference pointing to another project build using MSBuild.Sdk.SqlProj.
    In order to test this functionality locally you will need to run dotnet pack from the test/TestProject folder. This creates a .nupkg in the bin folder.
-   You can then reference this folder as a local NuGet feed using dotnet nuget feed add source -n TestFeed <path-to-bin-folder>. Finally you will need
+   You can then reference this folder as a local NuGet source using dotnet nuget add source -n TestFeed <path-to-bin-folder>. Finally you will need
    to change the Version attribute here to match the created version.
  -->
 <Project>
