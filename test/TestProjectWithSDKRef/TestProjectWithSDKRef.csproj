@@ -1,3 +1,10 @@
+<!-- 
+   This test project is designed to test a MSBuild.Sdk.SqlProj project with an explicit SDK reference. In order to build this project locally you will need to first
+   run dotnet pack from the src/MSBuild.Sdk.SqlProj folder. This will create a .nupkg file containing the SDK in the bin folder. You will then have to add this folder
+   as local NuGet source using dotnet nuget add source -n LocalSdkFeed <path-to-bin-folder>. Finally you will need to change the SDK version below to match the created version.
+
+   Note: This project is automatically built as part of CI so you'll rarely need to do this locally.
+ -->
 <Project Sdk="MSBuild.Sdk.SqlProj/#{NBGV_NuGetPackageVersion}#">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
