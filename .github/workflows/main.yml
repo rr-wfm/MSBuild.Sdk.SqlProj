@@ -81,7 +81,9 @@ jobs:
     
     # Package TestProject
     - name: dotnet pack TestProject
-      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj
+      run: |
+        dotnet build ./test/TestProject/TestProject.csproj -c Release
+        dotnet pack -c Release ./test/TestProject/TestProject.csproj
 
     # Upload TestProject package
     - name: upload TestProject
