@@ -132,7 +132,7 @@ jobs:
 
     - id: create_pr
       name: Create pull request
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         path: repo
         title: Update ManagedBatchParser version to ${{needs.get_versions.outputs.latest}}
