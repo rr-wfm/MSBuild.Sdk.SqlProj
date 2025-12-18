@@ -145,14 +145,14 @@ jobs:
 
     # Download artifact
     - name: download-artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: sdk-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Download artifact
     - name: download-artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
@@ -220,7 +220,7 @@ jobs:
     steps:
     # Download artifacts
     - name: download-artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: dacpac-package
         path: ~/dacpac-package
@@ -278,14 +278,14 @@ jobs:
 
     # Download SDK
     - name: download-artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: sdk-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Download test package
     - name: download-artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
@@ -345,7 +345,7 @@ jobs:
 
     # Download SDK package
     - name: download-sdk-package
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       id: download-sdk-package
       with:
         name: sdk-package
@@ -353,7 +353,7 @@ jobs:
 
     # Download Templates package
     - name: download-template-package
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       id: download-template-package
       with:
         name: template-package
