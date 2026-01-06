@@ -215,14 +215,20 @@ jobs:
     - name: Wait for SQL Server
       run: |
         echo "Waiting for SQL Server to start..."
+        sql_ready=false
         for i in {1..30}; do
           if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
+            sql_ready=true
             break
           fi
           echo "Attempt $i: SQL Server not ready, waiting..."
           sleep 10
         done
+        if [ "$sql_ready" != true ]; then
+          echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
+          exit 1
+        fi
   
     # Download artifacts
     - name: download-artifact
@@ -274,14 +280,20 @@ jobs:
     - name: Wait for SQL Server
       run: |
         echo "Waiting for SQL Server to start..."
+        sql_ready=false
         for i in {1..30}; do
-          if docker exec -e SA_PASSWORD="${{ secrets.SQL_SA_PASSWORD }}" sqlserver /bin/bash -c '/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1"' > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
+            sql_ready=true
             break
           fi
           echo "Attempt $i: SQL Server not ready, waiting..."
           sleep 10
         done
+        if [ "$sql_ready" != "true" ]; then
+          echo "SQL Server did not become ready after 30 attempts." >&2
+          exit 1
+        fi
 
     # Fetch sources
     - uses: actions/checkout@v6
