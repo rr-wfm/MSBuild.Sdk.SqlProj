@@ -215,8 +215,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Define some useful defaults for deployment -->
-    <TargetServerName>(local)</TargetServerName>
+    <!-- Define some useful defaults for deployment/publish -->
+    <TargetServerName Condition="'$(VisualStudioVersion)' == ''">(local)</TargetServerName>
+    <TargetServerName Condition="'$(VisualStudioVersion)' != ''">(localdb)\mssqllocaldb</TargetServerName>
     <TargetDatabaseName>$(MSBuildProjectName)</TargetDatabaseName>
     <IncludeCompositeObjects>true</IncludeCompositeObjects>
   </PropertyGroup>
