@@ -318,6 +318,7 @@ jobs:
 
     # Upload binary log
     - name: upload
+      if: always()
       uses: actions/upload-artifact@v6
       with:
         name: binary-log-publish
