@@ -262,21 +262,27 @@ jobs:
   deploy-publish:
     runs-on: ubuntu-22.04
     needs: test
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: ${{ secrets.SQL_SA_PASSWORD }}
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P '$SA_PASSWORD' -Q 'SELECT 1' || exit 1"
-          --health-interval 10s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 10s
     steps:
+    # Start SQL Server container
+    - name: Start SQL Server
+      run: |
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+          -p 1433:1433 --name sqlserver -d \
+          mcr.microsoft.com/mssql/server:2022-latest
+  
+    # Wait for SQL Server to be ready
+    - name: Wait for SQL Server
+      run: |
+        echo "Waiting for SQL Server to start..."
+        for i in {1..30}; do
+          if /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+            echo "SQL Server is ready!"
+            break
+          fi
+          echo "Attempt $i: SQL Server not ready, waiting..."
+          sleep 10
+        done
+
     # Fetch sources
     - uses: actions/checkout@v6
       with:
