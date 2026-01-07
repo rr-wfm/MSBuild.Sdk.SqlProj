@@ -203,21 +203,33 @@ jobs:
   deploy-sqlpackage:
     runs-on: ubuntu-22.04
     needs: test
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: JdMsKZPBBA8kVFXVrj8d
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
-          --health-interval 10s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 10s
     steps:
+    # Start SQL Server container
+    - name: Start SQL Server
+      run: |
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+          -p 1433:1433 --name sqlserver -d \
+          mcr.microsoft.com/mssql/server:2022-latest
+  
+    # Wait for SQL Server to be ready
+    - name: Wait for SQL Server
+      run: |
+        echo "Waiting for SQL Server to start..."
+        sql_ready=false
+        for i in {1..30}; do
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+            echo "SQL Server is ready!"
+            sql_ready=true
+            break
+          fi
+          echo "Attempt $i: SQL Server not ready, waiting..."
+          sleep 10
+        done
+        if [ "$sql_ready" != true ]; then
+          echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
+          exit 1
+        fi
+  
     # Download artifacts
     - name: download-artifact
       uses: actions/download-artifact@v7
@@ -243,7 +255,7 @@ jobs:
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:JdMsKZPBBA8kVFXVrj8d
+        /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
         /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
@@ -256,21 +268,33 @@ jobs:
   deploy-publish:
     runs-on: ubuntu-22.04
     needs: test
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: Y
-          SA_PASSWORD: JdMsKZPBBA8kVFXVrj8d
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'JdMsKZPBBA8kVFXVrj8d' -Q 'SELECT 1' || exit 1"
-          --health-interval 10s
-          --health-timeout 3s
-          --health-retries 10
-          --health-start-period 10s
     steps:
+    # Start SQL Server container
+    - name: Start SQL Server
+      run: |
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+          -p 1433:1433 --name sqlserver -d \
+          mcr.microsoft.com/mssql/server:2022-latest
+  
+    # Wait for SQL Server to be ready
+    - name: Wait for SQL Server
+      run: |
+        echo "Waiting for SQL Server to start..."
+        sql_ready=false
+        for i in {1..30}; do
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+            echo "SQL Server is ready!"
+            sql_ready=true
+            break
+          fi
+          echo "Attempt $i: SQL Server not ready, waiting..."
+          sleep 10
+        done
+        if [ "$sql_ready" != "true" ]; then
+          echo "SQL Server did not become ready after 30 attempts." >&2
+          exit 1
+        fi
+
     # Fetch sources
     - uses: actions/checkout@v6
       with:
@@ -314,7 +338,7 @@ jobs:
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=JdMsKZPBBA8kVFXVrj8d /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=${{ secrets.SQL_SA_PASSWORD }} /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
 
     # Upload binary log
     - name: upload
