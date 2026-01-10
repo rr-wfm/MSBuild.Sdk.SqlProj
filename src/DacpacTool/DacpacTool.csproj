@@ -13,10 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotMake.CommandLine" Version="1.9.3" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.2.70" />
     <PackageReference Include="NuGet.Versioning" Version="7.0.1" />
     <PackageReference Include="System.CommandLine" Version="2.0.1" />
+    <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.24324.3" />
   </ItemGroup>
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
