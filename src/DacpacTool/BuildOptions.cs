@@ -19,10 +19,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Filename of the output package", Required = false, Name = "--output")]
         public FileInfo Output { get; set; }
         
-        [CliOption(Description = "Target version of the model", Required = false, Name = "--sqlServerVersion")]
+        [CliOption(Description = "Target version of the model", Required = false, Name = "--sqlServerVersion", Alias = "-sv")]
         public SqlServerVersion SqlServerVersion { get; set; } = SqlServerVersion.Sql150;
         
-        [CliOption(Description = "Text file listing all input files", Name = "--inputfile", Required = false)]
+        [CliOption(Description = "Text file listing all input files", Name = "--inputfile", Required = false, Alias = "-i")]
         public FileInfo InputFile { get; set; }
         
         [CliOption(Description = "Reference(s) to include", Required = false, Name = "--reference")]
@@ -34,7 +34,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Deploy properties to be set for the create script", Name = "--deployproperty", Required = false)]
         public string[] DeployProperty { get; set; }
         
-        [CliOption(Description = "SqlCmdVariable(s) to include", Name = "--sqlcmdvar", Required = false)]
+        [CliOption(Description = "SqlCmdVariable(s) to include", Name = "--sqlcmdvar", Required = false, Alias = "-sc")]
         public string[] SqlCmdVar { get; set; }
         
         [CliOption(Description = "Filename of optional pre-deployment script", Name = "--predeploy", Required = false)]

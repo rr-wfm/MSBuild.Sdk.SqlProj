@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Properties used to control the deployment", Required = false, Name = "--property")]
         public string[] Property { get; set; }
         
-        [CliOption(Description = "SqlCmdVariable(s) and their associated values, separated by an equals sign", Name = "--sqlcmdvar", Required = false)]
+        [CliOption(Description = "SqlCmdVariable(s) and their associated values, separated by an equals sign", Name = "--sqlcmdvar", Required = false, Alias = "-sc")]
         public string[] SqlCmdVar { get; set; }
         
         [CliOption(Description = "Whether to run pre- and postdeployment scripts from references", Name = "--runScriptsFromReferences", Required = false)]
