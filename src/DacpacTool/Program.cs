@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         [CliCommand(Description = "Build a SQL Server Data-Tier Application package (dacpac)", Name = "build")]
-        public class BuildCommand : BuildOptions
+        internal class BuildCommand : BuildOptions
         {
             public async Task<int> RunAsync()
             {
@@ -27,7 +27,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         [CliCommand(Description = "Collect includes from pre- and post-deployment scripts", Name = "collect-includes")]
-        public class CollectIncludesCommand : InspectOptions
+        internal class CollectIncludesCommand : InspectOptions
         {
             public int Run()
             {
@@ -36,7 +36,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         [CliCommand(Description = "Deploy a SQL Server Data-Tier Application package (dacpac)", Name = "deploy")]
-        public class DeployCommand : DeployOptions
+        internal class DeployCommand : DeployOptions
         {
             public int Run()
             {
