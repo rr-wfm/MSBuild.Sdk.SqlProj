@@ -8,11 +8,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 NameCasingConvention = CliNameCasingConvention.CamelCase)]
     public class InspectOptions : BaseOptions
     {
-        [CliOption(Description = "Filename of optional pre-deployment script", Name = "--predeploy")]
-        public FileInfo PreDeploy { get; set; }
+        [CliOption(Description = "Filename of optional pre-deployment script", Name = "--predeploy", Required = false)]
+        public FileInfo? PreDeploy { get; set; }
         
-        [CliOption(Description = "Filename of optional post-deployment script", Name = "--postdeploy")]
-        public FileInfo PostDeploy { get; set; }
+        [CliOption(Description = "Filename of optional post-deployment script", Name = "--postdeploy", Required = false)]
+        public FileInfo? PostDeploy { get; set; }
         
         public int Run()
         {
