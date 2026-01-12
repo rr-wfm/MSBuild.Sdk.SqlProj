@@ -217,7 +217,7 @@ jobs:
         echo "Waiting for SQL Server to start..."
         sql_ready=false
         for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P ${{ secrets.SQL_SA_PASSWORD }} -Q "SELECT 1" > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
             sql_ready=true
             break
@@ -282,7 +282,7 @@ jobs:
         echo "Waiting for SQL Server to start..."
         sql_ready=false
         for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P ${{ secrets.SQL_SA_PASSWORD }} -Q "SELECT 1" > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
             sql_ready=true
             break
