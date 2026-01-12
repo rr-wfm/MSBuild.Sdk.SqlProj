@@ -61,9 +61,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Generate create script for package", Name = "--generatecreatescript", Required = false)]
         public bool GenerateCreateScript { get; set; }
         
-        [CliOption(Description = "Include referenced, external elements that also compose the source model", Name = "--includecompositeobjects", Required = false)]
-        public bool IncludeCompositeObjects { get; set; }
-        
         [CliOption(Description = "Name of the database to use in the generated create script", Name = "--targetdatabasename", Required = false)]
         public string TargetDatabaseName { get; set; }
         
