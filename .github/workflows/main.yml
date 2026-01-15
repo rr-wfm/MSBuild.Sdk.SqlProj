@@ -352,6 +352,68 @@ jobs:
       if: failure()
       uses: jwalton/gh-docker-logs@v2
 
+  # Attempt to publish the project as a container image and use that to  deploy the resulting dacpac's to a SQL Server instance running in a container
+  deploy-container:
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+    # Start SQL Server container
+    - name: Start SQL Server
+      run: |
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+          -p 1433:1433 --name sqlserver -d \
+          mcr.microsoft.com/mssql/server:2022-latest
+  
+    # Wait for SQL Server to be ready
+    - name: Wait for SQL Server
+      run: |
+        echo "Waiting for SQL Server to start..."
+        sql_ready=false
+        for i in {1..30}; do
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+            echo "SQL Server is ready!"
+            sql_ready=true
+            break
+          fi
+          echo "Attempt $i: SQL Server not ready, waiting..."
+          sleep 10
+        done
+        if [ "$sql_ready" != true ]; then
+          echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
+          exit 1
+        fi
+
+    # Setup .NET SDK
+    - uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '8.0.x'
+
+    # Publish the project as a container image
+    - name: publish-container
+      run: >
+        dotnet
+        publish
+        ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
+        /t:PublishContainer
+
+    # Run the container to publish the dacpac
+    - name: container publish
+      run: >
+        docker
+        run
+        testprojectwithsdkref:latest
+        /Properties:IncludeCompositeObjects=True
+        /TargetServerName:localhost
+        /TargetUser:sa
+        /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
+        /TargetDatabaseName:TestProjectWithSDKRef
+        /TargetEncryptConnection:False
+
+    # Dump logs of the container if something failed
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
+
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
     permissions:
