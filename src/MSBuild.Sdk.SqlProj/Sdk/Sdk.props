@@ -214,6 +214,18 @@
     </KnownDeployProperties>
   </PropertyGroup>
 
+  <!-- Define defaults for container support -->
+  <PropertyGroup Label="SdkContainerDefaults">
+    <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == ''">true</EnableSdkContainerSupport>
+    <ContainerRuntimeIdentifier>linux-x64</ContainerRuntimeIdentifier> <!-- sqlpackage is only available for linux-x64 -->
+  </PropertyGroup>
+
+  <ItemGroup Label="SdkContainerDefaults">
+    <ContainerAppCommand Include="/app/sqlpackage" />
+    <ContainerAppCommandArgs Include="/Action:Publish" />
+    <ContainerAppCommandArgs Include="/SourceFile:/app/$(MSBuildProjectName).dacpac" /> 
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Define some useful defaults for deployment -->
     <TargetServerName>(local)</TargetServerName>

@@ -50,6 +50,7 @@
       PostBuildEvent
     </CoreBuildDependsOn>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
@@ -267,7 +268,7 @@
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
-  <Target Name="Publish" DependsOnTargets="Build" Condition="'$(DeployOnPublish)' != 'False'">
+  <Target Name="PublishDatabase" DependsOnTargets="Build">
     <ItemGroup>
       <_DeployPropertyNames Include="$(KnownDeployProperties)" />
       <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
@@ -309,5 +310,14 @@
       </AllItemsFullPathWithTargetPath>
     </ItemGroup>
     <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
+  </Target>
+
+  <Target Name="PrepareContainer">
+    <!-- TODO: Do we always want to download the latest?-->
+    <PropertyGroup>
+      <TempStagingFolder>$([System.IO.Path]::GetTempPath())</TempStagingFolder>
+    </PropertyGroup>
+    <DownloadFile SourceUrl="https://aka.ms/sqlpackage-linux" DestinationFolder="$(TempStagingFolder)" Condition="!Exists('$(TempStagingFolder)/sqlpackage-linux')" />
+    <Unzip SourceFiles="$(TempStagingFolder)/sqlpackage-linux" DestinationFolder="$(PublishDir)" Condition="!Exists('$(PublishDir)/sqlpackage')" />
   </Target>
 </Project>
