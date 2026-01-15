@@ -396,7 +396,7 @@ jobs:
       run: >
         dotnet
         publish
-        ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
+        ./test/TestProject/TestProject.csproj
         /t:PublishContainer
 
     # Run the container to publish the dacpac
@@ -404,12 +404,12 @@ jobs:
       run: >
         docker
         run
-        testprojectwithsdkref:latest
+        testproject:latest
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
-        /TargetDatabaseName:TestProjectWithSDKRef
+        /TargetDatabaseName:TestProject
         /TargetEncryptConnection:False
 
     # Dump logs of the container if something failed
