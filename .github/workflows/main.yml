@@ -388,6 +388,9 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v6
+
     # Publish the project as a container image
     - name: publish-container
       run: >
