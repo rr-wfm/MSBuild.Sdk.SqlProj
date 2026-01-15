@@ -391,6 +391,10 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v6
 
+    # Build the SDK project to ensure it is in a working state
+    - name: dotnet build SDK
+      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
+
     # Publish the project as a container image
     - name: publish-container
       run: >
