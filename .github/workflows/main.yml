@@ -349,7 +349,7 @@ jobs:
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /p:TargetUser=sa /p:TargetPassword=${{ secrets.SQL_SA_PASSWORD }} /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword=${{ secrets.SQL_SA_PASSWORD }} /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
 
     # Verify deployment
     - name: verify-deployment
