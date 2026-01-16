@@ -263,7 +263,7 @@ jobs:
     - name: verify-deployment
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
@@ -355,7 +355,7 @@ jobs:
     - name: verify-deployment
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
@@ -446,13 +446,12 @@ jobs:
     - name: verify-deployment
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
           exit 1
-        fi
-        
+        fi        
 
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
