@@ -459,6 +459,8 @@ jobs:
         publish
         ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
         /t:PublishContainer
+        /bl
+        /p:DependencyVersion="2.*-*"
 
     # Run the container to publish the dacpac
     - name: container publish
@@ -489,6 +491,14 @@ jobs:
     - name: Dump docker logs on failure
       if: failure()
       uses: jwalton/gh-docker-logs@v2
+
+    # Upload binary log
+    - name: upload
+      uses: actions/upload-artifact@v6
+      if: failure()
+      with:
+        name: binary-log-publish
+        path: ./msbuild.binlog
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
