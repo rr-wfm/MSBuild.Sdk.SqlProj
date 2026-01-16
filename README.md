@@ -569,7 +569,7 @@ You can also set these properties in your project file if you prefer:
 Once the container image is published, you can run it using the following command:
 
 ```bash
-docker run my-database-image:v1.0.0 --rm /TargetServerName=<server> /TargetDatabaseName=<database> /TargetUser=<username> /TargetPassword=<password>
+docker run my-database-image:v1.0.0 --rm /TargetConnectionString=<your-connection-string>
 ```
 
 This will execute SqlPackage inside the container, deploying the .dacpac to the specified SQL Server instance. You can pass any additional SqlPackage parameters as needed. However by default the container is configured to pass `/Action:Publish` and `/SourceFile:<your-dacpac-file>.dacpac`. For a full list of available parameters, refer to the [SqlPackage documentation](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver17).
