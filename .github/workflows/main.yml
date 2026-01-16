@@ -419,6 +419,20 @@ jobs:
         /TargetDatabaseName:TestProject
         /TargetEncryptConnection:False
 
+    # Check that the deployment succeeded
+    - name: verify-deployment
+      shell: pwsh
+      run: |
+        Add-Type -AssemblyName "Microsoft.Data.SqlClient" -ErrorAction Stop
+        $connectionString = "Server=localhost;Database=TestProject;User Id=sa;Password=${{ secrets.SQL_SA_PASSWORD }};Encrypt=False;"
+        $query = "SELECT count(*) FROM dbo.TestTable;"
+        $connection = New-Object Microsoft.Data.SqlClient.SqlConnection $connectionString
+        $command = $connection.CreateCommand()
+        $command.CommandText = $query
+        $connection.Open()
+        $result = $command.ExecuteScalar()
+        $connection.Close()
+
     # Dump logs of the container if something failed
     - name: Dump docker logs on failure
       if: failure()
