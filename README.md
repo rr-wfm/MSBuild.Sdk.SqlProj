@@ -545,10 +545,10 @@ From version 4.0.0 of MSBuild.Sdk.SqlProj we now support publishing your databas
 dotnet publish /t:PublishContainer
 ```
 
-By default, the image will be tagged with the name of your project. You can customize the image name and tag by setting the `ContainerImageName` and `ContainerImageTag` properties on the command line. For example:
+By default, the image will be tagged with the name of your project. You can customize the image name and tag by setting the `ContainerRepository` and `ContainerImageTag` properties on the command line. For example:
 
 ```bash
-dotnet publish /t:PublishContainer /p:ContainerImageName=my-database-image /p:ContainerImageTag=v1.0.0
+dotnet publish /t:PublishContainer /p:ContainerRepository=my-database-image /p:ContainerImageTag=v1.0.0
 ```
 
 You can also set these properties in your project file if you prefer:
@@ -557,7 +557,7 @@ You can also set these properties in your project file if you prefer:
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
   <PropertyGroup>
     ...
-    <ContainerImageName>my-database-image</ContainerImageName>
+    <ContainerRepository>my-database-image</ContainerRepository>
     <ContainerImageTag>v1.0.0</ContainerImageTag>
     ...
   </PropertyGroup>
