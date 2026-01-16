@@ -8,7 +8,7 @@
   <Import Project="$(MSBuildThisFileDirectory)../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <SqlServerVersion>Sql150</SqlServerVersion>
     <RestoreAdditionalProjectSources>../TestProject/bin/Debug</RestoreAdditionalProjectSources>
   </PropertyGroup>

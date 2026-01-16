@@ -314,7 +314,7 @@
   </Target>
 
   <!-- Prepares the publish folder with the necessary files for the resulting container -->
-  <Target Name="PrepareContainer">
+  <Target Name="PrepareContainer" DependsOnTargets="CopyDacpacs">
     <PropertyGroup>
       <TempStagingFolder>$([System.IO.Path]::GetTempPath())</TempStagingFolder>
       <SqlPackageStagingFolder>$([System.IO.Path]::Combine('$(TempStagingFolder)', 'sqlpackage-linux'))</SqlPackageStagingFolder>
@@ -322,5 +322,6 @@
     </PropertyGroup>
     <DownloadFile SourceUrl="https://aka.ms/sqlpackage-linux" DestinationFolder="$(TempStagingFolder)" Condition="!Exists('$(SqlPackageExtractPath)')" />
     <Unzip SourceFiles="$(SqlPackageStagingFolder)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <Copy SourceFiles="@(CopyDacpacFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>
