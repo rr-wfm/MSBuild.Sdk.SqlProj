@@ -410,6 +410,7 @@ jobs:
       run: >
         docker
         run
+        --network host
         testproject:latest
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
