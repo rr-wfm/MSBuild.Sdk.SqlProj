@@ -423,7 +423,7 @@ jobs:
     - name: verify-deployment
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1 FROM dbo.TestTable; -b" > /dev/null 2>&1; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -Q "SELECT 1 FROM dbo.TestTable;" > /dev/null 2>&1; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
