@@ -416,16 +416,48 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    # Build the SDK project to ensure it is in a working state
-    - name: dotnet build SDK
-      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
+    # Download SDK
+    - name: download-artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: sdk-package
+        path: test/TestProjectWithSDKRef/nuget-packages
+
+    # Download test package
+    - name: download-artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: test-package
+        path: test/TestProjectWithSDKRef/nuget-packages
+ 
+    # Setup .NET SDK
+    - uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '8.0.x'
+
+    # Install Nerdbank.GitVersioning
+    - name: install nbgv
+      run: dotnet tool install --tool-path . nbgv
+
+    # Set version
+    - name: set version
+      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
+      id: nbgv
+
+    # Replace tokens 
+    - uses: cschleiden/replace-tokens@v1
+      name: replace tokens
+      with:
+        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
+      env:
+        DependencyVersion: '2.*-*'
 
     # Publish the project as a container image
     - name: publish-container
       run: >
         dotnet
         publish
-        ./test/TestProject/TestProject.csproj
+        ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
         /t:PublishContainer
 
     # Run the container to publish the dacpac
@@ -434,12 +466,12 @@ jobs:
         docker
         run
         --network host
-        testproject:latest
+        testprojectwithsdkref:latest
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
         /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
-        /TargetDatabaseName:TestProject
+        /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
     # Verify deployment
