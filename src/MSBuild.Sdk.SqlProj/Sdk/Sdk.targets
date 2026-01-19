@@ -320,7 +320,7 @@
       <SqlPackageStagingFolder>$([System.IO.Path]::Combine('$(TempStagingFolder)', 'sqlpackage-linux'))</SqlPackageStagingFolder>
       <SqlPackageExtractPath>$([System.IO.Path]::Combine('$(PublishDir)', 'sqlpackage'))</SqlPackageExtractPath>
     </PropertyGroup>
-    <DownloadFile SourceUrl="https://aka.ms/sqlpackage-linux" DestinationFolder="$(TempStagingFolder)" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <DownloadFile SourceUrl="$(SqlPackageDownloadUrl)" DestinationFolder="$(TempStagingFolder)" Condition="!Exists('$(SqlPackageExtractPath)')" />
     <Unzip SourceFiles="$(SqlPackageStagingFolder)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
     <Copy SourceFiles="@(CopyDacpacFiles)" DestinationFolder="$(PublishDir)" />
   </Target>

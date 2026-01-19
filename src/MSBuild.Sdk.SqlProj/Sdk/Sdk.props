@@ -10,6 +10,7 @@
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <SqlServerVersion>Sql150</SqlServerVersion>
     <TargetExt>.dacpac</TargetExt>
+    <SqlPackageDownloadUrl>https://aka.ms/sqlpackage-linux</SqlPackageDownloadUrl>
   </PropertyGroup>
 
   <PropertyGroup>
