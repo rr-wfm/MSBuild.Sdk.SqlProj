@@ -564,8 +564,6 @@ You can also set these properties in your project file if you prefer:
 </Project>
 ```
 
-> Note: In older versions of MSBuild.Sdk.SqlProj we've recommended to use netstandard2.0 as the target framework. This has since been changed to net8.0 (or higher). In order to publish container images you'll need to be targeting net8.0 or higher and use at least version 8.0 of the .NET SDK.
-
 Once the container image is published, you can run it using the following command:
 
 ```bash
