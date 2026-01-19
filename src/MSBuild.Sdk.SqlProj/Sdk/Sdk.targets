@@ -50,6 +50,7 @@
       PostBuildEvent
     </CoreBuildDependsOn>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
@@ -267,7 +268,8 @@
   </Target>
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
-  <Target Name="Publish" DependsOnTargets="Build" Condition="'$(DeployOnPublish)' != 'False'">
+  <!-- Note: This used to contain a condition that DeployOnPublish != False. Since you now have to explicitly run the PublishDatabase target this no longer made sense. -->
+  <Target Name="PublishDatabase" DependsOnTargets="Build">
     <ItemGroup>
       <_DeployPropertyNames Include="$(KnownDeployProperties)" />
       <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
@@ -309,5 +311,30 @@
       </AllItemsFullPathWithTargetPath>
     </ItemGroup>
     <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
+  </Target>
+
+  <Target Name="AssignSqlPackageBaseImage" BeforeTargets="ComputeContainerBaseImage">
+    <PropertyGroup>
+        <ContainerBaseImage Condition="'$(ContainerBaseImage)' == ''">mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+        <!-- SqlPackage only support amd64 runtimes -->
+        <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-x64</ContainerRuntimeIdentifier>
+    </PropertyGroup>
+    <ItemGroup>
+        <ContainerAppCommand Include="/app/sqlpackage" />
+        <ContainerAppCommandArgs Include="/Action:Publish" />
+        <ContainerAppCommandArgs Include="/SourceFile:/app/$(MSBuildProjectName).dacpac" /> 
+    </ItemGroup>
+  </Target>
+
+  <!-- Prepares the publish folder with the necessary files for the resulting container -->
+  <Target Name="PrepareContainer" DependsOnTargets="CopyDacpacs">
+    <PropertyGroup>
+      <TempStagingFolder>$([System.IO.Path]::GetTempPath())</TempStagingFolder>
+      <SqlPackageStagingFilename>$([System.IO.Path]::Combine('$(TempStagingFolder)', 'sqlpackage-linux.zip'))</SqlPackageStagingFilename>
+      <SqlPackageExtractPath>$([System.IO.Path]::Combine('$(PublishDir)', 'sqlpackage'))</SqlPackageExtractPath>
+    </PropertyGroup>
+    <DownloadFile SourceUrl="$(SqlPackageDownloadUrl)" DestinationFolder="$(TempStagingFolder)" DestinationFilename="sqlpackage-linux.zip" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <Unzip SourceFiles="$(SqlPackageStagingFilename)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <Copy SourceFiles="@(CopyDacpacFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>
