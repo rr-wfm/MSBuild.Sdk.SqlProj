@@ -505,7 +505,7 @@ To further customize the deployment process, you can use the following propertie
 
 | Property | Default Value | Description |
 | --- | --- | --- |
-| TargetServerName | (local) | Controls the name of the server to which the project is published |
+| TargetServerName | (local) | Controls the name of the server to which the project is published. Defaults to '(localdb)\mssqllocaldb' when using Visual Studio. |
 | TargetDatabaseName | Project name | Controls the name of the database published by `dotnet publish` |
 | TargetPort |  | Specifies an alternate port for connecting to the target server (only necessary if using a non-standard port) |
 | TargetUser |  | Username used to connect to the server. If empty, Windows authentication is used |
