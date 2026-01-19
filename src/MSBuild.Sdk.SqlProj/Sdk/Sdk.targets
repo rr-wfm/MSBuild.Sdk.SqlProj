@@ -313,6 +313,19 @@
     <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
   </Target>
 
+  <Target Name="AssignSqlPackageBaseImage" BeforeTargets="ComputeContainerBaseImage">
+    <PropertyGroup>
+        <ContainerBaseImage Condition="'$(ContainerBaseImage)' == ''">mcr.microsoft.com/dotnet/runtime:8.0</ContainerBaseImage>
+        <!-- SqlPackage only support amd64 runtimes -->
+        <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-x64</ContainerRuntimeIdentifier>
+    </PropertyGroup>
+    <ItemGroup>
+        <ContainerAppCommand Include="/app/sqlpackage" />
+        <ContainerAppCommandArgs Include="/Action:Publish" />
+        <ContainerAppCommandArgs Include="/SourceFile:/app/$(MSBuildProjectName).dacpac" /> 
+    </ItemGroup>
+  </Target>
+
   <!-- Prepares the publish folder with the necessary files for the resulting container -->
   <Target Name="PrepareContainer" DependsOnTargets="CopyDacpacs">
     <PropertyGroup>
