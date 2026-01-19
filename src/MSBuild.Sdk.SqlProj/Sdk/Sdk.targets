@@ -330,11 +330,11 @@
   <Target Name="PrepareContainer" DependsOnTargets="CopyDacpacs">
     <PropertyGroup>
       <TempStagingFolder>$([System.IO.Path]::GetTempPath())</TempStagingFolder>
-      <SqlPackageStagingFolder>$([System.IO.Path]::Combine('$(TempStagingFolder)', 'sqlpackage-linux'))</SqlPackageStagingFolder>
+      <SqlPackageStagingFilename>$([System.IO.Path]::Combine('$(TempStagingFolder)', 'sqlpackage-linux.zip'))</SqlPackageStagingFilename>
       <SqlPackageExtractPath>$([System.IO.Path]::Combine('$(PublishDir)', 'sqlpackage'))</SqlPackageExtractPath>
     </PropertyGroup>
-    <DownloadFile SourceUrl="$(SqlPackageDownloadUrl)" DestinationFolder="$(TempStagingFolder)" Condition="!Exists('$(SqlPackageExtractPath)')" />
-    <Unzip SourceFiles="$(SqlPackageStagingFolder)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <DownloadFile SourceUrl="$(SqlPackageDownloadUrl)" DestinationFolder="$(TempStagingFolder)" DestinationFilename="sqlpackage-linux.zip" Condition="!Exists('$(SqlPackageExtractPath)')" />
+    <Unzip SourceFiles="$(SqlPackageStagingFilename)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
     <Copy SourceFiles="@(CopyDacpacFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 </Project>

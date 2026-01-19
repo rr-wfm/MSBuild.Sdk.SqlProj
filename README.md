@@ -539,7 +539,11 @@ Most of those properties are simple values (like booleans, strings and integers)
 | SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [in this section](#sqlcmd-variables) |
 
 ### Publishing as a container image
-From version 4.0.0 of MSBuild.Sdk.SqlProj we now support publishing your database project as a runnable container image. The image will contain both SqlPackage and the .dacpac file. This allows you to run the image anywhere a container can be executed, making it ideal for CI/CD pipelines and other automated deployment scenarios. To publish your project as a container image, use the following command:
+From version 4.0.0 of MSBuild.Sdk.SqlProj we now support publishing your database project as a runnable container image. The image will contain both SqlPackage and the .dacpac file. This allows you to run the image anywhere a container can be executed, making it ideal for CI/CD pipelines and other automated deployment scenarios.
+
+> Note: By default the published container will contain the latest version of SqlPackage available at the time of publishing. If you want to pin the specific version of SqlPackage used in the container you can set the `SqlPackageDownloadUrl` property in your project file to point to the specific version you want, ie: `https://go.microsoft.com/fwlink/?linkid=2338525` for version 170.2.70. You can find the appropriate download links on the [SqlPackage release notes](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/release-notes-sqlpackage) page. Please make sure to use the link for the Linux .NET 8 version of SqlPackage.
+
+To publish your project as a container image, use the following command:
 
 ```bash
 dotnet publish /t:PublishContainer
