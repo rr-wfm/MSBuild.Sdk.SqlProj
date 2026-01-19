@@ -487,7 +487,7 @@ You can now reference your dacpac as a `PackageReference`!
 ## Publishing support
 Starting with MSBuild.Sdk.SqlProj version 4.0.0 there are two modes of publishing supported: publishing the database directly from the project to a SQL Server instance, or publishing a container image that includes both SqlPackage and the .dacpac ready to be run anywhere a container can be executed.
 
-> Note: To support both modes we unfortunately had to make a breaking change to the SDK. If you've previously used `dotnet publish` to deploy your database directly to SQL Server you'll now need to add `/t:PublishDatabase` to your command line to retain the previous behavior.
+> Note for 4.0.0: To support both modes we unfortunately had to make a breaking change to the SDK. If you've previously used `dotnet publish` to deploy your database directly to SQL Server you'll now need to add `/t:PublishDatabase` to your command line to retain the previous behavior.
 
 We generally recommend using the container image approach for most scenarios, as it provides a consistent deployment experience across different environments. However, for local development and quick deployments the direct publishing approach might be more convenient.
 
