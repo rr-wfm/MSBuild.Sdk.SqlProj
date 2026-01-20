@@ -13,7 +13,7 @@
   </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.0.0-preview.2">
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.1.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
