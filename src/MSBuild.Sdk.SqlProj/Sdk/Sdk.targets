@@ -50,6 +50,7 @@
       PostBuildEvent
     </CoreBuildDependsOn>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <PublishDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'True'">$(PublishDependsOn);PublishDatabase</PublishDependsOn>
     <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
