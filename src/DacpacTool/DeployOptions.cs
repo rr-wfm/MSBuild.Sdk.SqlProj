@@ -27,7 +27,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Password used to connect to the target server, using SQL Server authentication", Required = false, Name = "--targetPassword", Alias = "-tp")]
         public string TargetPassword { get; set; }
         
-        [CliOption(Description = "Properties used to control the deployment", Required = false, Name = "--property")]
+        [CliOption(Description = "Properties used to control the deployment", Required = false, Name = "--property", Alias = "-p")]
         public string[] Property { get; set; }
         
         [CliOption(Description = "SqlCmdVariable(s) and their associated values, separated by an equals sign", Name = "--sqlcmdvar", Required = false, Alias = "-sc")]

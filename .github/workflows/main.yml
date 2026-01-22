@@ -64,9 +64,15 @@ jobs:
     - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
-    # Ensure that test project builds
+    # Ensure that test projects build
     - name: dotnet build TestProject
       run: dotnet build ./test/TestProject/TestProject.csproj -c Release
+
+    - name: dotnet build TestProjectWithAnalyzers
+      run: dotnet build ./test/TestProjectWithAnalyzers/TestProjectWithAnalyzers.csproj -c Release
+
+    - name: dotnet build TestProjectWithGenerateScriptAndTargetDatabaseName
+      run: dotnet build ./test/TestProjectWithGenerateScriptAndTargetDatabaseName/TestProjectWithGenerateScriptAndTargetDatabaseName.csproj -c Release
     
     # Package SDK
     - name: dotnet pack SDK
