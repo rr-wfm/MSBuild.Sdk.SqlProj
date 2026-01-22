@@ -11,6 +11,7 @@
       "type": "project"
     },
     "sourceName": "sqlproj",
+    "defaultName": "SqlProject1",
     "preferNameDirectory": true,
     "sources": [
         {
