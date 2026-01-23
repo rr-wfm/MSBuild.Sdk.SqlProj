@@ -50,7 +50,7 @@
       PostBuildEvent
     </CoreBuildDependsOn>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
-    <PublishDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'true'">$(PublishDependsOn);PublishDatabase</PublishDependsOn>
+    <PublishBeforeTargets Condition="'$(BuildingInsideVisualStudio)' == 'true'">PublishDatabase</PublishBeforeTargets>
     <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
@@ -270,7 +270,7 @@
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
   <!-- Note: This used to contain a condition that DeployOnPublish != False. Since you now have to explicitly run the PublishDatabase target this no longer made sense. -->
-  <Target Name="PublishDatabase" DependsOnTargets="Build">
+  <Target Name="PublishDatabase" DependsOnTargets="Build" BeforeTargets="$(PublishBeforeTargets)">
     <ItemGroup>
       <_DeployPropertyNames Include="$(KnownDeployProperties)" />
       <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
