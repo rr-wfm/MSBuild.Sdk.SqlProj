@@ -1,0 +1,22 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/workflows/main.yml" />
+    <File Path="Directory.Build.props" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/DacpacTool/DacpacTool.csproj" />
+    <Project Path="src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/DacpacTool.Tests/DacpacTool.Tests.csproj" />
+    <Project Path="test/TestProject/TestProject.csproj" />
+  </Folder>
+</Solution>
