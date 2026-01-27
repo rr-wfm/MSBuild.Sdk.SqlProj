@@ -12,6 +12,9 @@
     <TargetExt>.dacpac</TargetExt>
     <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == ''">true</EnableSdkContainerSupport>
     <SqlPackageDownloadUrl>https://aka.ms/sqlpackage-linux</SqlPackageDownloadUrl>
+
+    <!-- Setting this here so that we won't try to generate a documentation file and then fail on publish since it doesn't exist -->
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
