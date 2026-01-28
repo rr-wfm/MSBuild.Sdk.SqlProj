@@ -271,7 +271,7 @@
 
   <!-- This target is run when using dotnet publish / Visual Studio publish. PublishDependsOn is set above to control what happens when using Publish in Visual Studio -->
   <Target Name="Publish"
-          Condition="$(IsPublishable) == 'true'"
+          Condition="'$(IsPublishable)' == 'true'"
           DependsOnTargets="$(PublishDependsOn)" />
 
   <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
