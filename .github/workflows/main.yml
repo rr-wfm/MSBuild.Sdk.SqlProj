@@ -390,7 +390,7 @@ jobs:
     - name: Generate SQL Server secret
       id: generate_sqlserver_secret
       run: |
-        SECRET="$(echo $RANDOM | md5sum | head -c 20)"
+        SECRET="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)"
         echo "SQL_SA_PASSWORD=$SECRET" >> $GITHUB_ENV
 
     # Start SQL Server container
