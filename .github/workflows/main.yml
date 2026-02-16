@@ -434,7 +434,6 @@ jobs:
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
           mcr.microsoft.com/mssql/server:2022-latest
-      
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
