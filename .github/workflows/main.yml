@@ -306,7 +306,7 @@ jobs:
     - name: Generate SQL Server secret
       id: generate_sqlserver_secret
       run: |
-        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()-_=+[]{}' </dev/urandom | head -c 32)"
         echo "::add-mask::$SECRET"
         echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
 
@@ -422,7 +422,7 @@ jobs:
     - name: Generate SQL Server secret
       id: generate_sqlserver_secret
       run: |
-        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()-_=+[]{}' </dev/urandom | head -c 32)"
         echo "::add-mask::$SECRET"
         echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
 
