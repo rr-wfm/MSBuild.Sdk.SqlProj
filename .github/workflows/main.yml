@@ -215,10 +215,13 @@ jobs:
       id: generate_sqlserver_secret
       run: |
         SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
-        echo "SQL_SA_PASSWORD=$SECRET" >> $GITHUB_ENV
+        echo "::add-mask::$SECRET"
+        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
 
     # Start SQL Server container
     - name: Start SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
@@ -226,6 +229,8 @@ jobs:
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Waiting for SQL Server to start..."
         sql_ready=false
@@ -261,6 +266,8 @@ jobs:
 
     # Run sqlpackage
     - name: sqlpackage publish
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: >
         sqlpackage
         /Action:Publish
@@ -274,6 +281,8 @@ jobs:
 
     # Verify deployment
     - name: verify-deployment
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Verifying deployment..."
         if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
@@ -295,7 +304,6 @@ jobs:
     steps:
     # Generate SQL Server secret
     - name: Generate SQL Server secret
-      id: generate_sqlserver_secret
       run: |
         SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
         echo "SQL_SA_PASSWORD=$SECRET" >> $GITHUB_ENV
@@ -402,7 +410,6 @@ jobs:
     steps:
     # Generate SQL Server secret
     - name: Generate SQL Server secret
-      id: generate_sqlserver_secret
       run: |
         SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
         echo "SQL_SA_PASSWORD=$SECRET" >> $GITHUB_ENV
