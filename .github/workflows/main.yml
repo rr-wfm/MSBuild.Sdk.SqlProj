@@ -275,7 +275,7 @@ jobs:
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:$SQL_SA_PASSWORD
+        /TargetPassword:"$SQL_SA_PASSWORD"
         /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
@@ -383,7 +383,7 @@ jobs:
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword=$SQL_SA_PASSWORD /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword="$SQL_SA_PASSWORD" /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
       env:
         SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
 
@@ -524,7 +524,7 @@ jobs:
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:$SQL_SA_PASSWORD
+        /TargetPassword:"$SQL_SA_PASSWORD"
         /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
