@@ -210,20 +210,32 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
+    # Generate SQL Server secret
+    - name: Generate SQL Server secret
+      id: generate_sqlserver_secret
+      run: |
+        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
+        echo "::add-mask::$SECRET"
+        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
+
     # Start SQL Server container
     - name: Start SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
           mcr.microsoft.com/mssql/server:2022-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Waiting for SQL Server to start..."
         sql_ready=false
         for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
             sql_ready=true
             break
@@ -254,6 +266,8 @@ jobs:
 
     # Run sqlpackage
     - name: sqlpackage publish
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: >
         sqlpackage
         /Action:Publish
@@ -261,15 +275,17 @@ jobs:
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
+        /TargetPassword:"$SQL_SA_PASSWORD"
         /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
     # Verify deployment
     - name: verify-deployment
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
@@ -286,20 +302,32 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
+    # Generate SQL Server secret
+    - name: Generate SQL Server secret
+      id: generate_sqlserver_secret
+      run: |
+        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
+        echo "::add-mask::$SECRET"
+        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
+
     # Start SQL Server container
     - name: Start SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
           mcr.microsoft.com/mssql/server:2022-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Waiting for SQL Server to start..."
         sql_ready=false
         for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
             sql_ready=true
             break
@@ -355,13 +383,17 @@ jobs:
 
     # Publish the project
     - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword=${{ secrets.SQL_SA_PASSWORD }} /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword="$SQL_SA_PASSWORD" /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
 
     # Verify deployment
     - name: verify-deployment
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
@@ -386,20 +418,32 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
+    # Generate SQL Server secret
+    - name: Generate SQL Server secret
+      id: generate_sqlserver_secret
+      run: |
+        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
+        echo "::add-mask::$SECRET"
+        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
+
     # Start SQL Server container
     - name: Start SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=${{ secrets.SQL_SA_PASSWORD }}" \
+        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
           mcr.microsoft.com/mssql/server:2022-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Waiting for SQL Server to start..."
         sql_ready=false
         for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -Q "SELECT 1" > /dev/null 2>&1; then
+          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
             echo "SQL Server is ready!"
             sql_ready=true
             break
@@ -470,6 +514,8 @@ jobs:
 
     # Run the container to publish the dacpac
     - name: container publish
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: >
         docker
         run
@@ -478,15 +524,17 @@ jobs:
         /Properties:IncludeCompositeObjects=True
         /TargetServerName:localhost
         /TargetUser:sa
-        /TargetPassword:${{ secrets.SQL_SA_PASSWORD }}
+        /TargetPassword:"$SQL_SA_PASSWORD"
         /TargetDatabaseName:TestProjectWithSDKRef
         /TargetEncryptConnection:False
 
     # Verify deployment
     - name: verify-deployment
+      env:
+        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: |
         echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "${{ secrets.SQL_SA_PASSWORD }}" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
+        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
           echo "Deployment succeeded!"
         else
           echo "Deployment failed!" >&2
