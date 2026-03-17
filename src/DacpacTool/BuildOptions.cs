@@ -69,7 +69,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         
         [CliOption(Description = "Filename for warning(s) to suppress for particular files", Name = "--suppresswarningslistfile", Required = false, Alias = "-spl")]
         public FileInfo SuppressWarningsListFile { get; set; }
-        
+
+        [CliOption(Description = "Generate ER diagram from the dacpac", Name = "--generateerdiagram", Required = false, Alias = "--ged")]
+        public bool GenerateErDiagram { get; set; }
+
         public async Task<int> RunAsync()
         {
             return await Program.BuildDacpac(this).ConfigureAwait(false);

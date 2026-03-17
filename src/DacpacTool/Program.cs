@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotMake.CommandLine;
 using Microsoft.SqlServer.Dac;
-using Microsoft.SqlServer.Dac.Model;
+using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     [CliCommand(Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)", 
                 Children = new[] { typeof(BuildOptions), typeof(InspectOptions), typeof(DeployOptions) })]
-    sealed class RootCommand
+    internal sealed class RootCommand
     {
     }
 
@@ -158,6 +158,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
                 analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
+            }
+
+            if (options.GenerateErDiagram)
+            {
+                var diagramBuilder = new ErDiagramBuilder(new ActualConsole());
+
+                diagramBuilder.BuildErDiagram(packageBuilder.Model, options.TargetDatabaseName ?? options.Name, options.Output);
             }
 
             return 0;
