@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -15,7 +17,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             _console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
-        public string BuildErDiagram(TSqlModel model, string databaseName, FileInfo dacpacFile)
+        public string? BuildErDiagram(TSqlModel model, string databaseName, FileInfo dacpacFile)
         {
             try
             {

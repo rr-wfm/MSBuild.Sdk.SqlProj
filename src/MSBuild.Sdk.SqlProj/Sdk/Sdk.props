@@ -17,9 +17,6 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <!-- Setting this here so that we won't try to copy documentation files to the publish directory since they don't exist for SQL projects -->
     <PublishDocumentationFiles>False</PublishDocumentationFiles>
-
-    <!-- Generate ER diagram by default -->
-    <GenerateErDiagram Condition="'$(GenerateErDiagram)' == ''">true</GenerateErDiagram>
   </PropertyGroup>
 
   <PropertyGroup>

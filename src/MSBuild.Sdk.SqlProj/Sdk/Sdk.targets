@@ -259,7 +259,7 @@
     <Copy SourceFiles="@(SqlArtifacts)" DestinationFolder="$(TargetDir)" />
 
     <!-- Copy any Diagram artifacts created from the command line tool -->
-    <CreateItem Include="$(IntermediateOutputPath)*.md">
+    <CreateItem Include="$(IntermediateOutputPath)*_erdiagram.md">
       <Output TaskParameter="Include" ItemName="MermaidArtifacts" />
     </CreateItem>
     <Message Importance="Low" Text="Copying @(MermaidArtifacts) to $(TargetDir)" />

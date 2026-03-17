@@ -11,9 +11,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
         private static readonly bool[] Lookup = new bool[65536];
         private readonly IReadOnlyList<SimpleTable> tables;
 
-        public DatabaseModelToMermaid(IReadOnlyList<SimpleTable> tables)
+        static DatabaseModelToMermaid()
         {
-            this.tables = tables;
             for (char c = '0'; c <= '9'; c++)
             {
                 Lookup[c] = true;
@@ -34,6 +33,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             Lookup['-'] = true;
         }
 
+        public DatabaseModelToMermaid(IReadOnlyList<SimpleTable> tables)
+        {
+            this.tables = tables;
+        }
+
         public string CreateMermaid(bool createMarkdown = true)
         {
             var sb = new System.Text.StringBuilder();
@@ -47,11 +51,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             foreach (var table in tables)
             {
-                if (table.ForeignKeys.Count == 0 && table.PrimaryKey == null)
-                {
-                    continue;
-                }
-
                 var formattedTableName = Sanitize(table.Name);
 
                 sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {{");
