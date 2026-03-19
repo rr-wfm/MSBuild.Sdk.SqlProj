@@ -35,13 +35,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             diagramText.ShouldContain("erDiagram");
 
+            diagramText.ShouldNotContain("sp_GetData");
+
             diagramText.ShouldContain("    Column1 nvarchar(100) PK");
+            diagramText.ShouldContain("    Computed computed(2*2)");
         }
 
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()
-                .AddTable("TestTable", ("Column1", "nvarchar(100) PRIMARY KEY"))
+                .AddTable("TestTable", ("Column1", "nvarchar(100) PRIMARY KEY"), ("Computed", "AS 2 * 2"))
                 .AddStoredProcedure("sp_GetData", "SELECT * FROM dbo.TestTable", "proc1.sql");
 
             var model = tmodel.Build();

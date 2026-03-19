@@ -53,6 +53,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                     var isNullable = colObj.GetProperty<bool>(Column.Nullable);
                     var storeType = GetColumnStoreType(colObj, typeAliases);
 
+                    if (colType == ColumnType.ComputedColumn)
+                    {
+                        var formula = colObj.GetProperty(Column.Expression);
+
+                        var trimmedFormula = formula as string;
+
+                        if (trimmedFormula != null)
+                        {
+                            trimmedFormula = trimmedFormula.Trim().Replace(" ", string.Empty, StringComparison.OrdinalIgnoreCase);
+                        }
+
+                        storeType = $"computed({trimmedFormula ?? formula})";
+                    }
+
                     simpleTable.Columns.Add(new SimpleColumn
                     {
                         Name = colName,

@@ -33,7 +33,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
                 var creator = new DatabaseModelToMermaid(tables.AsReadOnly());
 
-                var diagram = creator.CreateMermaid();
+                var diagram = creator.CreateMermaid(databaseName);
 
                 var fileName = Path.Combine(dacpacFile.DirectoryName!, diagramFileName);
 
