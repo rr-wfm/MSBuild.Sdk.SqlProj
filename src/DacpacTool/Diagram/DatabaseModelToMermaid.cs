@@ -8,7 +8,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 {
     public class DatabaseModelToMermaid
     {
-        private static readonly bool[] Lookup = new bool[65536];
+        private static readonly bool[] Lookup = new bool[70];
         private readonly IReadOnlyList<SimpleTable> tables;
 
         static DatabaseModelToMermaid()
@@ -38,14 +38,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             this.tables = tables;
         }
 
-        public string CreateMermaid(bool createMarkdown = true)
+        public string CreateMermaid()
         {
             var sb = new System.Text.StringBuilder();
 
-            if (createMarkdown)
-            {
-                sb.AppendLine("```mermaid");
-            }
+            sb.AppendLine("```mermaid");
 
             sb.AppendLine("erDiagram");
 
@@ -92,10 +89,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                 }
             }
 
-            if (createMarkdown)
-            {
-                sb.AppendLine("```");
-            }
+            sb.AppendLine("```");
 
             return sb.ToString();
         }
