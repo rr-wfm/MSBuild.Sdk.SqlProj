@@ -8,35 +8,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 {
     public class DatabaseModelToMermaid
     {
-        private static readonly bool[] Lookup = new bool[70];
         private readonly IReadOnlyList<SimpleTable> tables;
-
-        static DatabaseModelToMermaid()
-        {
-            for (char c = '0'; c <= '9'; c++)
-            {
-                Lookup[c] = true;
-            }
-
-            for (char c = 'A'; c <= 'Z'; c++)
-            {
-                Lookup[c] = true;
-            }
-
-            for (char c = 'a'; c <= 'z'; c++)
-            {
-                Lookup[c] = true;
-            }
-
-            Lookup['.'] = true;
-            Lookup['_'] = true;
-            Lookup['-'] = true;
-        }
 
         public DatabaseModelToMermaid(IReadOnlyList<SimpleTable> tables)
         {
             this.tables = tables;
         }
+
+        private static bool IsValidChar(char c) =>
+            c is (>= '0' and <= '9') or (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or '.' or '_' or '-';
 
         public string CreateMermaid()
         {
@@ -96,23 +76,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
         private static string Sanitize(string name)
         {
-            if (!string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
             {
-                char[] buffer = new char[name.Length];
-                int index = 0;
-                foreach (char c in name)
-                {
-                    if (Lookup[c])
-                    {
-                        buffer[index] = c;
-                        index++;
-                    }
-                }
-
-                return new string(buffer, 0, index);
+                return name;
             }
 
-            return name;
+            Span<char> buffer = new char[name.Length];
+
+            int index = 0;
+            foreach (char c in name)
+            {
+                if (IsValidChar(c))
+                {
+                    buffer[index++] = c;
+                }
+            }
+
+            return new string(buffer[..index]);
         }
     }
 }

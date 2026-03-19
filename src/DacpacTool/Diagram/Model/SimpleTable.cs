@@ -10,8 +10,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
 
         public string Schema { get; set; } = string.Empty;
 
-        public string? Comment { get; set; }
-
         public IList<SimpleColumn> Columns { get; set; } = [];
 
         public SimplePrimaryKey? PrimaryKey { get; set; }

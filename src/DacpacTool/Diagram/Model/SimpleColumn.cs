@@ -9,7 +9,5 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
         public string? StoreType { get; set; }
 
         public bool IsNullable { get; set; }
-
-        public string? Comment { get; set; }
     }
 }

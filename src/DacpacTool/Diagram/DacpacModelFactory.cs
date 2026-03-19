@@ -25,8 +25,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             ArgumentNullException.ThrowIfNull(model);
 
             var typeAliases = GetTypeAliases(model);
-            var tableComments = GetTableComments(model);
-            var columnComments = GetColumnComments(model);
 
             var tableObjects = model
                 .GetObjects(DacQueryScopes.UserDefined, Table.TypeClass)
@@ -41,35 +39,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                 var schema = tableObj.Name.Parts[0];
                 var name = tableObj.Name.Parts[1];
 
-                tableComments.TryGetValue($"{schema}.{name}", out var tableComment);
-
                 var simpleTable = new SimpleTable
                 {
                     Name = name,
                     Schema = schema,
-                    Comment = tableComment,
                 };
 
                 foreach (var colObj in tableObj.GetReferenced(Table.Columns, DacQueryScopes.UserDefined))
                 {
                     var colType = colObj.GetMetadata<ColumnType>(Column.ColumnType);
-                    if (colType == ColumnType.ComputedColumn)
-                    {
-                        continue;
-                    }
 
                     var colName = colObj.Name.Parts[2];
                     var isNullable = colObj.GetProperty<bool>(Column.Nullable);
                     var storeType = GetColumnStoreType(colObj, typeAliases);
-
-                    columnComments.TryGetValue($"{schema}.{name}.{colName}", out var colComment);
 
                     simpleTable.Columns.Add(new SimpleColumn
                     {
                         Name = colName,
                         StoreType = storeType,
                         IsNullable = isNullable,
-                        Comment = colComment,
                     });
                 }
 
@@ -172,50 +160,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             return tables;
         }
 
-        private static Dictionary<string, string> GetTableComments(TSqlModel model)
-        {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var ep in model.GetObjects(DacQueryScopes.UserDefined, ExtendedProperty.TypeClass))
-            {
-                var parts = ep.Name.Parts;
-                if (parts.Count == 4
-                    && string.Equals(parts[0], "SqlTableBase", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(parts[3], "MS_Description", StringComparison.OrdinalIgnoreCase))
-                {
-                    var value = ep.GetProperty<string>(ExtendedProperty.Value);
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        result[$"{parts[1]}.{parts[2]}"] = FixExtendedPropertyValue(value) ?? value;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        private static Dictionary<string, string> GetColumnComments(TSqlModel model)
-        {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var ep in model.GetObjects(DacQueryScopes.UserDefined, ExtendedProperty.TypeClass))
-            {
-                var parts = ep.Name.Parts;
-                if (parts.Count == 5
-                    && string.Equals(parts[0], "SqlColumn", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(parts[4], "MS_Description", StringComparison.OrdinalIgnoreCase))
-                {
-                    var value = ep.GetProperty<string>(ExtendedProperty.Value);
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        result[$"{parts[1]}.{parts[2]}.{parts[3]}"] = FixExtendedPropertyValue(value) ?? value;
-                    }
-                }
-            }
-
-            return result;
-        }
-
         private static Dictionary<string, (string StoreType, string TypeName)> GetTypeAliases(TSqlModel model)
         {
             var result = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase);
@@ -300,31 +244,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             }
 
             return dataTypeName;
-        }
-
-        private static string? FixExtendedPropertyValue(string? value)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            if (value.StartsWith("N'", StringComparison.Ordinal))
-            {
-                value = value[2..];
-            }
-
-            if (value.StartsWith('\''))
-            {
-                value = value[1..];
-            }
-
-            if (value.EndsWith('\''))
-            {
-                value = value[..^1];
-            }
-
-            return value;
         }
     }
 }
