@@ -8,11 +8,11 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 {
-    public class ErDiagramBuilder
+    public class MermaidDiagramBuilder
     {
         private readonly IConsole _console;
 
-        public ErDiagramBuilder(IConsole console)
+        public MermaidDiagramBuilder(IConsole console)
         {
             _console = console ?? throw new ArgumentNullException(nameof(console));
         }
@@ -44,7 +44,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                _console.WriteLine($"Error building ER diagram: {ex.Message}");
+                _console.WriteLine("Error building ER diagram. Diagram generation will be skipped.");
+                _console.WriteLine(ex.ToString());
             }
 #pragma warning restore CA1031 // Do not catch general exception types
 

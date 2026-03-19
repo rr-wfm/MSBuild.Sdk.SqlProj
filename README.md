@@ -606,17 +606,17 @@ The database name for the create script gets resolved in the following manner:
 
 ## E-R diagram
 
-The SDK supports generating and E-R diagram from your project. To enable this, add the `GenerateErDiagram` property to your project file:
+The SDK supports generating an E-R diagram from your project. To enable this, add the `GenerateErDiagram` property to your project file:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.2">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <GenerateErDiagram>True</GenerateErDiagram>
-</PropertyGroup>
+  </PropertyGroup>
+</Project>
 ```
 
-The generated diagram is saved in the in the output directory. The diagram is generated as a `.md` file and is named after the database project, for example `TestProject_erdiagram.md`.
+The generated diagram is saved in the output directory. The diagram is generated as a `.md` file and is named after the database project, for example `TestProject_erdiagram.md`.
 
 This is a sample of the generated diagram:
 

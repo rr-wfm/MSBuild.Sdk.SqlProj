@@ -162,7 +162,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.GenerateErDiagram)
             {
-                var diagramBuilder = new ErDiagramBuilder(new ActualConsole());
+                var diagramBuilder = new MermaidDiagramBuilder(new ActualConsole());
 
                 diagramBuilder.BuildErDiagram(packageBuilder.Model, options.TargetDatabaseName ?? options.Name, options.Output);
             }

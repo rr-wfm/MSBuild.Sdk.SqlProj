@@ -21,7 +21,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
 
-            var diagramBuilder = new ErDiagramBuilder(_console);
+            var diagramBuilder = new MermaidDiagramBuilder(_console);
 
             // Act
             var diagram = diagramBuilder.BuildErDiagram(result.model, packageName, result.fileInfo);
