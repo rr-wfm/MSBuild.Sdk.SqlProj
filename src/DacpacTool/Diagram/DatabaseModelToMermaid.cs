@@ -18,7 +18,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
         private static bool IsValidChar(char c) =>
             c is (>= '0' and <= '9') or (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or '.' or '_' or '-';
 
-        public string CreateMermaid(string databaseName)
+        public string CreateMermaid()
         {
             var sb = new System.Text.StringBuilder();
 
