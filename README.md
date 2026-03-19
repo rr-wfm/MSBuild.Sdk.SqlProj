@@ -485,6 +485,7 @@ You can now reference your dacpac as a `PackageReference`!
 > Note: To run these commands, you'll need to have the NuGet CLI tools installed. See [these installation instructions](https://docs.microsoft.com/nuget/install-nuget-client-tools#nugetexe-cli). If you use Chocolatey, you can also install by running `choco install nuget.commandline`. On a Mac with Homebrew installed, use `brew install nuget`.
 
 ## Publishing support
+
 Starting with MSBuild.Sdk.SqlProj version 4.0.0 there are two modes of publishing supported: publishing the database directly from the project to a SQL Server instance, or publishing a container image that includes both SqlPackage and the .dacpac ready to be run anywhere a container can be executed.
 
 > Note for 4.0.0: To support both modes we unfortunately had to make a breaking change to the SDK. If you've previously used `dotnet publish` to deploy your database directly to SQL Server you'll now need to add `/t:PublishDatabase` to your command line to retain the previous behavior.
@@ -539,6 +540,7 @@ Most of those properties are simple values (like booleans, strings and integers)
 | SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [in this section](#sqlcmd-variables) |
 
 ### Publishing as a container image
+
 From version 4.0.0 of MSBuild.Sdk.SqlProj we now support publishing your database project as a runnable container image. The image will contain both SqlPackage and the .dacpac file. This allows you to run the image anywhere a container can be executed, making it ideal for CI/CD pipelines and other automated deployment scenarios.
 
 > Note: By default the published container will contain the latest version of SqlPackage available at the time of publishing. If you want to pin the specific version of SqlPackage used in the container you can set the `SqlPackageDownloadUrl` property in your project file to point to the specific version you want, ie: `https://go.microsoft.com/fwlink/?linkid=2338525` for version 170.2.70. You can find the appropriate download links on the [SqlPackage release notes](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/release-notes-sqlpackage) page. Please make sure to use the link for the Linux .NET 8 version of SqlPackage.
@@ -601,6 +603,37 @@ The database name for the create script gets resolved in the following manner:
 
 - the generated script also uses the resolved database name via a setvar command.
 - if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`
+
+## E-R diagram
+
+The SDK supports generating and E-R diagram from your project. To enable this, add the `GenerateErDiagram` property to your project file:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/4.0.2">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateErDiagram>True</GenerateErDiagram>
+</PropertyGroup>
+```
+
+The generated diagram is saved in the in the output directory. The diagram is generated as a `.md` file and is named after the database project, for example `TestProject_erdiagram.md`.
+
+This is a sample of the generated diagram:
+
+```mermaid
+erDiagram
+  Album {
+    AlbumId int PK
+    Title nvarchar(160) 
+    ArtistId int FK
+    Valid bit(NULL) 
+  }
+  Album }o--|| Artist : FK_AlbumArtistId
+  Artist {
+    ArtistId int PK
+    Name nvarchar(120)(NULL) 
+  }
+```
 
 ## Static code analysis
 
