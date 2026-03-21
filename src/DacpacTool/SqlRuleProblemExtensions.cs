@@ -11,9 +11,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     internal static class SqlRuleProblemExtensions
     {
-        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules)
+        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules, List<string> errorRulePrefixes)
         {
             ArgumentNullException.ThrowIfNull(sqlRuleProblem);
+            ArgumentNullException.ThrowIfNull(errorRulePrefixes);
 
             SqlRuleProblemSeverity sqlRuleProblemSeverity = sqlRuleProblem.Severity;
 
@@ -22,13 +23,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }
 
-            // Wildcard suppression entries are configured like "SRD*" and matched as prefix matches.
-            // This span-based prefix check is equivalent to checking rule[..^1] but avoids per-call
-            // substring allocations while iterating potentially many diagnostics.
-            foreach (var rule in errorRules)
+            // Wildcard severity overrides are stored as trimmed prefixes (for "+!SRD*",
+            // we store "SRD"), so we only keep this loop for prefix rules.
+            foreach (var rule in errorRulePrefixes)
             {
-                if (rule.EndsWith('*') &&
-                    sqlRuleProblem.RuleId.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase))
+                if (sqlRuleProblem.RuleId.StartsWith(rule, StringComparison.OrdinalIgnoreCase))
                 {
                     sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
                     break;

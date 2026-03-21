@@ -13,6 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly HashSet<string> _ignoredRules = new();
         private readonly HashSet<string> _ignoredRuleSets = new();
         private readonly HashSet<string> _errorRuleSets = new();
+        private readonly List<string> _errorRulePrefixes = new();
         private readonly char[] separator = new[] { ';' };
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
@@ -96,7 +97,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     foreach (var err in result.Problems)
                     {
-                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets));
+                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets, _errorRulePrefixes));
                     }
 
                     result.SerializeResultsToXml(GetOutputFileName(outputFile));
@@ -116,27 +117,36 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (!string.IsNullOrWhiteSpace(rulesExpression))
             {
                 foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith('-')
-                                && rule.Length > 1))
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    if (rule.Length > 2 && rule.EndsWith('*'))
+                    if (rule.Length <= 1)
                     {
-                        _ignoredRuleSets.Add(rule[1..^1]);
+                        continue;
                     }
-                    else
+
+                    if (rule[0] == '-')
                     {
-                        _ignoredRules.Add(rule[1..]);
+                        if (rule.Length > 2 && rule.EndsWith('*'))
+                        {
+                            _ignoredRuleSets.Add(rule[1..^1]);
+                        }
+                        else
+                        {
+                            _ignoredRules.Add(rule[1..]);
+                        }
                     }
-                }
-                foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith("+!", StringComparison.OrdinalIgnoreCase)
-                                && rule.Length > 2))
-                {
-                    _errorRuleSets.Add(rule[2..]);
+                    else if (rule.Length > 2 &&
+                             rule.StartsWith("+!", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (rule.EndsWith('*'))
+                        {
+                            _errorRulePrefixes.Add(rule[2..^1]);
+                        }
+                        else
+                        {
+                            _errorRuleSets.Add(rule[2..]);
+                        }
+                    }
                 }
             }
         }

@@ -123,6 +123,46 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void RunsAnalyzerWithWildcardOverrides_CaseInsensitivePrefixes()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.ShouldContain("-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithWildcardSuppressions_CaseInsensitivePrefixes()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("Error")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
         [DataRow("+!SqlServer.Rules.SRD0006", 1, "proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.",      true)]
         [DataRow("+!SqlServer.Rules.SRD*",    2, "proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.",      true)]
         [DataRow("+!SqlServer.Rules.SRD*",    2, "-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.", true)]
