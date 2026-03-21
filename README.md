@@ -604,14 +604,14 @@ The database name for the create script gets resolved in the following manner:
 - the generated script also uses the resolved database name via a setvar command.
 - if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`
 
-## E-R diagram
+## Entity Relationship diagram
 
-The SDK supports generating an E-R diagram from your project. To enable this, add the `GenerateErDiagram` property to your project file:
+The SDK supports generating an Entity Relationship (ER) diagram from your project. To enable this, add the `GenerateEntityRelationshipDiagram` property to your project file:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.2">
   <PropertyGroup>
-    <GenerateErDiagram>True</GenerateErDiagram>
+    <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
   </PropertyGroup>
 </Project>
 ```
