@@ -1,0 +1,29 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+    <RunSqlCodeAnalysis>true</RunSqlCodeAnalysis>
+    <CodeAnalysisRules>+!*</CodeAnalysisRules>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRD0004</RuleId>
+      <Action>Suppress</Action>
+      <Explanation>test global error plus specific suppression</Explanation>
+    </CodeAnalysisRule>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+
+  <Target Name="WriteEffectiveCodeAnalysisRules" DependsOnTargets="ComputeCodeAnalysisRules">
+    <PropertyGroup>
+      <EffectiveCodeAnalysisRulesOutputFile Condition="'$(EffectiveCodeAnalysisRulesOutputFile)' == ''">$(IntermediateOutputPath)effective-code-analysis-rules.txt</EffectiveCodeAnalysisRulesOutputFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(EffectiveCodeAnalysisRulesOutputFile)"
+                      Overwrite="true"
+                      Lines="$(EffectiveCodeAnalysisRules)" />
+  </Target>
+</Project>

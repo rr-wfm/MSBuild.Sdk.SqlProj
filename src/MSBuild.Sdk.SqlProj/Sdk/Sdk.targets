@@ -180,9 +180,40 @@
   </Target>
 
   <!--
+    Builds the effective code analysis rule expression from the CodeAnalysisRules property and any CodeAnalysisRule items.
+  -->
+  <Target Name="ComputeCodeAnalysisRules">
+    <ItemGroup>
+      <_CodeAnalysisRuleExpressions Include="@(CodeAnalysisRule)"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' != '' and ('%(CodeAnalysisRule.Action)' == '' Or '%(CodeAnalysisRule.Action)' == 'Suppress')">
+        <Expression>-%(CodeAnalysisRule.RuleId)</Expression>
+      </_CodeAnalysisRuleExpressions>
+      <_CodeAnalysisRuleExpressions Include="@(CodeAnalysisRule)"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' != '' and '%(CodeAnalysisRule.Action)' == 'Error'">
+        <Expression>+!%(CodeAnalysisRule.RuleId)</Expression>
+      </_CodeAnalysisRuleExpressions>
+      <_CodeAnalysisRuleExpressions Include="@(CodeAnalysisRule)"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' == '' and ('%(CodeAnalysisRule.Action)' == '' Or '%(CodeAnalysisRule.Action)' == 'Suppress')">
+        <Expression>-%(CodeAnalysisRule.Identity)</Expression>
+      </_CodeAnalysisRuleExpressions>
+      <_CodeAnalysisRuleExpressions Include="@(CodeAnalysisRule)"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' == '' and '%(CodeAnalysisRule.Action)' == 'Error'">
+        <Expression>+!%(CodeAnalysisRule.Identity)</Expression>
+      </_CodeAnalysisRuleExpressions>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <CodeAnalysisRulesFromItems>@(_CodeAnalysisRuleExpressions->'%(Expression)', ';')</CodeAnalysisRulesFromItems>
+      <EffectiveCodeAnalysisRules Condition="'$(CodeAnalysisRules)' != '' And '$(CodeAnalysisRulesFromItems)' != ''">$(CodeAnalysisRules);$(CodeAnalysisRulesFromItems)</EffectiveCodeAnalysisRules>
+      <EffectiveCodeAnalysisRules Condition="'$(EffectiveCodeAnalysisRules)' == '' And '$(CodeAnalysisRules)' != ''">$(CodeAnalysisRules)</EffectiveCodeAnalysisRules>
+      <EffectiveCodeAnalysisRules Condition="'$(EffectiveCodeAnalysisRules)' == '' And '$(CodeAnalysisRulesFromItems)' != ''">$(CodeAnalysisRulesFromItems)</EffectiveCodeAnalysisRules>
+    </PropertyGroup>
+  </Target>
+
+  <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles;ComputeCodeAnalysisRules"
           Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
@@ -232,7 +263,7 @@
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog &quot;%(Identity)&quot;', ' ')</RefactorLogScriptArgument>
       <RunSqlCodeAnalysisArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">-an</RunSqlCodeAnalysisArgument>
       <CodeAnalysisAssemblyLookupPathsArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">@(Analyzer->'-aa &quot;%(Identity)&quot;', ' ')</CodeAnalysisAssemblyLookupPathsArgument>
-      <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar &quot;$(CodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
+      <CodeAnalysisRulesArgument Condition="'$(EffectiveCodeAnalysisRules)'!=''">-ar &quot;$(EffectiveCodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
