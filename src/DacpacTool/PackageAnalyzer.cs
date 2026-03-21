@@ -14,6 +14,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly HashSet<string> _ignoredRuleSets = new();
         private readonly HashSet<string> _errorRuleSets = new();
         private readonly List<string> _errorRulePrefixes = new();
+        private readonly Dictionary<string, HashSet<string>> _suppressedProblemsByRule = new(StringComparer.Ordinal);
         private readonly char[] separator = new[] { ';' };
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
@@ -35,6 +36,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var factory = new CodeAnalysisServiceFactory();
                 var settings = new CodeAnalysisServiceSettings();
 
+                _suppressedProblemsByRule.Clear();
 
                 if (analyzers.Length > 0)
                 {
@@ -54,28 +56,36 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
-                List<SuppressedProblemInfo> suppressedProblems = new();
 
                 if (File.Exists(suppressorPath))
                 {
                     _console.WriteLine($"Using suppressor file: {suppressorPath}");
                     var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
-
-                    suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
+                    var suppressedProblems = problemSuppressor.GetSuppressedProblems();
 
                     foreach (var problem in suppressedProblems)
                     {
                         _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
+                        var sourceName = Path.Combine(projectDir, problem.SourceName)
+                            .Replace('\\', Path.AltDirectorySeparatorChar);
+
+                        if (!_suppressedProblemsByRule.TryGetValue(problem.Rule.RuleId, out var sourceNames))
+                        {
+                            sourceNames = new HashSet<string>(StringComparer.Ordinal);
+                            _suppressedProblemsByRule[problem.Rule.RuleId] = sourceNames;
+                        }
+
+                        sourceNames.Add(sourceName);
                     }
                 }
 
                 if (_ignoredRules.Count > 0 
                     || _ignoredRuleSets.Count > 0
-                    || suppressedProblems.Count > 0)
+                    || _suppressedProblemsByRule.Count > 0)
                 {
-                    service.SetProblemSuppressor(p => 
-                        suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
-                            && Path.Combine(projectDir, s.SourceName).Replace('\\', Path.AltDirectorySeparatorChar) == p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar))
+                    service.SetProblemSuppressor(p =>
+                        (_suppressedProblemsByRule.TryGetValue(p.Rule.RuleId, out var sourceNames) &&
+                         sourceNames.Contains(p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar)))
                         || _ignoredRules.Contains(p.Rule.RuleId)
                         || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }

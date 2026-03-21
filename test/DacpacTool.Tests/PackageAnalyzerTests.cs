@@ -274,6 +274,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(20);
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
+            testConsole.Lines.Any(l => l.Contains("Suppressing rule:")).ShouldBeTrue();
         }
 
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
