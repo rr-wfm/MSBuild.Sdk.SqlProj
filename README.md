@@ -591,7 +591,7 @@ Instead of using `dotnet publish /t:PublishDatabase` to deploy changes to a data
 </Project>
 ```
 
-With this enabled you'll find a SQL script with the name `<database-name>_Create.sql` in the bin folder.
+With this enabled you'll find a SQL script with the name `<database-name>_Create.sql` in the bin folder. When the project is referenced by another project, the generated script is also copied to the referencing project's output directory alongside the `.dacpac`.
 The database name for the create script gets resolved in the following manner:
 
 1. `TargetDatabaseName`.

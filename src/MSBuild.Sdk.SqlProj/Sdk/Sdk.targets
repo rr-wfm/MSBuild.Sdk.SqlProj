@@ -310,14 +310,16 @@
     <ItemGroup>
       <CopyDacpacFiles Include="$(TargetPath)"/>
       <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
+      <CopySqlArtifactFiles Include="$(TargetDir)$(TargetDatabaseName)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
     </ItemGroup>
     <ItemGroup>
-      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles)">
+      <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles);@(CopySqlArtifactFiles)">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         <TargetPath>%(Filename)%(Extension)</TargetPath>
       </AllItemsFullPathWithTargetPath>
     </ItemGroup>
     <Message Importance="Low" Text="CopyDacpacFiles: @(CopyDacpacFiles)" />
+    <Message Importance="Low" Text="CopySqlArtifactFiles: @(CopySqlArtifactFiles)" />
   </Target>
 
   <Target Name="AssignSqlPackageBaseImage" BeforeTargets="ComputeContainerBaseImage">
