@@ -19,6 +19,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         static Type CustomSchemaDataType;
 
         static MethodInfo SetMetadataMethod;
+        private static readonly Regex ExternalPartsRegex = new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)", 
+            RegexOptions.CultureInvariant | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline
         static Extensions()
@@ -206,10 +208,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             string databaseVariableLiteralValue = null;
 
             // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
-            if (externalParts.Contains('=', StringComparison.OrdinalIgnoreCase))
+            if (externalParts.Contains('=', StringComparison.Ordinal))
             {
-                foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)",
-                    RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
+                foreach (Match match in ExternalPartsRegex.Matches(externalParts))
                 {
                     if (match.Groups["dbl"].Success)
                     {
@@ -328,17 +329,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("Unable to create instance of CustomSchemaData.");
             }
 
+            var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
+
+            if (setMetadataMethod == null)
+            {
+                throw new InvalidOperationException("Unable to find SetMetadata method on CustomSchemaData.");
+            }
+
             foreach (var variableName in variables)
             {
                 Console.WriteLine($"Adding SqlCmd variable {variableName}");
-
-                var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-
-                if (setMetadataMethod == null)
-                {
-                    throw new InvalidOperationException("Unable to find SetMetadata method on CustomSchemaData.");
-                }
-
                 setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
             }
 

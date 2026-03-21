@@ -14,12 +14,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public static class PropertyParser
     {
         private static readonly Dictionary<string, Func<string, object>> CustomParsers = new Dictionary<string, Func<string, object>>();
+        private static readonly Dictionary<string, PropertyInfo> DacDeployOptionProperties = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
 
         static PropertyParser()
         {
             CustomParsers.Add("DoNotDropObjectTypes", ParseObjectTypes);
             CustomParsers.Add("ExcludeObjectTypes", ParseObjectTypes);
             CustomParsers.Add("DatabaseSpecification", ParseDatabaseSpecification);
+
+            foreach (var property in typeof(DacDeployOptions).GetProperties())
+            {
+                DacDeployOptionProperties[property.Name] = property;
+            }
         }
 
         /// <summary>
@@ -43,10 +49,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static PropertyInfo GetDacDeployOptionsProperty(string propertyName)
         {
-            var property = typeof(DacDeployOptions).GetProperties()
-                .SingleOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase));
+            if (DacDeployOptionProperties.TryGetValue(propertyName, out var property))
+            {
+                return property;
+            }
 
-            return property;
+            return null;
         }
 
         public static ObjectType[] ParseObjectTypes(string value)

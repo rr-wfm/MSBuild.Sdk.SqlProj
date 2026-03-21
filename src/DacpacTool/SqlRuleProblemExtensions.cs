@@ -22,11 +22,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }
 
-            var wildCardErrorRules = errorRules
-                .Where(r => r.EndsWith('*'));
-            if (wildCardErrorRules.Any(s => sqlRuleProblem.RuleId.StartsWith(s[..^1], StringComparison.OrdinalIgnoreCase)))
+            // Wildcard suppression entries are configured like "SRD*" and matched as prefix matches.
+            // This span-based prefix check is equivalent to checking rule[..^1] but avoids per-call
+            // substring allocations while iterating potentially many diagnostics.
+            foreach (var rule in errorRules)
             {
-                sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+                if (rule.EndsWith('*') &&
+                    sqlRuleProblem.RuleId.StartsWith(rule[..^1], StringComparison.OrdinalIgnoreCase))
+                {
+                    sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+                    break;
+                }
             }
             
             var stringBuilder = new StringBuilder();

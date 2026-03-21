@@ -190,5 +190,24 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var validationErrors = model.Validate();
             validationErrors.Any().ShouldBeFalse();
         }
+
+        [TestMethod]
+        public void AddReferenceDatabaseLiteralAndVariable_UsesLiteralValue()
+        {
+            // Arrange
+            var referencePackage = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            // Act
+            var model = new TestModelBuilder()
+                .AddReference(referencePackage, "dbl=SomeDatabase|dbv=WrongDatabase")
+                .AddStoredProcedure("MyProc", "SELECT * FROM SomeDatabase.dbo.MyTable;")
+                .Build();
+
+            // Assert
+            var validationErrors = model.Validate();
+            validationErrors.Any().ShouldBeFalse();
+        }
     }
 }
