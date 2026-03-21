@@ -1,0 +1,29 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <SqlServerVersion>Sql150</SqlServerVersion>
+    <RunSqlCodeAnalysis>true</RunSqlCodeAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRD*</RuleId>
+      <Action>Suppress</Action>
+      <Explanation>test wildcard suppression</Explanation>
+    </CodeAnalysisRule>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRN0005</RuleId>
+      <Action>Error</Action>
+    </CodeAnalysisRule>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+
+  <Target Name="WriteEffectiveCodeAnalysisRules" AfterTargets="Build">
+    <WriteLinesToFile File="$(OutputPath)effective-code-analysis-rules.txt"
+                      Overwrite="true"
+                      Lines="$(EffectiveCodeAnalysisRules)" />
+  </Target>
+</Project>

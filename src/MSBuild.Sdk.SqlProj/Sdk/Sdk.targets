@@ -217,8 +217,24 @@
       Overwrite="true"
       Lines="@(WarningsSuppressionFiles)" />
 
+    <!-- Build code analysis rule expressions from item metadata -->
+    <ItemGroup>
+      <_CodeAnalysisRuleExpressions Include="-$([MSBuild]::Escape(%(CodeAnalysisRule.RuleId)))"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' != '' and ('%(CodeAnalysisRule.Action)' == '' Or '%(CodeAnalysisRule.Action)' == 'Suppress')" />
+      <_CodeAnalysisRuleExpressions Include="+!$([MSBuild]::Escape(%(CodeAnalysisRule.RuleId)))"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' != '' and '%(CodeAnalysisRule.Action)' == 'Error'" />
+      <_CodeAnalysisRuleExpressions Include="-$([MSBuild]::Escape(%(CodeAnalysisRule.Identity)))"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' == '' and ('%(CodeAnalysisRule.Action)' == '' Or '%(CodeAnalysisRule.Action)' == 'Suppress')" />
+      <_CodeAnalysisRuleExpressions Include="+!$([MSBuild]::Escape(%(CodeAnalysisRule.Identity)))"
+                                    Condition="'%(CodeAnalysisRule.RuleId)' == '' and '%(CodeAnalysisRule.Action)' == 'Error'" />
+    </ItemGroup>
+
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
+      <CodeAnalysisRulesFromItems>@(_CodeAnalysisRuleExpressions, ';')</CodeAnalysisRulesFromItems>
+      <EffectiveCodeAnalysisRules Condition="'$(CodeAnalysisRules)' != '' And '$(CodeAnalysisRulesFromItems)' != ''">$(CodeAnalysisRules);$(CodeAnalysisRulesFromItems)</EffectiveCodeAnalysisRules>
+      <EffectiveCodeAnalysisRules Condition="'$(EffectiveCodeAnalysisRules)' == '' And '$(CodeAnalysisRules)' != ''">$(CodeAnalysisRules)</EffectiveCodeAnalysisRules>
+      <EffectiveCodeAnalysisRules Condition="'$(EffectiveCodeAnalysisRules)' == '' And '$(CodeAnalysisRulesFromItems)' != ''">$(CodeAnalysisRulesFromItems)</EffectiveCodeAnalysisRules>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
@@ -232,7 +248,7 @@
       <RefactorLogScriptArgument>@(RefactorLog->'--refactorlog &quot;%(Identity)&quot;', ' ')</RefactorLogScriptArgument>
       <RunSqlCodeAnalysisArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">-an</RunSqlCodeAnalysisArgument>
       <CodeAnalysisAssemblyLookupPathsArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">@(Analyzer->'-aa &quot;%(Identity)&quot;', ' ')</CodeAnalysisAssemblyLookupPathsArgument>
-      <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar &quot;$(CodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
+      <CodeAnalysisRulesArgument Condition="'$(EffectiveCodeAnalysisRules)'!=''">-ar &quot;$(EffectiveCodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>

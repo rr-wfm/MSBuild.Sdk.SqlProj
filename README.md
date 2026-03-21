@@ -626,6 +626,60 @@ A xml file with the analysis results is created in the output folder.
 
 The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules for the entire project.
 
+If you have many analyzer rule adjustments, you can also declare them as items instead of a single semicolon-delimited property value:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
+  <PropertyGroup>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRD*</RuleId>
+      <Action>Suppress</Action>
+      <Explanation>suppress globally for some good reason</Explanation> <!-- optional explanation -->
+    </CodeAnalysisRule>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRN0005</RuleId>
+      <Action>Error</Action>
+      <Explanation>this type of violoation should break the build</Explanation> <!-- optional explanation -->
+    </CodeAnalysisRule>
+  </ItemGroup>
+</Project>
+```
+
+`Include` is only a placeholder required by MSBuild. The SDK uses `RuleId` and `Action`. `Explanation` is optional and is ignored by the SDK, so you can use it as a maintainer note in the project file.
+
+Supported `Action` values are:
+
+- `Suppress` to disable the specified rule
+- `Error` to report the specified rule as an error
+
+Use the `RuleId` element to define the rule name or wildcard pattern. For example, `SqlServer.Rules.SRD*` matches all rules with that prefix.
+
+If both `CodeAnalysisRules` and `CodeAnalysisRule` items are used, they are combined.
+
+You can use `+!*` in `CodeAnalysisRules` to treat all analyzer findings as errors, then add `CodeAnalysisRule` items to suppress specific rules:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
+  <PropertyGroup>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <CodeAnalysisRules>+!*</CodeAnalysisRules> <!-- treat all analyzer findings as errors -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CodeAnalysisRule Include="_">
+      <RuleId>SqlServer.Rules.SRD0004</RuleId>
+      <Action>Suppress</Action>
+    </CodeAnalysisRule>
+  </ItemGroup>
+</Project>
+```
+
+If the same rule is configured as both `Suppress` and `Error`, suppression takes precedence.
+
 Starting with version 3.0.0 of the SDK, you can also disable rules per file. Add a `StaticCodeAnalysis.SuppressMessages.xml` file to the project root, with contents similar to this:
 
 ```xml
