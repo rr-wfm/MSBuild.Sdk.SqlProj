@@ -329,17 +329,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("Unable to create instance of CustomSchemaData.");
             }
 
-            var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-
-            if (setMetadataMethod == null)
-            {
-                throw new InvalidOperationException("Unable to find SetMetadata method on CustomSchemaData.");
-            }
-
             foreach (var variableName in variables)
             {
                 Console.WriteLine($"Adding SqlCmd variable {variableName}");
-                setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
+                SetMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
             }
 
             AddCustomData(dataSchemaModel, customData);
