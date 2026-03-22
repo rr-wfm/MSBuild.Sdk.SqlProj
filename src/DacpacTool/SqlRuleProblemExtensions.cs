@@ -23,8 +23,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }
 
-            // Wildcard severity overrides are stored as trimmed prefixes (for "+!SRD*",
-            // we store "SRD"), so we only keep this loop for prefix rules.
+            // Wildcard severity overrides are stored as the full rule prefix from the
+            // rules expression (for "+!SqlServer.Rules.SRD*", we store
+            // "SqlServer.Rules.SRD"), so we only keep this loop for prefix rules.
             foreach (var rule in errorRulePrefixes)
             {
                 if (sqlRuleProblem.RuleId.StartsWith(rule, StringComparison.OrdinalIgnoreCase))
