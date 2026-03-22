@@ -13,7 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly HashSet<string> _ignoredRules = new();
         private readonly HashSet<string> _ignoredRuleSets = new();
         private readonly HashSet<string> _errorRuleSets = new();
-        private readonly List<string> _errorRulePrefixes = new();
+        private readonly HashSet<string> _errorRulePrefixes = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HashSet<string>> _suppressedProblemsByRule = new(StringComparer.Ordinal);
         private readonly char[] separator = new[] { ';' };
 

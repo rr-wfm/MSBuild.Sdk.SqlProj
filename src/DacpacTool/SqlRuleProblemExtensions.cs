@@ -11,7 +11,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     internal static class SqlRuleProblemExtensions
     {
-        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules, List<string> errorRulePrefixes)
+        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules, HashSet<string> errorRulePrefixes)
         {
             ArgumentNullException.ThrowIfNull(sqlRuleProblem);
             ArgumentNullException.ThrowIfNull(errorRulePrefixes);
