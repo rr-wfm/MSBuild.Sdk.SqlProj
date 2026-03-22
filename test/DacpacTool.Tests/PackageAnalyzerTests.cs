@@ -163,6 +163,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void RunsAnalyzerInVerboseModeWithProgressLogs()
+        {
+            // Arrange
+            var testConsole = new TestConsole(verbose: true);
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(testConsole, null);
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Count(l => l.StartsWith("Using analyzers: ", StringComparison.Ordinal)).ShouldBe(1);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
         public void RunsAnalyzerWithSuppressionFile()
         {
             // Arrange

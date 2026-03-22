@@ -43,6 +43,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void UsingVersion_LogsInVerboseMode()
+        {
+            // Arrange
+            var console = new TestConsole(verbose: true);
+            var packageBuilder = new PackageBuilder(console);
+
+            // Act
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Assert
+            console.Lines.ShouldContain("Using SQL Server version Sql150");
+        }
+
+        [TestMethod]
         public void AddInputFile_FileDoesNotExist()
         {
             // Arrange
@@ -253,6 +267,39 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Cleanup
             tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddSqlCmdvariable_LogsInVerboseMode()
+        {
+            // Arrange
+            var console = new TestConsole(verbose: true);
+            var packageBuilder = new PackageBuilder(console);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddSqlCmdVariables(new[] { "DbReader", "DbWriter" });
+
+            // Assert
+            console.Lines.ShouldContain("Adding SqlCmd variable DbReader");
+            console.Lines.ShouldContain("Adding SqlCmd variable DbWriter");
+        }
+
+        [TestMethod]
+        public void AddSqlCmdvariable_DoesNotLogInQuietMode()
+        {
+            // Arrange
+            var console = new TestConsole(verbose: false);
+            var packageBuilder = new PackageBuilder(console);
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Act
+            packageBuilder.AddSqlCmdVariables(new[] { "DbReader", "DbWriter" });
+
+            // Assert
+            console.Lines.ShouldBeEmpty();
         }
 
         [TestMethod]

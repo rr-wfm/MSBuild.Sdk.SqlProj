@@ -59,5 +59,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(0);
         }
+
+        [TestMethod]
+        public async Task RunsVersionCheckAndLogsDacFxVersionInVerboseMode()
+        {
+            // Arrange
+            var testConsole = new TestConsole(verbose: true);
+            var versionChecker = new VersionChecker(testConsole, new VersionProvider("9999999.9999999.0+4c0175a82e"));
+
+            // Act
+            await versionChecker.CheckForPackageUpdateAsync();
+
+            // Assert
+            testConsole.Lines.Count.ShouldBeGreaterThan(0);
+            testConsole.Lines[0].ShouldStartWith("Using DacFX version: ");
+        }
     }
 }
