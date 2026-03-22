@@ -19,7 +19,7 @@ jobs:
   # Run the build first
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -28,21 +28,14 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    # Install .NET SDK's for 8.0, 9.0 and 10.0
-    - name: Setup dotnet 10.0
+    # Install .NET SDKs for 8.0, 9.0 and 10.0
+    - name: Setup dotnet SDKs
       uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '10.0.x'
-
-    - name: Setup dotnet 9.0
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '9.0.x'
-
-    - name: Setup dotnet 8.0
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '8.0.x'
+        dotnet-version: |
+          10.0.x
+          9.0.x
+          8.0.x
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -119,7 +112,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ "ubuntu-22.04", "macos-14", "windows-2022" ]
+        os: [ "ubuntu-24.04", "macos-14", "windows-2025" ]
         dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
       fail-fast: false
 
@@ -192,7 +185,7 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-22.04' && matrix.dotnet == '8.0.x' }}
+      if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '8.0.x' }}
       uses: actions/upload-artifact@v7
       with:
         name: dacpac-package
@@ -207,7 +200,7 @@ jobs:
 
   # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
   deploy-sqlpackage:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     steps:
     # Generate SQL Server secret
@@ -269,7 +262,7 @@ jobs:
       env:
         SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
       run: >
-        sqlpackage
+        ./sqlpackage
         /Action:Publish
         /SourceFile:$HOME/dacpac-package/TestProjectWithSDKRef.dacpac
         /Properties:IncludeCompositeObjects=True
@@ -299,7 +292,7 @@ jobs:
 
   # Attempt to deploy a project to a SQL Server instance running in a container using dotnet publish
   deploy-publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     steps:
     # Generate SQL Server secret
@@ -415,7 +408,7 @@ jobs:
 
   # Attempt to publish the project as a container image and use that to  deploy the resulting dacpac's to a SQL Server instance running in a container
   deploy-container:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     steps:
     # Generate SQL Server secret
@@ -455,11 +448,6 @@ jobs:
           echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
           exit 1
         fi
-
-    # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: '8.0.x'
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v6
@@ -558,7 +546,7 @@ jobs:
   publish:
     permissions:
       id-token: write  # enable GitHub OIDC token issuance for this job
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: startsWith(github.ref, 'refs/heads/release/')
     needs:
     - deploy-sqlpackage
