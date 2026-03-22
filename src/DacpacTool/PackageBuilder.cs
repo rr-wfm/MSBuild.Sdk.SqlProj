@@ -27,7 +27,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public void UsingVersion(SqlServerVersion version)
         {
             Model = new TSqlModel(version, Options);
-            _console.WriteLine($"Using SQL Server version {version}");
+            _console.WriteVerboseLine($"Using SQL Server version {version}");
         }
 
         public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
@@ -37,7 +37,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             ValidateReference(referenceFile);
 
-            _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            _console.WriteVerboseLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
             Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
@@ -62,7 +62,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            Model.AddSqlCmdVariables(variables);
+            Model.AddSqlCmdVariables(variables, _console);
         }
 
         public bool AddInputFile(FileInfo inputFile)
@@ -78,7 +78,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"Unable to find input file {inputFile}", nameof(inputFile));
             }
 
-            _console.WriteLine($"Adding {inputFile.FullName} to the model");
+            _console.WriteVerboseLine($"Adding {inputFile.FullName} to the model");
 
             try
             {
@@ -176,11 +176,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (outputFile.Exists)
             {
                 // Delete the existing file
-                _console.WriteLine($"Deleting existing file {outputFile.FullName}");
+                _console.WriteVerboseLine($"Deleting existing file {outputFile.FullName}");
                 outputFile.Delete();
             }
 
-            _console.WriteLine($"Writing model to {outputFile.FullName}");
+            _console.WriteVerboseLine($"Writing model to {outputFile.FullName}");
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
@@ -192,7 +192,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 Version = version,
             };
 
-            _console.WriteLine($"Using package name {name} and version {version}");
+            _console.WriteVerboseLine($"Using package name {name} and version {version}");
         }
 
         public void SetProperty(string key, string value)
@@ -283,7 +283,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 property.SetValue(Options, propertyValue);
 
-                _console.WriteLine($"Setting property {key} to value {value}");
+                _console.WriteVerboseLine($"Setting property {key} to value {value}");
             }
             catch (FormatException)
             {
@@ -345,7 +345,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
             {
-                _console.WriteLine($"Adding {script.FullName} to package");
+                _console.WriteVerboseLine($"Adding {script.FullName} to package");
                 WritePart(script, package, path);
 
                 package.Close();
@@ -419,7 +419,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             var scriptFileName = $"{databaseName}_Create.sql";
-            _console.WriteLine($"Generating create script {scriptFileName}");
+            _console.WriteVerboseLine($"Generating create script {scriptFileName}");
 
             using var package = DacPackage.Load(dacpacFile.FullName);
 

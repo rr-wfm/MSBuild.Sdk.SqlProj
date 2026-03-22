@@ -29,6 +29,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void UsingVersion_DoesNotLogInQuietMode()
+        {
+            // Arrange
+            var console = new TestConsole(verbose: false);
+            var packageBuilder = new PackageBuilder(console);
+
+            // Act
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+
+            // Assert
+            console.Lines.ShouldBeEmpty();
+        }
+
+        [TestMethod]
         public void AddInputFile_FileDoesNotExist()
         {
             // Arrange

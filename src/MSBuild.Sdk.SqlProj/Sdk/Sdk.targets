@@ -165,10 +165,12 @@
   <Target Name="GetIncludedFiles" DependsOnTargets="ValidateEnvironment">
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
+      <MSBuildSdkSqlProjVerbose Condition="'$(MSBuildSdkSqlProjVerbose)' == ''">false</MSBuildSdkSqlProjVerbose>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy &quot;%(Identity)&quot;', ' ')</PreDeploymentScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy &quot;%(Identity)&quot;', ' ')</PostDeploymentScriptArgument>
+      <VerboseArgument Condition="'$(MSBuildSdkSqlProjVerbose)' == 'True'">--verbose</VerboseArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(VerboseArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="low" Text="Running command: $(DacpacToolCommand)" />
@@ -219,6 +221,7 @@
 
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
+      <MSBuildSdkSqlProjVerbose Condition="'$(MSBuildSdkSqlProjVerbose)' == ''">false</MSBuildSdkSqlProjVerbose>
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
@@ -233,13 +236,14 @@
       <RunSqlCodeAnalysisArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">-an</RunSqlCodeAnalysisArgument>
       <CodeAnalysisAssemblyLookupPathsArgument Condition="'$(RunSqlCodeAnalysis)' == 'True'">@(Analyzer->'-aa &quot;%(Identity)&quot;', ' ')</CodeAnalysisAssemblyLookupPathsArgument>
       <CodeAnalysisRulesArgument Condition="'$(CodeAnalysisRules)'!=''">-ar &quot;$(CodeAnalysisRules)&quot;</CodeAnalysisRulesArgument>
+      <VerboseArgument Condition="'$(MSBuildSdkSqlProjVerbose)' == 'True'">--verbose</VerboseArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
       <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(VerboseArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
@@ -289,6 +293,7 @@
       </_ResolvedSqlCmdVariable>
     </ItemGroup>
     <PropertyGroup>
+      <MSBuildSdkSqlProjVerbose Condition="'$(MSBuildSdkSqlProjVerbose)' == ''">false</MSBuildSdkSqlProjVerbose>
       <InputArgument>-i &quot;$(TargetPath)&quot;</InputArgument>
       <TargetServerNameArgument>-tsn &quot;$(TargetServerName)&quot;</TargetServerNameArgument>
       <TargetPortArgument Condition="'$(TargetPort)'!=''">-tprt &quot;$(TargetPort)&quot;</TargetPortArgument>
@@ -298,8 +303,9 @@
       <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
       <SqlCmdVariableArguments>@(_ResolvedSqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
       <RunScriptsFromReferencesArgument Condition="'$(RunScriptsFromReferences)' == 'True'">-sff</RunScriptsFromReferencesArgument>
+      <VerboseArgument Condition="'$(MSBuildSdkSqlProjVerbose)' == 'True'">--verbose</VerboseArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(VerboseArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />

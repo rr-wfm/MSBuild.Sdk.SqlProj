@@ -314,7 +314,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        public static void AddSqlCmdVariables(this TSqlModel model, string[] variables)
+        public static void AddSqlCmdVariables(this TSqlModel model, string[] variables, IConsole console = null)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(variables);
@@ -330,7 +330,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             foreach (var variableName in variables)
             {
-                Console.WriteLine($"Adding SqlCmd variable {variableName}");
+                console?.WriteVerboseLine($"Adding SqlCmd variable {variableName}");
 
                 var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
 

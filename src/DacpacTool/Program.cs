@@ -31,8 +31,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options);
 
-            using var packageBuilder = new PackageBuilder(new ActualConsole());
-            var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
+            var console = new ActualConsole(options.Verbose);
+            using var packageBuilder = new PackageBuilder(console);
+            var versionChecker = new VersionChecker(console, new VersionProvider());
 
             await versionChecker.CheckForPackageUpdateAsync().ConfigureAwait(false);
 
@@ -155,7 +156,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (options.RunCodeAnalysis)
             {
-                var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
+                var analyzer = new PackageAnalyzer(console, options.CodeAnalysisRules);
 
                 analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
@@ -194,7 +195,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             try
             {
-                var deployer = new PackageDeployer(new ActualConsole());
+                var deployer = new PackageDeployer(new ActualConsole(options.Verbose));
 
                 if (options.Property != null)
                 {

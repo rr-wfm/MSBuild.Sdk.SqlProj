@@ -9,15 +9,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class VersionCheckerTests
     {
-        private readonly IConsole _console = new TestConsole();
-
         [TestMethod]
         public async Task RunsVersionCheck()
         {
             // Arrange
-            var testConsole = (TestConsole)_console;
-            testConsole.Lines.Clear();
-            var versionChecker = new VersionChecker(_console, new VersionProvider("1.17.0+4c0175a82e"));
+            var testConsole = new TestConsole(verbose: false);
+            var versionChecker = new VersionChecker(testConsole, new VersionProvider("1.17.0+4c0175a82e"));
 
             var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt");
 
@@ -53,9 +50,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public async Task RunsVersionCheckAndNoLog()
         {
             // Arrange
-            var testConsole = (TestConsole)_console;
-            testConsole.Lines.Clear();
-            var versionChecker = new VersionChecker(_console, new VersionProvider("9999999.9999999.0+4c0175a82e"));
+            var testConsole = new TestConsole(verbose: false);
+            var versionChecker = new VersionChecker(testConsole, new VersionProvider("9999999.9999999.0+4c0175a82e"));
 
             // Act
             await versionChecker.CheckForPackageUpdateAsync();

@@ -5,7 +5,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
     internal class TestConsole : IConsole
     {
+        private readonly bool _verbose;
         public readonly List<string> Lines = new List<string>();
+
+        public TestConsole(bool verbose = true)
+        {
+            _verbose = verbose;
+        }
 
         public string ReadLine()
         {
@@ -18,6 +24,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             foreach (var line in values)
             {
                 Lines.Add(line);
+            }
+        }
+
+        public void WriteVerboseLine(string value)
+        {
+            if (_verbose)
+            {
+                WriteLine(value);
             }
         }
     }

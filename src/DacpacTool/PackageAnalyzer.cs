@@ -28,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ArgumentNullException.ThrowIfNull(outputFile);
             ArgumentNullException.ThrowIfNull(analyzers);
 
-            _console.WriteLine($"Analyzing package '{outputFile.FullName}'");
+            _console.WriteVerboseLine($"Analyzing package '{outputFile.FullName}'");
             try
             {
                 var factory = new CodeAnalysisServiceFactory();
@@ -49,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
                 }
                     
-                _console.WriteLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
+                _console.WriteVerboseLine("Using analyzers: " + string.Join(", ", rules.Select(a => a.Namespace).Distinct()));
 
                 var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
@@ -57,14 +57,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 if (File.Exists(suppressorPath))
                 {
-                    _console.WriteLine($"Using suppressor file: {suppressorPath}");
+                    _console.WriteVerboseLine($"Using suppressor file: {suppressorPath}");
                     var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
 
                     suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
 
                     foreach (var problem in suppressedProblems)
                     {
-                        _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
+                        _console.WriteVerboseLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
                     }
                 }
 
@@ -101,7 +101,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                     result.SerializeResultsToXml(GetOutputFileName(outputFile));
                 }
-                _console.WriteLine($"Successfully analyzed package '{outputFile}'");
+                _console.WriteVerboseLine($"Successfully analyzed package '{outputFile}'");
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
