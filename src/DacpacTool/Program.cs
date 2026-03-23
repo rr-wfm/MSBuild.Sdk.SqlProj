@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DotMake.CommandLine;
 using Microsoft.SqlServer.Dac;
-using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
