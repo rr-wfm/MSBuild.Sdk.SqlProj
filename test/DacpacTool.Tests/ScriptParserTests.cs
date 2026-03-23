@@ -1,7 +1,7 @@
-﻿using Microsoft.SqlTools.ServiceLayer.BatchParser;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Linq;
+using Microsoft.SqlTools.ServiceLayer.BatchParser;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Shouldly;
 
