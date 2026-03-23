@@ -20,7 +20,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo Output { get; set; }
         
         [CliOption(Description = "Target version of the model", Required = false, Name = "--sqlServerVersion", Alias = "-sv")]
-        public SqlServerVersion SqlServerVersion { get; set; } = SqlServerVersion.Sql150;
+        public SqlServerVersion SqlServerVersion { get; set; } = SqlServerVersion.Sql160;
         
         [CliOption(Description = "Text file listing all input files", Name = "--inputfile", Required = false, Alias = "-i")]
         public FileInfo InputFile { get; set; }
