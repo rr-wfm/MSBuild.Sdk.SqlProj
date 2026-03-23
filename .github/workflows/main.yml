@@ -185,11 +185,11 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '8.0.x' }}
+      if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '10.0.x' }}
       uses: actions/upload-artifact@v7
       with:
         name: dacpac-package
-        path: ./test/TestProjectWithSDKRef/bin/Debug/net8.0/
+        path: ./test/TestProjectWithSDKRef/bin/Debug/net10.0/
 
     # Upload binary log
     - name: upload
@@ -251,7 +251,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Microsoft.SqlPackage
     - name: install microsoft.sqlpackage
@@ -355,7 +355,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -471,7 +471,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
