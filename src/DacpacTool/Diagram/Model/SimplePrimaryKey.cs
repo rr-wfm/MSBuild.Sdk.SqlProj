@@ -8,6 +8,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
     {
         public string? Name { get; set; }
 
-        public IList<SimpleColumn> Columns { get; set; } = [];
+        public IList<SimpleColumn> Columns { get; init; } = [];
     }
 }
