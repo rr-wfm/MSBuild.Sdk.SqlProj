@@ -35,7 +35,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
                 var diagram = creator.CreateMermaid();
 
-                var fileName = Path.Combine(dacpacFile.DirectoryName!, diagramFileName);
+                var fileName = Path.Combine(Environment.CurrentDirectory, diagramFileName);
 
                 File.WriteAllText(fileName, diagram, Encoding.UTF8);
 
