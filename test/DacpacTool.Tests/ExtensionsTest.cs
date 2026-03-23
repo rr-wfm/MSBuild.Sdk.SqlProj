@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -208,6 +211,31 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             var validationErrors = model.Validate();
             validationErrors.Any().ShouldBeFalse();
+        }
+
+        [TestMethod]
+        public void ParseExternalParts_WhenRegexTimesOut_ShouldThrowArgumentException()
+        {
+            // Arrange
+            // Use a regex designed to trigger catastrophic backtracking so the timeout path is deterministic in test.
+            var regex = new Regex("dbl=(?<dbl>(a+)+)$", RegexOptions.None, TimeSpan.FromMilliseconds(1));
+            var method = typeof(Extensions).GetMethod("ParseExternalParts", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(string), typeof(Regex) }, null);
+
+            // Act
+            // The trailing '!' prevents a full match and forces catastrophic backtracking in the injected regex.
+            Action action = () => method!.Invoke(null, new object[] { "dbl=" + new string('a', 2048) + "!", regex });
+
+            // Assert
+            var exception = action.ShouldThrow<TargetInvocationException>().InnerException.ShouldBeOfType<ArgumentException>();
+            exception.ParamName.ShouldBe("externalParts");
+            exception.Message.ShouldBe(
+                "Unable to parse reference external parts. " +
+                "Use a database literal or SQLCMD variable metadata such as " +
+                "'DatabaseVariableLiteralValue=\"MyDatabase\"', " +
+                "'DatabaseSqlCmdVariable=\"MyDatabaseVar\"', or " +
+                "'DatabaseSqlCmdVariable=\"MyDatabaseVar\" ServerSqlCmdVariable=\"MyServerVar\"'. " +
+                "(Parameter 'externalParts')");
+            exception.InnerException.ShouldBeOfType<RegexMatchTimeoutException>();
         }
     }
 }
