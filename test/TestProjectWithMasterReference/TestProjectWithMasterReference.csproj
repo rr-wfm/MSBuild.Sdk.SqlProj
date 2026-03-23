@@ -3,7 +3,7 @@
   
     <PropertyGroup>
       <TargetFramework>netstandard2.0</TargetFramework>
-      <SqlServerVersion>Sql150</SqlServerVersion>
+      <SqlServerVersion>Sql160</SqlServerVersion>
       <RecoveryMode>Simple</RecoveryMode>
       <GenerateCreateScript>True</GenerateCreateScript>
       <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>

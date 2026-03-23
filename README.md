@@ -56,7 +56,7 @@ You should now have a project file with the following contents:
     <ItemGroup>
         <!-- These packages adds additional code analysis rules -->
         <!-- We recommend using these, but they can be removed if desired -->
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.0.0">
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.2.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -693,7 +693,7 @@ We know of the following public rules NuGet packages, that you can add to your p
 
 ```xml
     <ItemGroup>
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.0.0">
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.2.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

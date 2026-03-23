@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <SqlServerVersion>Sql150</SqlServerVersion>
+    <SqlServerVersion>Sql160</SqlServerVersion>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*;+!SqlServer.Rules.SRN0002</CodeAnalysisRules>
     <RunSqlCodeAnalysis>true</RunSqlCodeAnalysis>
   </PropertyGroup>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.1.0">
+        <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.2.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

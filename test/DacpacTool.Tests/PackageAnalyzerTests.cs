@@ -153,7 +153,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var path = new FileInfo(Path.GetTempFileName() + ".dacpac");
 
             var packageBuilder = new PackageBuilder(testConsole);
-            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
             packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
             packageBuilder.AddInputFile(new FileInfo("./Suppression/Folder/proc3.sql"));
