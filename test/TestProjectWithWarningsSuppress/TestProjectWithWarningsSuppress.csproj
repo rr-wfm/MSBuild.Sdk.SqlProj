@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SqlServerVersion>Sql150</SqlServerVersion>
+    <SqlServerVersion>Sql160</SqlServerVersion>
 
     <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
     <SuppressTSqlWarnings>71502</SuppressTSqlWarnings>

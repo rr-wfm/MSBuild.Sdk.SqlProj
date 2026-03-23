@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <SqlServerVersion>Sql150</SqlServerVersion>
+    <SqlServerVersion>Sql160</SqlServerVersion>
     <RestoreAdditionalProjectSources>../TestProject/bin/Debug</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
