@@ -99,6 +99,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void RunsAnalyzerWithWarningsAsErrors_ExactRuleIdsAreCaseInsensitive()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!sqlserver.rules.srd0006");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(1);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
         public void RunsAnalyzerWithWarningsAsErrorsUsingWildcard()
         {
             // Arrange
@@ -159,6 +178,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
             testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
             testConsole.Lines.Any(l => l.Contains("Error")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithDuplicateWildcardSuppressions_DifferentCasing_BehavesOnce()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*;-sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("): Error ")).ShouldBeFalse();
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 

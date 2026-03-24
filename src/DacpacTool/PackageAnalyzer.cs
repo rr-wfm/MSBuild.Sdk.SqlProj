@@ -10,9 +10,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
-        private readonly HashSet<string> _ignoredRules = new();
-        private readonly HashSet<string> _ignoredRuleSets = new();
-        private readonly HashSet<string> _errorRuleSets = new();
+        private readonly HashSet<string> _ignoredRules = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _ignoredRuleSets = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _errorRuleSets = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _errorRulePrefixes = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, HashSet<string>> _suppressedProblemsByRule = new(StringComparer.Ordinal);
         private readonly char[] separator = new[] { ';' };
