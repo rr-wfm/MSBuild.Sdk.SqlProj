@@ -92,27 +92,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var result = service.Analyze(model);
 
-                var errors = result.GetAllErrors();
-                foreach (var err in errors)
-                {
-                    _console.WriteLine(err.GetOutputMessage());
-                }
-
-                if (!result.AnalysisSucceeded)
-                {
-                    _console.WriteLine($"Analysis of package '{outputFile}' failed");
-                    return;
-                }
-                else
-                {
-                    foreach (var err in result.Problems)
-                    {
-                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets, _errorRulePrefixes));
-                    }
-
-                    result.SerializeResultsToXml(GetOutputFileName(outputFile));
-                }
-                _console.WriteLine($"Successfully analyzed package '{outputFile}'");
+                WriteAnalysisResults(
+                    outputFile,
+                    result.GetAllErrors().Select(err => err.GetOutputMessage()),
+                    result.AnalysisSucceeded,
+                    result.Problems.Select(err => err.GetOutputMessage(_errorRuleSets, _errorRulePrefixes)),
+                    () => result.SerializeResultsToXml(GetOutputFileName(outputFile)));
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -159,6 +144,33 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     }
                 }
             }
+        }
+
+        private void WriteAnalysisResults(FileInfo outputFile, IEnumerable<string> errors, bool analysisSucceeded, IEnumerable<string> problems, Action serializeResults)
+        {
+            ArgumentNullException.ThrowIfNull(outputFile);
+            ArgumentNullException.ThrowIfNull(errors);
+            ArgumentNullException.ThrowIfNull(problems);
+            ArgumentNullException.ThrowIfNull(serializeResults);
+
+            foreach (var error in errors)
+            {
+                _console.WriteLine(error);
+            }
+
+            if (!analysisSucceeded)
+            {
+                _console.WriteLine($"Analysis of package '{outputFile}' failed");
+                return;
+            }
+
+            foreach (var problem in problems)
+            {
+                _console.WriteLine(problem);
+            }
+
+            serializeResults();
+            _console.WriteLine($"Successfully analyzed package '{outputFile}'");
         }
 
         private static string GetOutputFileName(FileInfo outputFile)

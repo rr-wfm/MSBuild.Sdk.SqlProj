@@ -3,6 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
+using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
+using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -214,6 +218,133 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void GetPreDeploymentScript_WithoutEmbeddedScript_ReturnsNull()
+        {
+            var packagePath = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            using var package = DacPackage.Load(packagePath);
+
+            package.GetPreDeploymentScript().ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void GetPostDeploymentScript_WithoutEmbeddedScript_ReturnsNull()
+        {
+            var packagePath = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            using var package = DacPackage.Load(packagePath);
+
+            package.GetPostDeploymentScript().ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void GetPreAndPostDeploymentScripts_WithEmbeddedScripts_ReturnScriptContents()
+        {
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder(new TestConsole());
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
+            packageBuilder.ValidateModel();
+            var packageOptions = new PackageOptions
+            {
+                RefactorLogPath = "../../../../TestProjectWithPrePost/RefactorLog/TestProjectWithPrePost.refactorlog"
+            };
+
+            packageBuilder.SaveToDisk(tempFile, packageOptions);
+
+            var preDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql");
+            var postDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql");
+
+            packageBuilder.AddPreDeploymentScript(preDeploymentFile, tempFile);
+            packageBuilder.AddPostDeploymentScript(postDeploymentFile, tempFile);
+
+            using var package = DacPackage.Load(tempFile.FullName);
+
+            package.GetPreDeploymentScript().ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*GO[\r\n]*");
+            var postDeploymentScript = package.GetPostDeploymentScript();
+            postDeploymentScript.ShouldContain("PRINT 'Inserting record into MyTable'");
+            postDeploymentScript.ShouldContain("ALTER ROLE db_datareader ADD MEMBER [DbReader];");
+            postDeploymentScript.ShouldEndWith($"{Environment.NewLine}GO{Environment.NewLine}");
+        }
+
+        [TestMethod]
+        public void FormatBatchErrorEventArgs_WithException_UsesMessage()
+        {
+            // Arrange
+            var args = CreateBatchErrorEventArgsWithException("Boom", 12, 7, new InvalidOperationException("boom"));
+
+            // Act
+            var result = args.Format("input.sql");
+
+            // Assert
+            result.ShouldBe("input.sql(12,7):error Boom");
+        }
+
+        [TestMethod]
+        public void FormatBatchErrorEventArgs_WithSqlError_UsesSqlErrorDetails()
+        {
+            // Arrange
+            var args = CreateBatchErrorEventArgsWithSqlError("Ignored", 4, 3, CreateSqlError(71501, "Bad SQL"));
+
+            // Act
+            var result = args.Format("model.sql");
+
+            // Assert
+            result.ShouldBe("model.sql(4,3):error SQL71501: Bad SQL");
+        }
+
+        [TestMethod]
+        public void FormatBatchParserExecutionErrorEventArgs_WithException_UsesMessage()
+        {
+            // Arrange
+            var args = new BatchParserExecutionErrorEventArgs("Parse failed", "Ignored", ScriptMessageType.Error);
+            SetField(args, "line", 9);
+            SetField(args, "textSpan", CreateTextSpan(2));
+            SetField(args, "exception", new InvalidOperationException("parse failed"));
+
+            // Act
+            var result = args.Format("deploy.sql");
+
+            // Assert
+            result.ShouldBe("deploy.sql(9,2): error: Parse failed");
+        }
+
+        [TestMethod]
+        public void FormatBatchParserExecutionErrorEventArgs_WithSqlError_UsesSqlErrorDetails()
+        {
+            // Arrange
+            var args = new BatchParserExecutionErrorEventArgs("Ignored", "Ignored", ScriptMessageType.Error);
+            SetField(args, "line", 5);
+            SetField(args, "textSpan", CreateTextSpan(11));
+            SetField(args, "error", CreateSqlError(50000, "Execution failed"));
+
+            // Act
+            var result = args.Format("deploy.sql");
+
+            // Assert
+            result.ShouldBe("deploy.sql(5,11): error: SQL50000: Execution failed");
+        }
+
+        [TestMethod]
+        public void FormatBatchParserExecutionErrorEventArgs_WithoutExceptionOrSqlError_UsesMessageAndDescription()
+        {
+            // Arrange
+            var args = new BatchParserExecutionErrorEventArgs("Parse failed", "Near GO", ScriptMessageType.Error);
+            SetField(args, "line", 6);
+            SetField(args, "textSpan", CreateTextSpan(4));
+
+            // Act
+            var result = args.Format("deploy.sql");
+
+            // Assert
+            result.ShouldBe("deploy.sql(6,4): error: Parse failed Near GO");
+        }
+
+        [TestMethod]
         public void ParseExternalParts_WhenRegexTimesOut_ShouldThrowArgumentException()
         {
             // Arrange
@@ -236,6 +367,83 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 "'DatabaseSqlCmdVariable=\"MyDatabaseVar\" ServerSqlCmdVariable=\"MyServerVar\"'. " +
                 "(Parameter 'externalParts')");
             exception.InnerException.ShouldBeOfType<RegexMatchTimeoutException>();
+        }
+
+        private static TextSpan CreateTextSpan(int startIndex)
+        {
+            var textSpan = new TextSpan();
+            SetField(ref textSpan, "iStartIndex", startIndex);
+            return textSpan;
+        }
+
+        private static BatchErrorEventArgs CreateBatchErrorEventArgsWithException(string message, int line, int startIndex, Exception exception)
+        {
+            var constructor = typeof(BatchErrorEventArgs).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(string), typeof(string), typeof(int), typeof(TextSpan), typeof(Exception) },
+                null);
+
+            return (BatchErrorEventArgs)constructor!.Invoke(new object[] { message, "description", line, CreateTextSpan(startIndex), exception });
+        }
+
+        private static BatchErrorEventArgs CreateBatchErrorEventArgsWithSqlError(string message, int line, int startIndex, SqlError error)
+        {
+            var constructor = typeof(BatchErrorEventArgs).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(string), typeof(SqlError), typeof(TextSpan), typeof(Exception) },
+                null);
+
+            var args = (BatchErrorEventArgs)constructor!.Invoke(new object[] { message, error, CreateTextSpan(startIndex), null });
+            SetField(args, "line", line);
+            return args;
+        }
+
+        private static SqlError CreateSqlError(int number, string message)
+        {
+            var constructor = typeof(SqlError).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[]
+                {
+                    typeof(int), typeof(byte), typeof(byte), typeof(string), typeof(string),
+                    typeof(string), typeof(int), typeof(Exception)
+                },
+                null);
+
+            return (SqlError)constructor!.Invoke(new object[] { number, (byte)0, (byte)0, "server", message, "proc", 1, null });
+        }
+
+        private static void SetField(object target, string fieldName, object value)
+        {
+            var field = FindField(target.GetType(), fieldName)
+                ?? throw new InvalidOperationException($"Unable to find field '{fieldName}' on '{target.GetType()}'.");
+
+            field.SetValue(target, value);
+        }
+
+        private static void SetField<T>(ref T target, string fieldName, object value) where T : struct
+        {
+            object boxed = target;
+            SetField(boxed, fieldName, value);
+            target = (T)boxed;
+        }
+
+        private static FieldInfo FindField(Type type, string fieldName)
+        {
+            while (type != null)
+            {
+                var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                {
+                    return field;
+                }
+
+                type = type.BaseType;
+            }
+
+            return null;
         }
     }
 }

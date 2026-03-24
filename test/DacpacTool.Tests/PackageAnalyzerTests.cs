@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -314,6 +315,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
             testConsole.Lines.Any(l => l.Contains("Suppressing rule:")).ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void WriteAnalysisResults_WhenAnalysisFails_WritesErrorsAndFailureMessage()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var method = typeof(PackageAnalyzer).GetMethod("WriteAnalysisResults", BindingFlags.NonPublic | BindingFlags.Instance);
+            var outputFile = new FileInfo("test.dacpac");
+            var serialized = false;
+
+            // Act
+            method!.Invoke(packageAnalyzer, new object[]
+            {
+                outputFile,
+                new[] { "proc1.sql(1,1): Error SR9999: Analyzer failed." },
+                false,
+                new[] { "proc1.sql(1,1): Warning SRD0006 : Should not be written." },
+                new Action(() => serialized = true)
+            });
+
+            // Assert
+            testConsole.Lines.ShouldContain("proc1.sql(1,1): Error SR9999: Analyzer failed.");
+            testConsole.Lines.ShouldContain($"Analysis of package '{outputFile}' failed");
+            testConsole.Lines.ShouldNotContain("proc1.sql(1,1): Warning SRD0006 : Should not be written.");
+            testConsole.Lines.ShouldNotContain($"Successfully analyzed package '{outputFile}'");
+            serialized.ShouldBeFalse();
         }
 
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
