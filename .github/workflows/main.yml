@@ -13,6 +13,7 @@ on:
 
 permissions:
   id-token: write   # required for GitHub OIDC
+  checks: write
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -49,9 +50,45 @@ jobs:
     - name: dotnet build DacpacTool
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
-    # Run tests for command line tool
-    - name: dotnet test
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
+    # Run tests for command line tool and collect coverage
+    - name: dotnet test with coverage
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release --results-directory ./artifacts/test-results --logger trx --collect:"XPlat Code Coverage"
+
+    # Install ReportGenerator for coverage report generation
+    - name: install reportgenerator
+      run: dotnet tool install --tool-path . dotnet-reportgenerator-globaltool
+
+    # Generate HTML and Markdown coverage reports
+    - name: generate coverage report
+      run: ./reportgenerator -reports:"./artifacts/test-results/**/coverage.cobertura.xml" -targetdir:"./artifacts/coverage-report" -reporttypes:"Html;MarkdownSummary"
+
+    # Publish coverage summary to the GitHub Actions job summary
+    - name: publish coverage summary
+      run: cat ./artifacts/coverage-report/Summary.md >> "$GITHUB_STEP_SUMMARY"
+
+    # Upload HTML coverage report
+    - name: upload coverage report
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage-report
+        path: ./artifacts/coverage-report
+
+    # Upload raw test result files
+    - name: upload test results
+      uses: actions/upload-artifact@v7
+      if: (!cancelled())
+      with:
+        name: test-results
+        path: ./artifacts/test-results/**/*
+
+    # Publish TRX results to GitHub checks
+    - name: publish test results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: (!cancelled())
+      with:
+        check_name: "Unit Test Results"
+        comment_mode: off
+        files: "./artifacts/test-results/**/*.trx"
 
     # Run build for SDK package
     - name: dotnet build SDK
