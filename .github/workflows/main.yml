@@ -13,7 +13,6 @@ on:
 
 permissions:
   id-token: write   # required for GitHub OIDC
-  checks: write
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -21,6 +20,8 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-24.04
+    permissions:
+      checks: write
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -52,39 +53,52 @@ jobs:
 
     # Run tests for command line tool and collect coverage
     - name: dotnet test with coverage
+      id: tests
+      continue-on-error: true
       run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release --results-directory ./artifacts/test-results --logger trx --collect:"XPlat Code Coverage"
 
     # Install ReportGenerator for coverage report generation
     - name: install reportgenerator
+      if: ${{ always() && !cancelled() }}
       run: dotnet tool install --tool-path . dotnet-reportgenerator-globaltool
 
     # Generate HTML and Markdown coverage reports
     - name: generate coverage report
+      if: ${{ always() && !cancelled() }}
       run: ./reportgenerator -reports:"./artifacts/test-results/**/coverage.cobertura.xml" -targetdir:"./artifacts/coverage-report" -reporttypes:"Html;MarkdownSummary"
 
     # Publish coverage summary to the GitHub Actions job summary
     - name: publish coverage summary
-      run: cat ./artifacts/coverage-report/Summary.md >> "$GITHUB_STEP_SUMMARY"
+      if: ${{ always() && !cancelled() }}
+      run: |
+        if [ -f ./artifacts/coverage-report/Summary.md ]; then
+          cat ./artifacts/coverage-report/Summary.md >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "Coverage summary not generated; skipping job summary publication."
+        fi
 
     # Upload HTML coverage report
     - name: upload coverage report
+      if: ${{ always() && !cancelled() }}
       uses: actions/upload-artifact@v7
       with:
         name: coverage-report
         path: ./artifacts/coverage-report
+        if-no-files-found: ignore
 
     # Upload raw test result files
     - name: upload test results
+      if: ${{ always() && !cancelled() }}
       uses: actions/upload-artifact@v7
-      if: (!cancelled())
       with:
         name: test-results
         path: ./artifacts/test-results/**/*
+        if-no-files-found: ignore
 
     # Publish TRX results to GitHub checks
     - name: publish test results
+      if: ${{ always() && !cancelled() }}
       uses: EnricoMi/publish-unit-test-result-action@v2
-      if: (!cancelled())
       with:
         check_name: "Unit Test Results"
         comment_mode: off
@@ -142,6 +156,10 @@ jobs:
       with:
         name: template-package
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
+
+    - name: fail job if tests failed
+      if: ${{ always() && !cancelled() && steps.tests.outcome == 'failure' }}
+      run: exit 1
 
   # Run tests in parallel
   test:
