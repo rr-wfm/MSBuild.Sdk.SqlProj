@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
-using Microsoft.SqlServer.Management.HadrModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
