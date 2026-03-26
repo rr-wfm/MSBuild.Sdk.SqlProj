@@ -6,7 +6,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
     {
         public string Name { get; set; } = string.Empty;
 
-        public string? StoreType { get; set; }
+        public string StoreType { get; set; } = string.Empty;
 
         public bool IsNullable { get; set; }
     }

@@ -1,8 +1,10 @@
 ﻿using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
+using MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
@@ -39,6 +41,35 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             diagramText.ShouldContain("    Column1 nvarchar(100) PK");
             diagramText.ShouldContain("    Computed computed(2*2)");
+        }
+
+        [TestMethod]
+        public void UsesSchemaQualifiedNamesWhenTableNamesCollide()
+        {
+            var salesOrder = new SimpleTable
+            {
+                Schema = "sales",
+                Name = "Order",
+                Columns =
+                [
+                    new SimpleColumn { Name = "Id", StoreType = "int" },
+                ],
+            };
+
+            var hrOrder = new SimpleTable
+            {
+                Schema = "hr",
+                Name = "Order",
+                Columns =
+                [
+                    new SimpleColumn { Name = "Id", StoreType = "int" },
+                ],
+            };
+
+            var diagram = new DatabaseModelToMermaid(new List<SimpleTable> { salesOrder, hrOrder }).CreateMermaid();
+
+            diagram.ShouldContain("  sales.Order {");
+            diagram.ShouldContain("  hr.Order {");
         }
 
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
