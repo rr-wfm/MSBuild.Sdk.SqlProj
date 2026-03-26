@@ -3,6 +3,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <SqlServerVersion>#{SqlServerVersion}</SqlServerVersion>
         <RunSqlCodeAnalysis>#{CodeAnalysis}</RunSqlCodeAnalysis>
+        <GenerateEntityRelationshipDiagram>#{ErDiagram}</GenerateEntityRelationshipDiagram>
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
     </PropertyGroup>
 
