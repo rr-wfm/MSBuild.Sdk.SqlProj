@@ -51,6 +51,10 @@ jobs:
     - name: dotnet build DacpacTool
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
+    # Verify analyzer fixes without applying formatting changes
+    - name: dotnet format analyzers
+      run: dotnet format analyzers ./MSBuild.Sdk.SqlProj.slnx --verify-no-changes --severity info
+
     # Run tests for command line tool and collect coverage
     - name: dotnet test with coverage
       id: tests

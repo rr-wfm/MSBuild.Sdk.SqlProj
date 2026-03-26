@@ -14,6 +14,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageBuilderTest
     {
+        public TestContext TestContext { get; set; } = null!;
+
         [TestMethod]
         public void UsingVersion()
         {
@@ -165,7 +167,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
             // Assert Does not throw
-            TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions());
+            TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions(), TestContext.CancellationToken);
 
             // Cleanup
             File.Delete(model1File);
@@ -194,7 +196,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             Assert.ThrowsExactly<DacModelException>(() =>
-                TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions()));
+                TSqlModel.LoadFromDacpac(model2File, new ModelLoadOptions(), TestContext.CancellationToken));
 
             // Cleanup
             File.Delete(model1File);
@@ -770,6 +772,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             tempFile.Delete();
         }
 
+        [AttributeUsage(AttributeTargets.Method)]
         class ValidPropertiesTestDataAttribute : Attribute, ITestDataSource
         {
             public IEnumerable<object[]> GetData(MethodInfo methodInfo)

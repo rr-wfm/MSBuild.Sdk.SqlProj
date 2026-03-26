@@ -268,7 +268,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return (new FileInfo(packagePath), model);
         }
 
-        private FileInfo[] CollectAssemblyPaths()
+        private static FileInfo[] CollectAssemblyPaths()
         {
             var result = new List<FileInfo>();
             var path = ProjectSource.ProjectDirectory();

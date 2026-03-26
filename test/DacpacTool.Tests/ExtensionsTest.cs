@@ -11,6 +11,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class ExtensionsTest
     {
+        private static readonly string[] DatabaseVariable = ["SomeDatabase"];
+        private static readonly string[] ServerAndDatabaseVariables = ["SomeDatabase", "SomeServer"];
+        private static readonly string[] ServerVariable = ["SomeServer"];
+
         /// <summary>
         /// Tests that we can add a reference to a model.
         /// </summary>
@@ -136,7 +140,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Act
             var model = new TestModelBuilder()
                 .AddReference(referencePackage, "dbv=SomeDatabase")
-                .AddSqlCmdVariables(new string[] { "SomeDatabase" })
+                .AddSqlCmdVariables(DatabaseVariable)
                 .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeDatabase)].dbo.MyTable;")
                 .Build();
 
@@ -159,7 +163,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Act
             var model = new TestModelBuilder()
                 .AddReference(referencePackage, "dbv=SomeDatabase|srv=SomeServer")
-                .AddSqlCmdVariables(new string[] { "SomeDatabase", "SomeServer" })
+                .AddSqlCmdVariables(ServerAndDatabaseVariables)
                 .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[$(SomeDatabase)].dbo.MyTable;")
                 .Build();
 
@@ -182,7 +186,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Act
             var model = new TestModelBuilder()
                 .AddReference(referencePackage, "dbl=SomeDatabase|srv=SomeServer")
-                .AddSqlCmdVariables(new string[] { "SomeServer" })
+                .AddSqlCmdVariables(ServerVariable)
                 .AddStoredProcedure("MyProc", "SELECT * FROM [$(SomeServer)].[SomeDatabase].dbo.MyTable;")
                 .Build();
 

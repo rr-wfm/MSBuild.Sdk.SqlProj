@@ -10,6 +10,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageDeployerTests
     {
+        private static readonly string[] AllowDropBlockingAssemblies = ["AllowDropBlockingAssemblies=True"];
         private readonly IConsole _console = Substitute.For<IConsole>();
 
         [TestMethod]
@@ -183,7 +184,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetDeployProperties(new []{"AllowDropBlockingAssemblies=True"});
+            packageDeployer.SetDeployProperties(AllowDropBlockingAssemblies);
 
             // Assert
             packageDeployer.DeployOptions.AllowDropBlockingAssemblies.ShouldBeTrue();
