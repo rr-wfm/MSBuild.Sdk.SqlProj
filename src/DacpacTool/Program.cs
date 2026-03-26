@@ -245,13 +245,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"ERROR: An error occured while validating arguments: {ex.Message}");
+                Console.WriteLine($"ERROR: An error occurred while validating arguments: {ex.Message}");
                 return 1;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
+                Console.WriteLine($"ERROR: An error occurred during deployment: {ex.Message}");
                 return 1;
             }
 #pragma warning restore CA1031 // Do not catch general exception types
