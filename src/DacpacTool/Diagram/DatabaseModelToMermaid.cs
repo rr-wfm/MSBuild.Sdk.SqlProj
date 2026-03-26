@@ -9,10 +9,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
     public class DatabaseModelToMermaid
     {
         private readonly IReadOnlyList<SimpleTable> tables;
+        private readonly HashSet<string> duplicateTableNames;
 
         public DatabaseModelToMermaid(IReadOnlyList<SimpleTable> tables)
         {
             this.tables = tables;
+            duplicateTableNames = tables
+                .GroupBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         }
 
         private static bool IsValidChar(char c) =>
@@ -28,7 +34,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             foreach (var table in tables)
             {
-                var formattedTableName = Sanitize(table.Name);
+                var formattedTableName = GetFormattedTableName(table);
 
                 sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {{");
                 foreach (var column in table.Columns)
@@ -48,7 +54,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                     }
 
                     var nullable = column.IsNullable ? "(NULL)" : string.Empty;
-                    sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase)}{nullable} {pkfk}");
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {column.StoreType.Replace(", ", "-", StringComparison.OrdinalIgnoreCase)}{nullable} {pkfk}");
                 }
 
                 sb.AppendLine("  }");
@@ -62,7 +68,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                         relationship = "}o--o";
                     }
 
-                    var formattedPrincipalTableName = Sanitize(foreignKey.PrincipalTable.Name);
+                    var formattedPrincipalTableName = GetFormattedTableName(foreignKey.PrincipalTable);
                     var formattedForeignKeyName = Sanitize(foreignKey.Name ?? string.Empty);
 
                     sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {relationship}| {formattedPrincipalTableName} : {formattedForeignKeyName}");
@@ -93,6 +99,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             }
 
             return new string(buffer[..index]);
+        }
+
+        private string GetFormattedTableName(SimpleTable table)
+        {
+            var name = duplicateTableNames.Contains(table.Name)
+                ? $"{table.Schema}.{table.Name}"
+                : table.Name;
+
+            return Sanitize(name);
         }
     }
 }

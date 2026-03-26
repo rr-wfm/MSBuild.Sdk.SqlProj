@@ -8,7 +8,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
     {
         public string? Name { get; set; }
 
-        public SimpleTable PrincipalTable { get; set; } = null!;
+        public required SimpleTable PrincipalTable { get; init; }
 
         public IList<SimpleColumn> Columns { get; init; } = [];
 
