@@ -16,6 +16,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
         public void Dispose()
         {
             Close();
+            GC.SuppressFinalize(this);
         }
 
         public string GetXml(string fileName)
