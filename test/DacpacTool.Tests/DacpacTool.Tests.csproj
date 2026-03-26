@@ -28,6 +28,9 @@
     <Content Include="Suppression\StaticCodeAnalysis.SuppressMessages.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Suppression\StaticCodeAnalysis.SuppressMessages.mixed-rule-id-casing.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

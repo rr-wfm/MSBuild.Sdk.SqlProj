@@ -12,6 +12,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageAnalyzerTests
     {
+        private const string SuppressionFileName = global::Microsoft.SqlServer.Dac.CodeAnalysis.ProjectProblemSuppressor.SuppressionFilename;
+        private const string SuppressionFileNameMixedCaseRuleIds = "StaticCodeAnalysis.SuppressMessages.mixed-rule-id-casing.xml";
+        // IDE0330: keep object here because this test project also targets net8.0.
+        private static readonly object SuppressionFileLock = new();
         private readonly IConsole _console = new TestConsole();
 
         [TestMethod]
@@ -164,23 +168,92 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
-            try
+            // PackageAnalyzer resolves the suppression file from CurrentDirectory,
+            // so these tests must serialize any CurrentDirectory changes.
+            lock (SuppressionFileLock)
             {
-                //Set the current directory.
-                Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
-                // Act
-                packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
-            }
-            finally
-            {
-                //Reset the current directory.
-                Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+                try
+                {
+                    // Set the current directory.
+                    Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
+                    // Act
+                    packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+                }
+                finally
+                {
+                    // Reset the current directory.
+                    Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+                }
             }
 
             // Assert
             testConsole.Lines.Count.ShouldBe(20);
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithSuppressionFile_RuleIdMatchingIsCaseSensitive()
+        {
+            // Arrange
+            // The mixed-case fixture suppresses proc1.sql with SR0001 and tries to suppress Folder/proc3.sql with sr0001.
+            // That lets the test prove the matching remains case-sensitive while exercising the same directory layout as the existing suppression test.
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+
+            var path = new FileInfo(Path.GetTempFileName() + ".dacpac");
+
+            var packageBuilder = new PackageBuilder(testConsole);
+            packageBuilder.UsingVersion(SqlServerVersion.Sql150);
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc1.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/proc2.sql"));
+            packageBuilder.AddInputFile(new FileInfo("./Suppression/Folder/proc3.sql"));
+            packageBuilder.SetMetadata("TestSuppression", "1.0.0");
+
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(path);
+
+            var originalDirectory = Environment.CurrentDirectory;
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var suppressionDirectory = Path.Combine(
+                Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location)!,
+                "Suppression",
+                string.Empty);
+            var originalSuppressionFile = Path.Combine(suppressionDirectory, SuppressionFileName);
+            var mixedCaseSuppressionFile = Path.Combine(suppressionDirectory, SuppressionFileNameMixedCaseRuleIds);
+            var backupSuppressionFile = originalSuppressionFile + ".bak";
+
+            // PackageAnalyzer resolves the suppression file from CurrentDirectory,
+            // and this test swaps the shared suppression fixture in place.
+            lock (SuppressionFileLock)
+            {
+                try
+                {
+                    File.Move(originalSuppressionFile, backupSuppressionFile, overwrite: true);
+                    File.Copy(mixedCaseSuppressionFile, originalSuppressionFile);
+                    Directory.SetCurrentDirectory(suppressionDirectory);
+                    testConsole.Lines.Clear();
+                    packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+
+                    // proc1.sql is suppressed by the correctly cased RuleId.
+                    testConsole.Lines.Any(l => l.Contains("proc1.sql") && l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBeFalse();
+                    // proc3.sql is not suppressed because the fixture uses sr0001 instead of SR0001!!
+                    testConsole.Lines.Any(l => l.Contains("proc3.sql") && l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBeTrue();
+                }
+                finally
+                {
+                    Directory.SetCurrentDirectory(originalDirectory);
+                    if (File.Exists(backupSuppressionFile))
+                    {
+                        if (File.Exists(originalSuppressionFile))
+                        {
+                            File.Delete(originalSuppressionFile);
+                        }
+
+                        File.Move(backupSuppressionFile, originalSuppressionFile);
+                    }
+                }
+            }
         }
 
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
