@@ -68,12 +68,12 @@ jobs:
 
     # Generate HTML and Markdown coverage reports
     - name: generate coverage report
-      if: ${{ always() && !cancelled() }}
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/test-results/**/coverage.cobertura.xml') != '' }}
       run: ./reportgenerator -reports:"./artifacts/test-results/**/coverage.cobertura.xml" -targetdir:"./artifacts/coverage-report" -reporttypes:"Html;MarkdownSummary"
 
     # Publish coverage summary to the GitHub Actions job summary
     - name: publish coverage summary
-      if: ${{ always() && !cancelled() }}
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/coverage-report/Summary.md') != '' }}
       run: |
         if [ -f ./artifacts/coverage-report/Summary.md ]; then
           cat ./artifacts/coverage-report/Summary.md >> "$GITHUB_STEP_SUMMARY"
@@ -83,7 +83,7 @@ jobs:
 
     # Upload HTML coverage report
     - name: upload coverage report
-      if: ${{ always() && !cancelled() }}
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/coverage-report/index.html') != '' }}
       uses: actions/upload-artifact@v7
       with:
         name: coverage-report
