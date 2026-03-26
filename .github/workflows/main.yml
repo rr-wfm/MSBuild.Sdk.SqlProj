@@ -57,6 +57,10 @@ jobs:
     - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
+    # Verify generated create scripts are copied to referencing project outputs
+    - name: validate generated create script copy
+      run: bash ./test/validate-generated-create-script-copy.sh
+
     # Ensure that test projects build
     - name: dotnet build TestProject
       run: dotnet build ./test/TestProject/TestProject.csproj -c Release
