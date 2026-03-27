@@ -626,6 +626,23 @@ A xml file with the analysis results is created in the output folder.
 
 The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules for the entire project.
 
+The SDK also reads `.editorconfig` severity entries for SQL analysis rules from the project directory and its parent directories. Supported mappings are:
+
+- `dotnet_diagnostic.<Assembly>.<RuleId>.severity = error` to report that rule as an error
+- `dotnet_diagnostic.<Assembly>.<RuleId>.severity = none` to suppress that rule
+
+For example:
+
+```ini
+[*.sql]
+dotnet_diagnostic.SqlServer.Rules.SRD0006.severity = error
+dotnet_diagnostic.SqlServer.Rules.SRD0002.severity = none
+```
+
+Use the fully qualified rule name in `.editorconfig`, for example `SqlServer.Rules.SRD0006`. Non-qualified rule IDs are ignored with a warning so analyzer packages cannot conflict on the same short `RuleId`.
+
+The current implementation applies entries from `[*]`, `[*.*]`, `[*.sql]`, `[**.sql]`, and `[**/*.sql]` sections. If `.editorconfig`, and `CodeAnalysisRules`, are used, they are combined.
+
 Starting with version 3.0.0 of the SDK, you can also disable rules per file. Add a `StaticCodeAnalysis.SuppressMessages.xml` file to the project root, with contents similar to this:
 
 ```xml

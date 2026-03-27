@@ -12,10 +12,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageAnalyzerTests
     {
-        private const string SuppressionFileName = global::Microsoft.SqlServer.Dac.CodeAnalysis.ProjectProblemSuppressor.SuppressionFilename;
+        private const string SuppressionFileName = Microsoft.SqlServer.Dac.CodeAnalysis.ProjectProblemSuppressor.SuppressionFilename;
         private const string SuppressionFileNameMixedCaseRuleIds = "StaticCodeAnalysis.SuppressMessages.mixed-rule-id-casing.xml";
         // IDE0330: keep object here because this test project also targets net8.0.
         private static readonly object SuppressionFileLock = new();
+        private const string EditorConfigFileName = ".editorconfig";
         private readonly IConsole _console = new TestConsole();
 
         [TestMethod]
@@ -24,19 +25,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var result = BuildSimpleModel();
+            var (fileInfo, model) = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+            packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
             
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
-            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SML005 : Smells : Avoid use of 'Select *'");
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -67,18 +68,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var result = BuildSimpleModel();
+            var (fileInfo, model) = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+            packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(14);
 
-            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
             testConsole.Lines.Any(l => l.Contains("SRD")).ShouldBeFalse();
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -87,19 +88,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var result = BuildSimpleModel();
+            var (fileInfo, model) = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+            packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
-            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.Count(l => l.Contains("Error ")).ShouldBe(1);
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -108,22 +109,189 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var result = BuildSimpleModel();
+            var (fileInfo, model) = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD*");
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+            packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
 
             // Assert
             testConsole.Lines.Count.ShouldBe(16);
 
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
-            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
             testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void IgnoresNonQualifiedEditorConfigRuleIds()
+        {
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var (fileInfo, model) = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var originalDirectory = Environment.CurrentDirectory;
+            var tempDirectory = CreateTemporaryProjectDirectory();
+
+            try
+            {
+                File.WriteAllText(Path.Combine(tempDirectory, "proc1.sql"), "-- test");
+                File.WriteAllText(
+                    Path.Combine(tempDirectory, EditorConfigFileName),
+                    """
+                    root = true
+
+                    [*.sql]
+                    dotnet_diagnostic.SRD0006.severity = error
+                    """);
+
+                lock (SuppressionFileLock)
+                {
+                    Directory.SetCurrentDirectory(tempDirectory);
+                    packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
+                }
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+
+            testConsole.Lines.ShouldContain(l => l.Contains("SQLPROJ0002") && l.Contains("SRD0006"));
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzer_WithEditorConfigSeverityOverrides()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var (fileInfo, model) = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var originalDirectory = Environment.CurrentDirectory;
+            var tempDirectory = CreateTemporaryProjectDirectory();
+
+            try
+            {
+                File.WriteAllText(Path.Combine(tempDirectory, "proc1.sql"), "-- test");
+                File.WriteAllText(
+                    Path.Combine(tempDirectory, EditorConfigFileName),
+                    """
+                    root = true
+
+                    [*.sql]
+                    dotnet_diagnostic.SqlServer.Rules.SRD0006.severity = error
+                    dotnet_diagnostic.SqlServer.Rules.SRD0002.severity = none
+                    """);
+
+                lock (SuppressionFileLock)
+                {
+                    Directory.SetCurrentDirectory(tempDirectory);
+
+                    // Act
+                    packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
+                }
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzer_WithNestedEditorConfigSqlSection()
+        {
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var (fileInfo, model) = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var originalDirectory = Environment.CurrentDirectory;
+            var tempDirectory = CreateTemporaryProjectDirectory();
+
+            try
+            {
+                var sqlDirectory = Path.Combine(tempDirectory, "src", "StoredProcedures");
+                Directory.CreateDirectory(sqlDirectory);
+                File.WriteAllText(Path.Combine(sqlDirectory, "proc1.sql"), "-- test");
+                File.WriteAllText(
+                    Path.Combine(tempDirectory, EditorConfigFileName),
+                    """
+                    root = true
+
+                    [src/**/*.sql]
+                    dotnet_diagnostic.SqlServer.Rules.SRD0006.severity = error
+                    """);
+
+                lock (SuppressionFileLock)
+                {
+                    Directory.SetCurrentDirectory(tempDirectory);
+                    packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
+                }
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzer_WithCodeAnalysisRulesOverridingEditorConfigForSameRule()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var (fileInfo, model) = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;+!SqlServer.Rules.SRD0002");
+            var originalDirectory = Environment.CurrentDirectory;
+            var tempDirectory = CreateTemporaryProjectDirectory();
+
+            try
+            {
+                File.WriteAllText(Path.Combine(tempDirectory, "proc1.sql"), "-- test");
+                File.WriteAllText(
+                    Path.Combine(tempDirectory, EditorConfigFileName),
+                    """
+                    root = true
+
+                    [*.sql]
+                    dotnet_diagnostic.SqlServer.Rules.SRD0006.severity = error
+                    dotnet_diagnostic.SqlServer.Rules.SRD0002.severity = none
+                    """);
+
+                lock (SuppressionFileLock)
+                {
+                    Directory.SetCurrentDirectory(tempDirectory);
+
+                    // Act
+                    packageAnalyzer.Analyze(model, fileInfo, CollectAssemblyPaths());
+                }
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(originalDirectory);
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain("-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -132,20 +300,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var result = BuildSimpleModel();
+            var (fileInfo, model) = BuildSimpleModel();
             var packageAnalyzer = new PackageAnalyzer(_console, null);
 
             // Act
-            packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
+            packageAnalyzer.Analyze(model, fileInfo, []);
 
             // Assert
             testConsole.Lines.Count.ShouldBe(6);
 
             testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md#static-code-analysis. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
-            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Analyzing package '{fileInfo.FullName}'");
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);
-            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{fileInfo.FullName}'");
         }
 
         [TestMethod]
@@ -177,7 +345,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     // Set the current directory.
                     Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
                     // Act
-                    packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+                    packageAnalyzer.Analyze(packageBuilder.Model, path, []);
                 }
                 finally
                 {
@@ -233,7 +401,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     File.Copy(mixedCaseSuppressionFile, originalSuppressionFile);
                     Directory.SetCurrentDirectory(suppressionDirectory);
                     testConsole.Lines.Clear();
-                    packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
+                    packageAnalyzer.Analyze(packageBuilder.Model, path, []);
 
                     // proc1.sql is suppressed by the correctly cased RuleId.
                     testConsole.Lines.Any(l => l.Contains("proc1.sql") && l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBeFalse();
@@ -276,6 +444,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             result.Add(new FileInfo(Path.Combine(path, "TSQLSmellSCA.dll")));
 
             return result.ToArray();
+        }
+
+        private static string CreateTemporaryProjectDirectory()
+        {
+            var tempDirectory = Path.Combine(Path.GetTempPath(), $"{nameof(PackageAnalyzerTests)}.{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDirectory);
+            return tempDirectory;
         }
     }
 

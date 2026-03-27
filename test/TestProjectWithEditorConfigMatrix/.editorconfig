@@ -1,0 +1,7 @@
+root = true
+
+[*.sql]
+dotnet_diagnostic.SqlServer.Rules.SRD0068.severity = error
+dotnet_diagnostic.SqlServer.Rules.SRP0005.severity = none
+dotnet_diagnostic.SRD0002.severity = error
+dotnet_diagnostic.SRP0020.severity = none

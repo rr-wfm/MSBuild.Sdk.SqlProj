@@ -112,6 +112,10 @@ jobs:
     - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
 
+    # Verify .editorconfig-backed analyzer rule overrides
+    - name: validate editorconfig rules
+      run: bash ./test/validate-editorconfig-rules.sh
+
     # Verify generated create scripts are copied to referencing project outputs
     - name: validate generated create script copy
       run: bash ./test/validate-generated-create-script-copy.sh
