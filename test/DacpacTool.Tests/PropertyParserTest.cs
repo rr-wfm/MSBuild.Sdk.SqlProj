@@ -40,6 +40,31 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void ExtractDeployOptions_WithCaseInsensitivePropertyNames_ShouldParse()
+        {
+            // Arrange
+            var buildOptions = new BuildOptions
+            {
+                DeployProperty = new[]
+                {
+                    "createNewDatabase=True",
+                    "COMMANDTIMEOUT=200",
+                    "excludeobjecttypes=Audits,Endpoints"
+                }
+            };
+
+            // Act
+            var deployOptions = buildOptions.ExtractDeployOptions();
+
+            // Assert
+            deployOptions.CreateNewDatabase.ShouldBeTrue();
+            deployOptions.CommandTimeout.ShouldBe(200);
+            deployOptions.ExcludeObjectTypes.ShouldContain(ObjectType.Audits);
+            deployOptions.ExcludeObjectTypes.ShouldContain(ObjectType.Endpoints);
+            deployOptions.ExcludeObjectTypes.Length.ShouldBe(2);
+        }
+
+        [TestMethod]
         public void ExtractDeployOptions_WithObjectTypesProperties_ShouldParse()
         {
             // Arrange

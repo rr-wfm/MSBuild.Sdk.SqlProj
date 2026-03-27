@@ -19,6 +19,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         static Type CustomSchemaDataType;
 
         static MethodInfo SetMetadataMethod;
+        private static readonly Regex ExternalPartsRegex = new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)", 
+            RegexOptions.CultureInvariant | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline
         static Extensions()
@@ -201,29 +203,47 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private static string ParseExternalParts(string externalParts)
         {
+            return ParseExternalParts(externalParts, ExternalPartsRegex);
+        }
+
+        private static string ParseExternalParts(string externalParts, Regex externalPartsRegex)
+        {
             string serverVariableName = null;
             string databaseVariableName = null;
             string databaseVariableLiteralValue = null;
 
             // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
-            if (externalParts.Contains('=', StringComparison.OrdinalIgnoreCase))
+            if (externalParts.Contains('=', StringComparison.Ordinal))
             {
-                foreach (Match match in new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)",
-                    RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1)).Matches(externalParts))
+                try
                 {
-                    if (match.Groups["dbl"].Success)
+                    foreach (Match match in externalPartsRegex.Matches(externalParts))
                     {
-                        databaseVariableLiteralValue = Identifier.EncodeIdentifier(match.Groups["dbl"].Value);
+                        if (match.Groups["dbl"].Success)
+                        {
+                            databaseVariableLiteralValue = Identifier.EncodeIdentifier(match.Groups["dbl"].Value);
+                        }
+                        else if (match.Groups["dbv"].Success)
+                        {
+                            databaseVariableName =
+                                Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["dbv"].Value));
+                        }
+                        else if (match.Groups["srv"].Success)
+                        {
+                            serverVariableName = Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["srv"].Value));
+                        }
                     }
-                    else if (match.Groups["dbv"].Success)
-                    {
-                        databaseVariableName =
-                            Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["dbv"].Value));
-                    }
-                    else if (match.Groups["srv"].Success)
-                    {
-                        serverVariableName = Identifier.EncodeIdentifier(EnsureIsDelimited(match.Groups["srv"].Value));
-                    }
+                }
+                catch (RegexMatchTimeoutException ex)
+                {
+                    throw new ArgumentException(
+                        "Unable to parse reference external parts. " +
+                        "Use a database literal or SQLCMD variable metadata such as " +
+                        "'DatabaseVariableLiteralValue=\"MyDatabase\"', " +
+                        "'DatabaseSqlCmdVariable=\"MyDatabaseVar\"', or " +
+                        "'DatabaseSqlCmdVariable=\"MyDatabaseVar\" ServerSqlCmdVariable=\"MyServerVar\"'.",
+                        nameof(externalParts),
+                        ex);
                 }
             }
             else
@@ -331,15 +351,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             foreach (var variableName in variables)
             {
                 Console.WriteLine($"Adding SqlCmd variable {variableName}");
-
-                var setMetadataMethod = customData.GetType().GetMethod("SetMetadata", BindingFlags.Public | BindingFlags.Instance);
-
-                if (setMetadataMethod == null)
-                {
-                    throw new InvalidOperationException("Unable to find SetMetadata method on CustomSchemaData.");
-                }
-
-                setMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
+                SetMetadataMethod.Invoke(customData, new object[] { variableName, string.Empty });
             }
 
             AddCustomData(dataSchemaModel, customData);

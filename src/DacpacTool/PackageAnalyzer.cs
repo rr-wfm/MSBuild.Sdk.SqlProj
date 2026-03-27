@@ -10,9 +10,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class PackageAnalyzer
     {
         private readonly IConsole _console;
-        private readonly HashSet<string> _ignoredRules = new();
-        private readonly HashSet<string> _ignoredRuleSets = new();
-        private readonly HashSet<string> _errorRuleSets = new();
+        private readonly HashSet<string> _ignoredRules = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _ignoredRuleSets = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _errorRuleSets = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _errorRulePrefixes = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, HashSet<string>> _suppressedProblemsByRule = new(StringComparer.Ordinal);
         private readonly char[] separator = new[] { ';' };
 
         public PackageAnalyzer(IConsole console, string rulesExpression)
@@ -34,6 +36,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 var factory = new CodeAnalysisServiceFactory();
                 var settings = new CodeAnalysisServiceSettings();
 
+                _suppressedProblemsByRule.Clear();
 
                 if (analyzers.Length > 0)
                 {
@@ -53,55 +56,48 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var projectDir = Environment.CurrentDirectory;
                 var suppressorPath = Path.Combine(projectDir, ProjectProblemSuppressor.SuppressionFilename);
-                List<SuppressedProblemInfo> suppressedProblems = new();
 
                 if (File.Exists(suppressorPath))
                 {
                     _console.WriteLine($"Using suppressor file: {suppressorPath}");
                     var problemSuppressor = ProjectProblemSuppressor.CreateSuppressor(projectDir);
-
-                    suppressedProblems = problemSuppressor.GetSuppressedProblems().ToList();
+                    var suppressedProblems = problemSuppressor.GetSuppressedProblems();
 
                     foreach (var problem in suppressedProblems)
                     {
                         _console.WriteLine($"Suppressing rule: '{problem.Rule.RuleId}' in '{problem.SourceName}'");
+                        var sourceName = Path.Combine(projectDir, problem.SourceName)
+                            .Replace('\\', Path.AltDirectorySeparatorChar);
+
+                        if (!_suppressedProblemsByRule.TryGetValue(problem.Rule.RuleId, out var sourceNames))
+                        {
+                            sourceNames = new HashSet<string>(StringComparer.Ordinal);
+                            _suppressedProblemsByRule[problem.Rule.RuleId] = sourceNames;
+                        }
+
+                        sourceNames.Add(sourceName);
                     }
                 }
 
                 if (_ignoredRules.Count > 0 
                     || _ignoredRuleSets.Count > 0
-                    || suppressedProblems.Count > 0)
+                    || _suppressedProblemsByRule.Count > 0)
                 {
-                    service.SetProblemSuppressor(p => 
-                        suppressedProblems.Any(s => s.Rule.RuleId == p.Rule.RuleId
-                            && Path.Combine(projectDir, s.SourceName).Replace('\\', Path.AltDirectorySeparatorChar) == p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar))
+                    service.SetProblemSuppressor(p =>
+                        (_suppressedProblemsByRule.TryGetValue(p.Rule.RuleId, out var sourceNames) &&
+                         sourceNames.Contains(p.Problem.SourceName.Replace('\\', Path.AltDirectorySeparatorChar)))
                         || _ignoredRules.Contains(p.Rule.RuleId)
                         || _ignoredRuleSets.Any(s => p.Rule.RuleId.StartsWith(s, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 var result = service.Analyze(model);
 
-                var errors = result.GetAllErrors();
-                foreach (var err in errors)
-                {
-                    _console.WriteLine(err.GetOutputMessage());
-                }
-
-                if (!result.AnalysisSucceeded)
-                {
-                    _console.WriteLine($"Analysis of package '{outputFile}' failed");
-                    return;
-                }
-                else
-                {
-                    foreach (var err in result.Problems)
-                    {
-                        _console.WriteLine(err.GetOutputMessage(_errorRuleSets));
-                    }
-
-                    result.SerializeResultsToXml(GetOutputFileName(outputFile));
-                }
-                _console.WriteLine($"Successfully analyzed package '{outputFile}'");
+                WriteAnalysisResults(
+                    outputFile,
+                    result.GetAllErrors().Select(err => err.GetOutputMessage()),
+                    result.AnalysisSucceeded,
+                    result.Problems.Select(err => err.GetOutputMessage(_errorRuleSets, _errorRulePrefixes)),
+                    () => result.SerializeResultsToXml(GetOutputFileName(outputFile)));
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -116,29 +112,65 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             if (!string.IsNullOrWhiteSpace(rulesExpression))
             {
                 foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith('-')
-                                && rule.Length > 1))
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    if (rule.Length > 2 && rule.EndsWith('*'))
+                    if (rule.Length <= 1)
                     {
-                        _ignoredRuleSets.Add(rule[1..^1]);
+                        continue;
                     }
-                    else
+
+                    if (rule[0] == '-')
                     {
-                        _ignoredRules.Add(rule[1..]);
+                        if (rule.Length > 2 && rule.EndsWith('*'))
+                        {
+                            _ignoredRuleSets.Add(rule[1..^1]);
+                        }
+                        else
+                        {
+                            _ignoredRules.Add(rule[1..]);
+                        }
                     }
-                }
-                foreach (var rule in rulesExpression.Split(separator,
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Where(rule => rule
-                            .StartsWith("+!", StringComparison.OrdinalIgnoreCase)
-                                && rule.Length > 2))
-                {
-                    _errorRuleSets.Add(rule[2..]);
+                    else if (rule.Length > 2 &&
+                             rule.StartsWith("+!", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (rule.EndsWith('*'))
+                        {
+                            _errorRulePrefixes.Add(rule[2..^1]);
+                        }
+                        else
+                        {
+                            _errorRuleSets.Add(rule[2..]);
+                        }
+                    }
                 }
             }
+        }
+
+        private void WriteAnalysisResults(FileInfo outputFile, IEnumerable<string> errors, bool analysisSucceeded, IEnumerable<string> problems, Action serializeResults)
+        {
+            ArgumentNullException.ThrowIfNull(outputFile);
+            ArgumentNullException.ThrowIfNull(errors);
+            ArgumentNullException.ThrowIfNull(problems);
+            ArgumentNullException.ThrowIfNull(serializeResults);
+
+            foreach (var error in errors)
+            {
+                _console.WriteLine(error);
+            }
+
+            if (!analysisSucceeded)
+            {
+                _console.WriteLine($"Analysis of package '{outputFile}' failed");
+                return;
+            }
+
+            foreach (var problem in problems)
+            {
+                _console.WriteLine(problem);
+            }
+
+            serializeResults();
+            _console.WriteLine($"Successfully analyzed package '{outputFile}'");
         }
 
         private static string GetOutputFileName(FileInfo outputFile)
