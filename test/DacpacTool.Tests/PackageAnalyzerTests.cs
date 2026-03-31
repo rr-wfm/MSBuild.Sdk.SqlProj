@@ -17,6 +17,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private const string SuppressionFileNameMixedCaseRuleIds = "StaticCodeAnalysis.SuppressMessages.mixed-rule-id-casing.xml";
         // IDE0330: keep object here because this test project also targets net8.0.
         private static readonly object SuppressionFileLock = new();
+        private static readonly string[] AnalysisFailureErrors = ["proc1.sql(1,1): Error SR9999: Analyzer failed."];
+        private static readonly string[] AnalysisFailureWarnings = ["proc1.sql(1,1): Warning SRD0006 : Should not be written."];
         private readonly IConsole _console = new TestConsole();
 
         [TestMethod]
@@ -341,9 +343,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             method!.Invoke(packageAnalyzer, new object[]
             {
                 outputFile,
-                new[] { "proc1.sql(1,1): Error SR9999: Analyzer failed." },
+                AnalysisFailureErrors,
                 false,
-                new[] { "proc1.sql(1,1): Warning SRD0006 : Should not be written." },
+                AnalysisFailureWarnings,
                 new Action(() => serialized = true)
             });
 
