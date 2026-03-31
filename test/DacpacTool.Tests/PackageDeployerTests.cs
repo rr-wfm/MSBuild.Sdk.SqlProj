@@ -191,6 +191,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void SetPropertyCaseInsensitiveNames()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Act
+            packageDeployer.SetDeployProperties(new[]
+            {
+                "createNewDatabase=True",
+                "COMMANDTIMEOUT=77",
+                "dOnOtDrOpObJeCtTyPeS=Assemblies,Rules"
+            });
+
+            // Assert
+            packageDeployer.DeployOptions.CreateNewDatabase.ShouldBeTrue();
+            packageDeployer.DeployOptions.CommandTimeout.ShouldBe(77);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldContain(ObjectType.Assemblies);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldContain(ObjectType.Rules);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.Length.ShouldBe(2);
+        }
+
+        [TestMethod]
         public void SetProperty_SqlCommandVariableValues_ShouldThrowException()
         {
             // Arrange

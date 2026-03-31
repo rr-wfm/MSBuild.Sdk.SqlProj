@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -103,6 +104,25 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void RunsAnalyzerWithWarningsAsErrors_ExactRuleIdsAreCaseInsensitive()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!sqlserver.rules.srd0006");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(1);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
         public void RunsAnalyzerWithWarningsAsErrorsUsingWildcard()
         {
             // Arrange
@@ -123,6 +143,119 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithWildcardOverrides_CaseInsensitivePrefixes()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.ShouldContain("-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithWildcardSuppressions_CaseInsensitivePrefixes()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("Error")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzerWithDuplicateWildcardSuppressions_DifferentCasing_BehavesOnce()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD*;-sqlserver.rules.srd*");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("SRD0002")).ShouldBeFalse();
+            testConsole.Lines.Any(l => l.Contains("): Error ")).ShouldBeFalse();
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        [DataRow("+!SqlServer.Rules.SRD0006", 1, "proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.",      true)]
+        [DataRow("+!SqlServer.Rules.SRD*",    2, "proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.",      true)]
+        [DataRow("+!SqlServer.Rules.SRD*",    2, "-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.", true)]
+        [DataRow("-SqlServer.Rules.SRD0006",  0, "proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.",      false)]
+        [DataRow("-SqlServer.Rules.SRD*",     0, "SRD0002",                                                                       false)]
+        public void RunsAnalyzerWithRuleSeverityOverrides_DataDriven(string overrideRules, int expectedErrorCount, string expectedOutputLine, bool expectContainsLine)
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, overrideRules);
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            if (expectContainsLine)
+            {
+                testConsole.Lines.Any(l => l.Contains(expectedOutputLine)).ShouldBeTrue();
+            }
+            else
+            {
+                testConsole.Lines.Any(l => l.Contains(expectedOutputLine)).ShouldBeFalse();
+            }
+
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(expectedErrorCount);
+            testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
+        }
+
+        [TestMethod]
+        public void RunsAnalyzer_WithMultipleWarningToErrorOverridesInSingleExpression()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var result = BuildSimpleModel();
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006;+!SqlServer.Rules.SRD0002;+!Smells.SML005");
+
+            // Act
+            packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
+
+            // Assert
+            testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
+            testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
+            testConsole.Lines.ShouldContain("-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
+            testConsole.Lines.Any(l => l.Contains("): Error SML005 : Smells : Avoid use of 'Select *'")).ShouldBeTrue();
+            testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(3);
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
@@ -190,6 +323,36 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.Count.ShouldBe(20);
 
             testConsole.Lines.Count(l => l.Contains("Warning SR0001 : Microsoft.Rules.Data")).ShouldBe(1);
+            testConsole.Lines.Any(l => l.Contains("Suppressing rule:")).ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void WriteAnalysisResults_WhenAnalysisFails_WritesErrorsAndFailureMessage()
+        {
+            // Arrange
+            var testConsole = (TestConsole)_console;
+            testConsole.Lines.Clear();
+            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var method = typeof(PackageAnalyzer).GetMethod("WriteAnalysisResults", BindingFlags.NonPublic | BindingFlags.Instance);
+            var outputFile = new FileInfo("test.dacpac");
+            var serialized = false;
+
+            // Act
+            method!.Invoke(packageAnalyzer, new object[]
+            {
+                outputFile,
+                new[] { "proc1.sql(1,1): Error SR9999: Analyzer failed." },
+                false,
+                new[] { "proc1.sql(1,1): Warning SRD0006 : Should not be written." },
+                new Action(() => serialized = true)
+            });
+
+            // Assert
+            testConsole.Lines.ShouldContain("proc1.sql(1,1): Error SR9999: Analyzer failed.");
+            testConsole.Lines.ShouldContain($"Analysis of package '{outputFile}' failed");
+            testConsole.Lines.ShouldNotContain("proc1.sql(1,1): Warning SRD0006 : Should not be written.");
+            testConsole.Lines.ShouldNotContain($"Successfully analyzed package '{outputFile}'");
+            serialized.ShouldBeFalse();
         }
 
         [TestMethod]
