@@ -28,50 +28,60 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             foreach (var table in tables)
             {
-                var formattedTableName = Sanitize(string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}");
-
-                sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {{");
-                foreach (var column in table.Columns)
-                {
-                    var formattedColumnName = Sanitize(column.Name);
-
-                    var pkfk = string.Empty;
-
-                    if (table.PrimaryKey?.Columns.Contains(column) ?? false)
-                    {
-                        pkfk = "PK";
-                    }
-
-                    if (table.ForeignKeys.Any(c => c.Columns.Contains(column)))
-                    {
-                        pkfk = string.IsNullOrEmpty(pkfk) ? "FK" : "PK,FK";
-                    }
-
-                    var nullable = column.IsNullable ? "(NULL)" : string.Empty;
-                    sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase)}{nullable} {pkfk}");
-                }
-
-                sb.AppendLine("  }");
-
-                foreach (var foreignKey in table.ForeignKeys)
-                {
-                    var relationship = "}o--|";
-
-                    if (foreignKey.Columns.Any(c => c.IsNullable))
-                    {
-                        relationship = "}o--o";
-                    }
-
-                    var formattedPrincipalTableName = Sanitize(string.IsNullOrEmpty(foreignKey.PrincipalTable.Schema) ? foreignKey.PrincipalTable.Name : $"{foreignKey.PrincipalTable.Schema}.{foreignKey.PrincipalTable.Name}");
-                    var formattedForeignKeyName = Sanitize(foreignKey.Name ?? string.Empty);
-
-                    sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {relationship}| {formattedPrincipalTableName} : {formattedForeignKeyName}");
-                }
+                AddTable(sb, table);
             }
 
             sb.AppendLine("```");
 
             return sb.ToString();
+        }
+
+        private static void AddTable(System.Text.StringBuilder sb, SimpleTable table)
+        {
+            var formattedTableName = Sanitize(string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}");
+
+            sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {{");
+            foreach (var column in table.Columns)
+            {
+                AddColum(sb, table, column);
+            }
+
+            sb.AppendLine("  }");
+
+            foreach (var foreignKey in table.ForeignKeys)
+            {
+                var relationship = "}o--|";
+
+                if (foreignKey.Columns.Any(c => c.IsNullable))
+                {
+                    relationship = "}o--o";
+                }
+
+                var formattedPrincipalTableName = Sanitize(string.IsNullOrEmpty(foreignKey.PrincipalTable.Schema) ? foreignKey.PrincipalTable.Name : $"{foreignKey.PrincipalTable.Schema}.{foreignKey.PrincipalTable.Name}");
+                var formattedForeignKeyName = Sanitize(foreignKey.Name ?? string.Empty);
+
+                sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {relationship}| {formattedPrincipalTableName} : {formattedForeignKeyName}");
+            }
+        }
+
+        private static void AddColum(System.Text.StringBuilder sb, SimpleTable table, SimpleColumn column)
+        {
+            var formattedColumnName = Sanitize(column.Name);
+
+            var pkfk = string.Empty;
+
+            if (table.PrimaryKey?.Columns.Contains(column) ?? false)
+            {
+                pkfk = "PK";
+            }
+
+            if (table.ForeignKeys.Any(c => c.Columns.Contains(column)))
+            {
+                pkfk = string.IsNullOrEmpty(pkfk) ? "FK" : "PK,FK";
+            }
+
+            var nullable = column.IsNullable ? "(NULL)" : string.Empty;
+            sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase)}{nullable} {pkfk}");
         }
 
         private static string Sanitize(string name)
