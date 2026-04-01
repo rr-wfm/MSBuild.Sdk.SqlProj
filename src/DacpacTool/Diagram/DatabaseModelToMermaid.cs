@@ -28,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             foreach (var table in tables)
             {
-                var formattedTableName = Sanitize(table.Name);
+                var formattedTableName = Sanitize(string.IsNullOrEmpty(table.Schema) ? table.Name : $"{table.Schema}.{table.Name}");
 
                 sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {{");
                 foreach (var column in table.Columns)
@@ -62,7 +62,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                         relationship = "}o--o";
                     }
 
-                    var formattedPrincipalTableName = Sanitize(foreignKey.PrincipalTable.Name);
+                    var formattedPrincipalTableName = Sanitize(string.IsNullOrEmpty(foreignKey.PrincipalTable.Schema) ? foreignKey.PrincipalTable.Name : $"{foreignKey.PrincipalTable.Schema}.{foreignKey.PrincipalTable.Name}");
                     var formattedForeignKeyName = Sanitize(foreignKey.Name ?? string.Empty);
 
                     sb.AppendLine(CultureInfo.InvariantCulture, $"  {formattedTableName} {relationship}| {formattedPrincipalTableName} : {formattedForeignKeyName}");
