@@ -11,9 +11,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     [CliCommand(Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)", 
                 Children = new[] { typeof(BuildOptions), typeof(InspectOptions), typeof(DeployOptions) })]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated by DotMake.CommandLine via Cli.RunAsync<RootCommand>.")]    
     internal sealed class RootCommand
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated by DotMake.CommandLine via Cli.RunAsync<RootCommand>.")]
-    sealed class RootCommand
     {
     }
 
