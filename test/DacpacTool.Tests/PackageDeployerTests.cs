@@ -10,6 +10,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [TestClass]
     public class PackageDeployerTests
     {
+        private static readonly string[] AllowDropBlockingAssemblies = ["AllowDropBlockingAssemblies=True"];
+        private static readonly string[] CaseInsensitiveNamesProperties =
+        [
+            "createNewDatabase=True",
+            "COMMANDTIMEOUT=77",
+            "dOnOtDrOpObJeCtTyPeS=Assemblies,Rules"
+        ];
         private readonly IConsole _console = Substitute.For<IConsole>();
 
         [TestMethod]
@@ -183,10 +190,27 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.SetDeployProperties(new []{"AllowDropBlockingAssemblies=True"});
+            packageDeployer.SetDeployProperties(AllowDropBlockingAssemblies);
 
             // Assert
             packageDeployer.DeployOptions.AllowDropBlockingAssemblies.ShouldBeTrue();
+        }
+
+        [TestMethod]
+        public void SetPropertyCaseInsensitiveNames()
+        {
+            // Arrange
+            var packageDeployer = new PackageDeployer(_console);
+
+            // Act
+            packageDeployer.SetDeployProperties(CaseInsensitiveNamesProperties);
+
+            // Assert
+            packageDeployer.DeployOptions.CreateNewDatabase.ShouldBeTrue();
+            packageDeployer.DeployOptions.CommandTimeout.ShouldBe(77);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldContain(ObjectType.Assemblies);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.ShouldContain(ObjectType.Rules);
+            packageDeployer.DeployOptions.DoNotDropObjectTypes.Length.ShouldBe(2);
         }
 
         [TestMethod]

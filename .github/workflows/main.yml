@@ -20,6 +20,8 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-24.04
+    permissions:
+      checks: write
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -49,13 +51,70 @@ jobs:
     - name: dotnet build DacpacTool
       run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
 
-    # Run tests for command line tool
-    - name: dotnet test
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
+    # Verify analyzer fixes without applying formatting changes
+    - name: dotnet format analyzers
+      run: dotnet format analyzers ./MSBuild.Sdk.SqlProj.slnx --verify-no-changes --severity info
+
+    # Run tests for command line tool and collect coverage
+    - name: dotnet test with coverage
+      id: tests
+      continue-on-error: true
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release --results-directory ./artifacts/test-results --logger trx --collect:"XPlat Code Coverage"
+
+    # Install ReportGenerator for coverage report generation
+    - name: install reportgenerator
+      if: ${{ always() && !cancelled() }}
+      run: dotnet tool install --tool-path . dotnet-reportgenerator-globaltool
+
+    # Generate HTML and Markdown coverage reports
+    - name: generate coverage report
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/test-results/**/coverage.cobertura.xml') != '' }}
+      run: ./reportgenerator -reports:"./artifacts/test-results/**/coverage.cobertura.xml" -targetdir:"./artifacts/coverage-report" -reporttypes:"Html;MarkdownSummary"
+
+    # Publish coverage summary to the GitHub Actions job summary
+    - name: publish coverage summary
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/coverage-report/Summary.md') != '' }}
+      run: |
+        if [ -f ./artifacts/coverage-report/Summary.md ]; then
+          cat ./artifacts/coverage-report/Summary.md >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "Coverage summary not generated; skipping job summary publication."
+        fi
+
+    # Upload HTML coverage report
+    - name: upload coverage report
+      if: ${{ always() && !cancelled() && hashFiles('artifacts/coverage-report/index.html') != '' }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage-report
+        path: ./artifacts/coverage-report
+        if-no-files-found: ignore
+
+    # Upload raw test result files
+    - name: upload test results
+      if: ${{ always() && !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: test-results
+        path: ./artifacts/test-results/**/*
+        if-no-files-found: ignore
+
+    # Publish TRX results to GitHub checks
+    - name: publish test results
+      if: ${{ always() && !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        check_name: "Unit Test Results"
+        comment_mode: off
+        files: "./artifacts/test-results/**/*.trx"
 
     # Run build for SDK package
     - name: dotnet build SDK
       run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
+
+    # Verify generated create scripts are copied to referencing project outputs
+    - name: validate generated create script copy
+      run: bash ./test/validate-generated-create-script-copy.sh
 
     # Ensure that test projects build
     - name: dotnet build TestProject
@@ -105,6 +164,10 @@ jobs:
       with:
         name: template-package
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
+
+    - name: fail job if tests failed
+      if: ${{ always() && !cancelled() && steps.tests.outcome == 'failure' }}
+      run: exit 1
 
   # Run tests in parallel
   test:
@@ -185,11 +248,11 @@ jobs:
 
     # Upload dacpac
     - name: upload
-      if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '8.0.x' }}
+      if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '10.0.x' }}
       uses: actions/upload-artifact@v7
       with:
         name: dacpac-package
-        path: ./test/TestProjectWithSDKRef/bin/Debug/net8.0/
+        path: ./test/TestProjectWithSDKRef/bin/Debug/net10.0/
 
     # Upload binary log
     - name: upload
@@ -251,7 +314,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Microsoft.SqlPackage
     - name: install microsoft.sqlpackage
@@ -355,7 +418,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -471,7 +534,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv

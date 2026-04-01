@@ -12,6 +12,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     [CliCommand(Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)", 
                 Children = new[] { typeof(BuildOptions), typeof(InspectOptions), typeof(DeployOptions) })]
     internal sealed class RootCommand
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated by DotMake.CommandLine via Cli.RunAsync<RootCommand>.")]
+    sealed class RootCommand
     {
     }
 
@@ -253,13 +255,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"ERROR: An error occured while validating arguments: {ex.Message}");
+                Console.WriteLine($"ERROR: An error occurred while validating arguments: {ex.Message}");
                 return 1;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: An error ocurred during deployment: {ex.Message}");
+                Console.WriteLine($"ERROR: An error occurred during deployment: {ex.Message}");
                 return 1;
             }
 #pragma warning restore CA1031 // Do not catch general exception types

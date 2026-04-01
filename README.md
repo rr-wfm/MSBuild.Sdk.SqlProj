@@ -47,7 +47,7 @@ You should now have a project file with the following contents:
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <SqlServerVersion>Sql160</SqlServerVersion>
         <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
         <!-- For additional properties that can be set here, please refer to https://github.com/rr-wfm/MSBuild.Sdk.SqlProj#model-properties -->
@@ -132,7 +132,7 @@ There are a lot of properties that can be set on the model in the resulting `.da
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <RecoveryMode>Simple</RecoveryMode>
         <SqlServerVersion>SqlAzure</SqlServerVersion>
     </PropertyGroup>
@@ -257,7 +257,7 @@ Especially when using pre- and post-deployment scripts, but also in other scenar
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -271,7 +271,7 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <SqlServerVersion>Sql160</SqlServerVersion>
     </PropertyGroup>
 
@@ -288,7 +288,7 @@ By default, the package reference is treated as being part of the same database.
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -305,7 +305,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -348,7 +348,7 @@ Microsoft has released NuGet packages containing the definitions of the `master`
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <SqlServerVersion>160</SqlServerVersion>
     </PropertyGroup>
 
@@ -369,7 +369,7 @@ Similar to package references you can also reference another project by using a 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -383,7 +383,7 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -417,7 +417,7 @@ In order to solve circular references between databases that may have been incor
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -593,7 +593,7 @@ Instead of using `dotnet publish /t:PublishDatabase` to deploy changes to a data
 </Project>
 ```
 
-With this enabled you'll find a SQL script with the name `<database-name>_Create.sql` in the bin folder.
+With this enabled you'll find a SQL script with the name `<database-name>_Create.sql` in the bin folder. When the project is referenced by another project, the generated script is also copied to the referencing project's output directory alongside the `.dacpac`.
 The database name for the create script gets resolved in the following manner:
 
 1. `TargetDatabaseName`.
@@ -646,7 +646,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.0.0">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
   </PropertyGroup>

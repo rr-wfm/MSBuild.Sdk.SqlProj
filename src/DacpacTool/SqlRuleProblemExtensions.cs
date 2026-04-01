@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 
@@ -11,9 +10,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     /// </summary>
     internal static class SqlRuleProblemExtensions
     {
-        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules)
+        public static string GetOutputMessage(this SqlRuleProblem sqlRuleProblem, HashSet<string> errorRules, HashSet<string> errorRulePrefixes)
         {
             ArgumentNullException.ThrowIfNull(sqlRuleProblem);
+            ArgumentNullException.ThrowIfNull(errorRulePrefixes);
 
             SqlRuleProblemSeverity sqlRuleProblemSeverity = sqlRuleProblem.Severity;
 
@@ -22,11 +22,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
             }
 
-            var wildCardErrorRules = errorRules
-                .Where(r => r.EndsWith('*'));
-            if (wildCardErrorRules.Any(s => sqlRuleProblem.RuleId.StartsWith(s[..^1], StringComparison.OrdinalIgnoreCase)))
+            // Wildcard severity overrides are stored as the full rule prefix from the
+            // rules expression (for "+!SqlServer.Rules.SRD*", we store
+            // "SqlServer.Rules.SRD"), so we only keep this loop for prefix rules.
+            foreach (var rule in errorRulePrefixes)
             {
-                sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+                if (sqlRuleProblem.RuleId.StartsWith(rule, StringComparison.OrdinalIgnoreCase))
+                {
+                    sqlRuleProblemSeverity = SqlRuleProblemSeverity.Error;
+                    break;
+                }
             }
             
             var stringBuilder = new StringBuilder();

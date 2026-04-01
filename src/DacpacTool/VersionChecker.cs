@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Net.Http.Json;
-using NuGet.Versioning;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Diagnostics;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Versioning;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
