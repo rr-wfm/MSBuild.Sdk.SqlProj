@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,9 +25,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var diagramBuilder = new MermaidDiagramBuilder(_console);
 
             // Act
-            var diagram = diagramBuilder.BuildErDiagram(result.model, packageName, result.fileInfo);
+            var diagram = diagramBuilder.BuildErDiagram(result.model, packageName);
             
             // Assert
+            Path.GetDirectoryName(diagram).ShouldBe(Environment.CurrentDirectory);
+
             testConsole.Lines.Count.ShouldBe(1);
 
             testConsole.Lines.ShouldContain($"Generating ER diagram MyPackage_erdiagram.md");

@@ -616,7 +616,7 @@ The SDK supports generating an Entity Relationship (ER) diagram from your projec
 </Project>
 ```
 
-The generated diagram is saved in the output directory. The diagram is generated as a `.md` file and is named after the database project, for example `TestProject_erdiagram.md`.
+The generated diagram is saved in the project directory. The diagram is generated as a `.md` file and is named after the database project, for example `TestProject_erdiagram.md`.
 
 This is a sample of the generated diagram:
 

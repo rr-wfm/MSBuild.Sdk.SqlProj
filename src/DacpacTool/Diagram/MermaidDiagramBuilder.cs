@@ -17,13 +17,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             _console = console ?? throw new ArgumentNullException(nameof(console));
         }
 
-        public string? BuildErDiagram(TSqlModel model, string databaseName, FileInfo dacpacFile)
+        public string? BuildErDiagram(TSqlModel model, string databaseName)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(model);
-
-                ArgumentNullException.ThrowIfNull(dacpacFile);
 
                 var diagramFileName = $"{databaseName}_erdiagram.md";
 
