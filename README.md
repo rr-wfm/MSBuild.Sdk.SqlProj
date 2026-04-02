@@ -609,7 +609,7 @@ The database name for the create script gets resolved in the following manner:
 The SDK supports generating an Entity Relationship (ER) diagram from your project. To enable this, add the `GenerateEntityRelationshipDiagram` property to your project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.0.2">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
   <PropertyGroup>
     <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
   </PropertyGroup>
@@ -622,14 +622,14 @@ This is a sample of the generated diagram:
 
 ```mermaid
 erDiagram
-  Album {
+  "dbo.Album" {
     AlbumId int PK
     Title nvarchar(160) 
     ArtistId int FK
     Valid bit(NULL) 
   }
-  Album }o--|| Artist : FK_AlbumArtistId
-  Artist {
+  "dbo.Album" }o--|| "dbo.Artist" : FK_AlbumArtistId
+  "dbo.Artist" {
     ArtistId int PK
     Name nvarchar(120)(NULL) 
   }
