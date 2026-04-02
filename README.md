@@ -72,7 +72,7 @@ You should now have a project file with the following contents:
 </Project>
 ```
 
-Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\net8.0` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
+Then run a `dotnet build` and you'll find a .dacpac file with the same name as your project file in the `bin\Debug\net10.0` folder. If you want to change the name of the `.dacpac` file you can set the `<TargetName>` property in your project file to something else.
 
 > Note: For PackageReferences this SDK currently assumes that the `.dacpac` file has the same name as the package. If you plan to create a NuGet package out of your project (see [below](#packaging-support)) then make sure that `<TargetName>` matches the ID of your package.
 
@@ -606,10 +606,10 @@ The database name for the create script gets resolved in the following manner:
 
 ## Entity Relationship diagram
 
-The SDK supports generating an Entity Relationship (ER) diagram from your project. To enable this, add the `GenerateEntityRelationshipDiagram` property to your project file:
+The SDK supports generating an Entity Relationship diagram from your project. To enable this, add the `GenerateEntityRelationshipDiagram` property to your project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.0.2">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
   <PropertyGroup>
     <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
   </PropertyGroup>
@@ -622,14 +622,14 @@ This is a sample of the generated diagram:
 
 ```mermaid
 erDiagram
-  Album {
+  "dbo.Album" {
     AlbumId int PK
     Title nvarchar(160) 
     ArtistId int FK
     Valid bit(NULL) 
   }
-  Album }o--|| Artist : FK_AlbumArtistId
-  Artist {
+  "dbo.Album" }o--|| "dbo.Artist" : FK_AlbumArtistId
+  "dbo.Artist" {
     ArtistId int PK
     Name nvarchar(120)(NULL) 
   }
@@ -717,7 +717,7 @@ They are based on these older repositories:
 
 - [dotnet-sqltest](https://github.com/cagrin/dotnet-sqltest) - Command line tool for running tSQLt unit tests from MSBuild.Sdk.SqlProj projects.
 
-- [SQL Project Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools&ssr=false#overview) - Visual Studio extension that enhances the developer experience for MSBuild.Sdk.SqlProj projects with project and item templates, import of existing databases, E/R diagrams, static analysis reporting and more.
+- [SQL Project Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools&ssr=false#overview) - Visual Studio extension that enhances the developer experience for MSBuild.Sdk.SqlProj projects with project and item templates, import of existing databases, schema compare, analyzer rule management, E/R diagrams, static code analysis reporting and more.
 
 - [T-SQL Analyzer](https://marketplace.visualstudio.com/items?itemName=ErikEJ.TSqlAnalyzer) - Visual Studio extension that adds live best practices analysis to your SQL scripts in your MSBuild.Sdk.SqlProj project.
 
