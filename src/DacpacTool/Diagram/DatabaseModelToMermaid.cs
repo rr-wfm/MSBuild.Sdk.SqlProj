@@ -81,7 +81,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
             }
 
             var nullable = column.IsNullable ? "(NULL)" : string.Empty;
-            sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase)}{nullable} {pkfk}");
+
+            var storeType = column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase).Replace(",", "-", StringComparison.OrdinalIgnoreCase) ?? string.Empty;
+
+            sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {storeType}{nullable} {pkfk}");
         }
 
         private static string Sanitize(string name)
