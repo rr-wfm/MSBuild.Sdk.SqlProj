@@ -90,6 +90,14 @@
         "displayName": "Enable Code Analysis",
         "description": "Enable code analysis for the SQL project",
         "replaces": "#{CodeAnalysis}"
+      },
+      "erDiagram": {
+        "type": "parameter",
+        "dataType": "bool",
+        "defaultValue": "false",
+        "displayName": "Enable ER Diagram",
+        "description": "Enable Entity-Relationship diagram generation for the SQL project",
+        "replaces": "#{ErDiagram}"
       }
     }
   }
