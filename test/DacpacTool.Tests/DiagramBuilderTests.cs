@@ -40,6 +40,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             diagramText.ShouldNotContain("sp_GetData");
 
+            diagramText.ShouldContain("  \"dbo.TestTable\" {");
             diagramText.ShouldContain("    Column1 nvarchar(100) PK");
             diagramText.ShouldContain("    Computed computed(2*2)");
         }
