@@ -17,7 +17,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static readonly string ProjectDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../ErDiagramHarnessProject"));
         private static readonly string ProjectFile = Path.Combine(ProjectDirectory, "ErDiagramHarnessProject.csproj");
         private static readonly string ExpectedDirectory = Path.Combine(ProjectDirectory, "Expected");
-        private static readonly string DacpacToolExe = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/DacpacTool/bin/Debug/net10.0/DacpacTool.dll"));
         private static readonly UTF8Encoding Utf8WithoutBom = new UTF8Encoding(false);
         private static readonly string[] GeneratedDiagramFiles =
         {
@@ -152,8 +151,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
         private static (int ExitCode, string Output) BuildHarnessProject()
         {
-            File.Exists(DacpacToolExe).ShouldBeTrue($"Expected test-built DacpacTool at {DacpacToolExe}");
-            return RunProcess("dotnet", $"build \"{ProjectFile}\" -nologo -t:Rebuild -p:DacpacToolExe=\"{DacpacToolExe}\"");
+            var dacpacToolExe = GetDacpacToolExe();
+
+            File.Exists(dacpacToolExe).ShouldBeTrue($"Expected test-built DacpacTool at {dacpacToolExe}");
+            return RunProcess("dotnet", $"build \"{ProjectFile}\" -nologo -t:Rebuild -p:DacpacToolExe=\"{dacpacToolExe}\"");
         }
 
         private static bool CanRunProcess(string fileName, string arguments)
@@ -195,6 +196,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static string NormalizeLineEndings(string value)
         {
             return value.Replace("\r\n", "\n", StringComparison.Ordinal);
+        }
+
+        private static string GetDacpacToolExe()
+        {
+            var debugPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/DacpacTool/bin/Debug/net10.0/DacpacTool.dll"));
+            if (File.Exists(debugPath))
+            {
+                return debugPath;
+            }
+
+            var releasePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/DacpacTool/bin/Release/net10.0/DacpacTool.dll"));
+            return releasePath;
         }
 
         private static string ComputeSha256(string value)
