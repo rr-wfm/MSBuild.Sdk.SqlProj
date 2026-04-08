@@ -18,6 +18,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static readonly string ProjectFile = Path.Combine(ProjectDirectory, "ErDiagramHarnessProject.csproj");
         private static readonly string ExpectedDirectory = Path.Combine(ProjectDirectory, "Expected");
         private static readonly UTF8Encoding Utf8WithoutBom = new UTF8Encoding(false);
+        private static readonly string[] DacpacToolTargetFrameworks = { "net8.0", "net9.0", "net10.0" };
+        private static readonly string[] BuildConfigurations = { "Debug", "Release" };
         private static readonly string[] GeneratedDiagramFiles =
         {
             "sales.erdiagram.md",
@@ -244,13 +246,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
         private static string[] GetDacpacToolCandidatePaths(string preferredTargetFramework)
         {
-            var targetFrameworks = new[] { "net8.0", "net9.0", "net10.0" };
-            var orderedTargetFrameworks = targetFrameworks
+            var orderedTargetFrameworks = DacpacToolTargetFrameworks
                 .Where(tfm => !string.Equals(tfm, preferredTargetFramework, StringComparison.OrdinalIgnoreCase))
                 .Prepend(preferredTargetFramework)
                 .ToArray();
 
-            return new[] { "Debug", "Release" }
+            return BuildConfigurations
                 .SelectMany(configuration => orderedTargetFrameworks.Select(targetFramework =>
                     Path.GetFullPath(
                         Path.Combine(
