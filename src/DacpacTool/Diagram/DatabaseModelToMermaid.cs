@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             var nullable = column.IsNullable ? "(NULL)" : string.Empty;
 
-            var storeType = SanitizeStoreType(column.StoreType);
+            var storeType = SanitizeStoreType(column.StoreType ?? string.Empty);
 
             sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {storeType}{nullable} {pkfk}");
         }
