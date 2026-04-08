@@ -55,6 +55,14 @@
     <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_EntityRelationshipDiagramConfigFile Include="$(EntityRelationshipDiagramConfigFile)"
+                                          Condition="'$(EntityRelationshipDiagramConfigFile)' != ''" />
+    <_EntityRelationshipDiagramConfigFile Include="@(EntityRelationshipDiagramConfigFile)"
+                                          Condition="'$(EntityRelationshipDiagramConfigFile)' == ''" />
+    <_DistinctEntityRelationshipDiagramConfigFile Include="@(_EntityRelationshipDiagramConfigFile->Distinct())" />
+  </ItemGroup>
+
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
     <PropertyGroup>
       <NuspecProperties>
@@ -183,7 +191,7 @@
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
   <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
-          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);$(EntityRelationshipDiagramConfigFile);@(EntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
+          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
       <_BuildPropertyNames Include="$(KnownModelProperties)" />
@@ -199,8 +207,6 @@
 
       <!-- Compile the list of references -->
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
-      <_EntityRelationshipDiagramConfigFile Include="$(EntityRelationshipDiagramConfigFile)" Condition="'$(EntityRelationshipDiagramConfigFile)' != ''" />
-      <_EntityRelationshipDiagramConfigFile Include="@(EntityRelationshipDiagramConfigFile)" />
     </ItemGroup>
     <!-- Write the list of input files to a file to be consumed by the dacpac tool -->
     <Message Importance="Low" Text="Writing input files to $(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt" />
@@ -242,7 +248,7 @@
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
-      <ErDiagramConfigArgument>@(_EntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
+      <ErDiagramConfigArgument>@(_DistinctEntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
       <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
