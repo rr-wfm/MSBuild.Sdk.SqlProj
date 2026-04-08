@@ -163,12 +163,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
                 var isNullable = colObj.GetProperty<bool>(Column.Nullable);
                 var storeType = GetColumnStoreType(colObj, typeAliases);
 
-                    if (colType == ColumnType.ComputedColumn)
-                    {
-                        storeType = string.Equals(storeType, "unknown", StringComparison.OrdinalIgnoreCase)
-                            ? "computed"
-                            : $"computed({storeType})";
-                    }
+                if (colType == ColumnType.ComputedColumn)
+                {
+                    storeType = string.Equals(storeType, "unknown", StringComparison.OrdinalIgnoreCase)
+                        ? "computed"
+                        : $"computed({storeType})";
+                }
 
                 simpleTable.Columns.Add(new SimpleColumn
                 {
