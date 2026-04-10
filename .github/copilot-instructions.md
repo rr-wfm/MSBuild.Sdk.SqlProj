@@ -3,25 +3,25 @@
 ## Repository purpose and layout
 - This repository ships an MSBuild SDK that builds SQL projects into `.dacpac` artifacts.
 - Core projects:
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/DacpacTool`: CLI used by SDK targets to build/inspect/deploy dacpacs.
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/MSBuild.Sdk.SqlProj`: SDK packaging and MSBuild `Sdk.props`/`Sdk.targets`.
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/MSBuild.Sdk.SqlProj.Templates`: `dotnet new` templates.
+  - `./src/DacpacTool`: CLI used by SDK targets to build/inspect/deploy dacpacs.
+  - `./src/MSBuild.Sdk.SqlProj`: SDK packaging and MSBuild `Sdk.props`/`Sdk.targets`.
+  - `./src/MSBuild.Sdk.SqlProj.Templates`: `dotnet new` templates.
 - Tests and scenario projects:
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/test/DacpacTool.Tests`: unit tests for CLI logic.
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/test/TestProject*`: integration-style build/publish scenarios.
+  - `./test/DacpacTool.Tests`: unit tests for CLI logic.
+  - `./test/TestProject*`: integration-style build/publish scenarios.
 
 ## Where to change code
 - SDK behavior (build/publish/reference resolution):
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets`
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props`
+  - `./src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets`
+  - `./src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props`
 - CLI behavior and command handling:
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/DacpacTool/Program.cs`
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/DacpacTool/*.cs`
+  - `./src/DacpacTool/Program.cs`
+  - `./src/DacpacTool/*.cs`
 - Template changes:
-  - `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj`
+  - `./src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj`
 
 ## Preferred validation sequence
-Run from `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj`.
+Run from the repository root.
 
 1. Build CLI:
    - `dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release`
@@ -37,13 +37,13 @@ Run from `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj`.
    - `dotnet build ./test/TestProjectWithGenerateScriptAndTargetDatabaseName/TestProjectWithGenerateScriptAndTargetDatabaseName.csproj -c Release`
 
 ## CI alignment
-- Primary CI workflow: `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/.github/workflows/main.yml`.
+- Primary CI workflow: `./.github/workflows/main.yml`.
 - CI runs across Ubuntu/macOS/Windows and .NET 8/9/10 for SDK reference scenarios.
 - CI also validates deployment flows using SQL Server containers (`deploy-sqlpackage`, `deploy-publish`, `deploy-container`).
 - Keep local validation focused first; use workflow logs to debug matrix/platform-specific failures.
 
 ## Coding and style expectations
-- Follow `/home/runner/work/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj/.editorconfig`.
+- Follow `./.editorconfig`.
 - C# style is analyzer-enforced (`AnalysisMode=all`, `EnforceCodeStyleInBuild=true` in DacpacTool).
 - Avoid broad refactors unless requested; this repo has many scenario tests that can be sensitive to behavioral changes.
 
