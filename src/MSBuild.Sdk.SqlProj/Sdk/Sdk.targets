@@ -104,7 +104,8 @@
   -->
   <Target Name="ValidateEnvironment">
     <PropertyGroup>
-      <DacpacToolTfm Condition="'$(DacpacToolTfm)' == ''">net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
+      <DacpacToolTfm>net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
+      <!-- Allow tests and advanced callers to override the exact tool path via -p:DacpacToolExe=... -->
       <DacpacToolExe Condition="'$(DacpacToolExe)' == ''">$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
