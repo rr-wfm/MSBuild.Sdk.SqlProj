@@ -20,9 +20,11 @@
         </PackageReference>
     </ItemGroup>
 
-    <ItemGroup Condition="'#{ErDiagram}' == 'True'">
+    <!--#if (erDiagram) -->
+    <ItemGroup>
         <EntityRelationshipDiagramConfigFile Include="sqlproj.erdiagram.json" />
     </ItemGroup>
+    <!--#endif -->
 
     <PropertyGroup>
         <!-- Refer to https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/publishing.html for supported publishing options -->
