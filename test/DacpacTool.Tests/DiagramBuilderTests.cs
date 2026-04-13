@@ -130,6 +130,69 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
         }
 
+        [TestMethod]
+        public void ThrowsForUnknownConfigProperty()
+        {
+            var packageName = "MyPackage";
+            var result = BuildRelationalModel();
+            var configPath = WriteConfigFile("{\"unknown\":true}");
+            var diagramBuilder = new MermaidDiagramBuilder(_console);
+
+            try
+            {
+                var exception = Should.Throw<System.Text.Json.JsonException>(() =>
+                    diagramBuilder.BuildErDiagram(result.model, packageName, new FileInfo(configPath)));
+
+                exception.Message.ShouldContain("unsupported property 'unknown'");
+            }
+            finally
+            {
+                File.Delete(configPath);
+            }
+        }
+
+        [TestMethod]
+        public void ThrowsForDuplicateSchemaEntries()
+        {
+            var packageName = "MyPackage";
+            var result = BuildRelationalModel();
+            var configPath = WriteConfigFile("{\"schemas\":[\"sales\",\"sales\"]}");
+            var diagramBuilder = new MermaidDiagramBuilder(_console);
+
+            try
+            {
+                var exception = Should.Throw<System.Text.Json.JsonException>(() =>
+                    diagramBuilder.BuildErDiagram(result.model, packageName, new FileInfo(configPath)));
+
+                exception.Message.ShouldContain("must not contain duplicate values");
+            }
+            finally
+            {
+                File.Delete(configPath);
+            }
+        }
+
+        [TestMethod]
+        public void ThrowsForEmptyOutputFileName()
+        {
+            var packageName = "MyPackage";
+            var result = BuildRelationalModel();
+            var configPath = WriteConfigFile("{\"outputFileName\":\"\"}");
+            var diagramBuilder = new MermaidDiagramBuilder(_console);
+
+            try
+            {
+                var exception = Should.Throw<System.Text.Json.JsonException>(() =>
+                    diagramBuilder.BuildErDiagram(result.model, packageName, new FileInfo(configPath)));
+
+                exception.Message.ShouldContain("must be a non-empty string");
+            }
+            finally
+            {
+                File.Delete(configPath);
+            }
+        }
+
         private static (FileInfo fileInfo, TSqlModel model) BuildSimpleModel()
         {
             var tmodel = new TestModelBuilder()
