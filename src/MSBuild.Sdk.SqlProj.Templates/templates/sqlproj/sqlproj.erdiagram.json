@@ -1,0 +1,7 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rr-wfm/MSBuild.Sdk.SqlProj/master/src/MSBuild.Sdk.SqlProj/Sdk/EntityRelationshipDiagramConfig.schema.json",
+  "schemas": [
+    "dbo"
+  ],
+  "outputFileName": "sqlproj_erdiagram.md"
+}
