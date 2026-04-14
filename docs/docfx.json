@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "build": {
+    "content": [
+      {
+        "files": [
+          "index.md",
+          "toc.yml",
+          "docs/toc.yml",
+          "docs/index.md",
+          "docs/**.md",
+          "docs/**.yml"
+        ]
+      },
+      {
+        "src": "..",
+        "files": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.svg"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "src": "..",
+        "files": [
+          "images/**",
+          "docs/images/**",
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.svg"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern",
+      "templates/custom"
+    ],
+    "globalMetadata": {
+      "_appTitle": "MSBuild.Sdk.SqlProj",
+      "_appName": "MSBuild.Sdk.SqlProj",
+      "_appFooter": "MSBuild.Sdk.SqlProj documentation"
+    }
+  }
+}
