@@ -118,7 +118,7 @@ By default the pre- and/or post-deployment script of referenced packages (both [
 
 ## SQLCMD variables
 
-Especially when using pre-deployment and post-deployment scripts, but also in other scenario's, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables. These variables can be defined in your project file using the following syntax:
+Especially when using pre-deployment and post-deployment scripts, but also in other scenarios, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables. These variables can be defined in your project file using the following syntax:
 
 ### Define SQLCMD variables
 

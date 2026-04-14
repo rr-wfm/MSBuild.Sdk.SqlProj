@@ -141,7 +141,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
-            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/static-code-analysis.html. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
+            testConsole.Lines.ShouldNotContain("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the documentation here: https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/static-code-analysis.html. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain($"-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(2);
@@ -276,7 +276,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Assert
             testConsole.Lines.Count.ShouldBe(6);
 
-            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the readme here: https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/static-code-analysis.html. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
+            testConsole.Lines[1].ShouldBe("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the documentation here: https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/static-code-analysis.html. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(0);

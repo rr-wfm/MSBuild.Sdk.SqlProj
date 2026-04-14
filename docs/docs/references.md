@@ -176,8 +176,8 @@ For other variants of SQL Server / Azure SQL Database there are dedicated packag
 
 ## Circular References and SuppressMissingDependenciesErrors
 
-In order to solve circular references between databases that may have been incorrectly setup, it is possible to add
-`SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [Project References](#project-references)):
+In order to solve circular references between databases that may have been incorrectly set up, it is possible to add
+`SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [Project References](#project-references):
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">

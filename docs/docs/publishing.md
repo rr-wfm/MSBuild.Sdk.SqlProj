@@ -9,7 +9,7 @@ We generally recommend using the container image approach for most scenarios, as
 
 ## Publishing directly to SQL Server
 
-There is support for publishing a project to a SQL Server using the `dotnet publish /t:PublishDatabase` command. This support is designed to be used by developers to deploy or update their local development database quickly. For more advanced deployment scenario's we suggest using [SqlPackage](https://docs.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver15) instead as it provides more options, or check out the container image approach described below.
+There is support for publishing a project to a SQL Server using the `dotnet publish /t:PublishDatabase` command. This support is designed to be used by developers to deploy or update their local development database quickly. For more advanced deployment scenarios we suggest using [SqlPackage](https://docs.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage?view=sql-server-ver15) instead as it provides more options, or check out the container image approach described below.
 
 There are a couple of properties that control the deployment process which have some defaults to make the experience as smooth as possible for local development. For example, on Windows if you have a default SQL Server instance running on your local machine running `dotnet publish /t:PublishDatabase` creates a database with the same name as the project. Unfortunately on Mac and Linux we cannot use Windows authentication, so you'll need to specify a username and password:
 

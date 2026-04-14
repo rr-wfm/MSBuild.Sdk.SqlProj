@@ -4,7 +4,7 @@ Starting with version 2.7.0 of the SDK, there is support for running static code
 
 - [Transact-SQL Design Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193411(v=vs.100))
 - [Transact-SQL Naming Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193246(v=vs.100))
-- [Transact-SQL Performance Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd172117(v=vs.100)))
+- [Transact-SQL Performance Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd172117(v=vs.100))
 
 ## Enable static code analysis
 
@@ -23,7 +23,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
 > [!NOTE]
 > The target framework must be set to `net8.0` or `net10.0` when using additional NuGet-based rules.
 
-A xml file with the analysis results is created in the output folder.
+An XML file with the analysis results is created in the output folder.
 
 The optional `CodeAnalysisRules` property allows you to disable individual rules or groups of rules for the entire project.
 
