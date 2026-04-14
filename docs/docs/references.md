@@ -7,7 +7,7 @@
 ### Basic package references
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -23,7 +23,7 @@ It will assume that the `.dacpac` file is inside the `tools` folder of the refer
 ### Override the dacpac name
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -41,7 +41,7 @@ By default, the package reference is treated as being part of the same database.
 ### Reference another database
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -62,7 +62,7 @@ You can also use SQLCMD variables to set references, similar to the behavior of 
 ### Use SQLCMD variables
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -109,7 +109,7 @@ Similar to package references you can also reference another project by using a 
 ### Basic project references
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -125,7 +125,7 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 ### Reference another database
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -159,7 +159,7 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 Microsoft has released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>
@@ -180,7 +180,7 @@ In order to solve circular references between databases that may have been incor
 `SuppressMissingDependenciesErrors` to both [Package References](#package-references) and [Project References](#project-references):
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
   </PropertyGroup>

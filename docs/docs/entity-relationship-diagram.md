@@ -5,7 +5,7 @@
 The SDK supports generating an Entity Relationship diagram from your project. To enable this, add the `GenerateEntityRelationshipDiagram` property to your project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
   </PropertyGroup>
