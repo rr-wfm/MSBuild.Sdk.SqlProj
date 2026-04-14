@@ -1,0 +1,8 @@
+- name: Docs
+  href: docs/
+- name: GitHub
+  href: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj
+- name: NuGet
+  href: https://www.nuget.org/packages/MSBuild.Sdk.SqlProj
+- name: Releases
+  href: https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/releases

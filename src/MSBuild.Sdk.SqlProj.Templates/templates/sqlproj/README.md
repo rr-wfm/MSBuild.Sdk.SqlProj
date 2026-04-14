@@ -12,4 +12,4 @@ dotnet build
 
 ## Learn more
 
-📚 To get started and take advantage of the many features of your MSBuild.Sdk.SqlProj project, please have a look at our [user guide](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/blob/master/README.md).
+📚 To get started and take advantage of the many features of your MSBuild.Sdk.SqlProj project, please have a look at our [user guide](https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/getting-started.html).
