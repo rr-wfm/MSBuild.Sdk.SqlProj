@@ -3,5 +3,5 @@
   "schemas": [
     "hr"
   ],
-  "outputFileName": "hr.erdiagram.md"
+  "outputFileName": "hr_erdiagram.md"
 }

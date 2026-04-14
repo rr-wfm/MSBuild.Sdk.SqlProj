@@ -22,10 +22,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static readonly string[] BuildConfigurations = { "Debug", "Release" };
         private static readonly string[] GeneratedDiagramFiles =
         {
-            "sales.erdiagram.md",
-            "hr.erdiagram.md",
-            "special.erdiagram.md",
-            "computed-column.erdiagram.md",
+            "sales_erdiagram.md",
+            "hr_erdiagram.md",
+            "special_erdiagram.md",
+            "computed-column_erdiagram.md",
         };
 
         [TestMethod]

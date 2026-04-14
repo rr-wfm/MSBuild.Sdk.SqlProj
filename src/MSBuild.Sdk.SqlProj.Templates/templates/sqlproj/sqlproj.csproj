@@ -22,7 +22,7 @@
 
     <!--#if (erDiagram) -->
     <ItemGroup>
-        <EntityRelationshipDiagramConfigFile Include="sqlproj.erdiagram.json" />
+        <EntityRelationshipDiagramConfigFile Include="sqlproj_erdiagram.json" />
     </ItemGroup>
     <!--#endif -->
 

@@ -21,7 +21,7 @@
             "modifiers": [
               {
                 "condition": "(erDiagram)",
-                "include": ["sqlproj.erdiagram.json"]
+                "include": ["sqlproj_erdiagram.json"]
               }
             ]
         }

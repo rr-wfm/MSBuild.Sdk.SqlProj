@@ -55,8 +55,8 @@ To generate multiple diagrams, define multiple config files in an item group:
   </PropertyGroup>
 
   <ItemGroup>
-    <EntityRelationshipDiagramConfigFile Include="Configs\sales.erdiagram.json" />
-    <EntityRelationshipDiagramConfigFile Include="Configs\hr.erdiagram.json" />
+    <EntityRelationshipDiagramConfigFile Include="Configs\sales_erdiagram.json" />
+    <EntityRelationshipDiagramConfigFile Include="Configs\hr_erdiagram.json" />
   </ItemGroup>
 </Project>
 ```
@@ -67,7 +67,7 @@ Each config file can optionally contain `schemas`, `tables`, and `outputFileName
 {
   "schemas": [ "sales", "hr" ],
   "tables": [ "dbo.Customer", "reporting.Snapshot" ],
-  "outputFileName": "operations.erdiagram.md"
+  "outputFileName": "operations_erdiagram.md"
 }
 ```
 

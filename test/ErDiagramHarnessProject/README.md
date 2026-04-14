@@ -12,7 +12,7 @@ It exists to verify:
 ## Files
 
 - `ErDiagramHarnessProject.csproj`: SDK-backed test project that generates multiple ER diagrams during build
-- `Configs/*.erdiagram.json`: diagram filter configurations
+- `Configs/*_erdiagram.json`: diagram filter configurations
 - `Expected/*.md`: golden files used for output comparison
 - `Tables/*.sql`: schema objects used by the harness
 

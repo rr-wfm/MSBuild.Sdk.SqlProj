@@ -5,5 +5,5 @@
     "dbo.Entity",
     "dbo.SpecializedEntity"
   ],
-  "outputFileName": "computed-column.erdiagram.md"
+  "outputFileName": "computed-column_erdiagram.md"
 }
