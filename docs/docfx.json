@@ -46,8 +46,7 @@
     "globalMetadata": {
       "_appTitle": "MSBuild.Sdk.SqlProj",
       "_appName": "MSBuild.Sdk.SqlProj",
-      "_appFooter": "MSBuild.Sdk.SqlProj documentation",
-      "_disableContribution": true
+      "_appFooter": "MSBuild.Sdk.SqlProj documentation"
     }
   }
 }
