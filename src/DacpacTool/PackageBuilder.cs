@@ -44,13 +44,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else if (referenceType == "dll")
             {
-                _console.WriteLine($"Adding assembly reference to {referenceFile}");
-                var name = Path.GetFileNameWithoutExtension(referenceFile);
-                name = name.Replace("]", "]]", StringComparison.OrdinalIgnoreCase);
-                var data = File.ReadAllBytes(referenceFile);
-                var bits = Convert.ToHexString(data);
-                var script = $"CREATE ASSEMBLY [{name}] FROM 0x{bits}";
-                Model.AddOrUpdateObjects(script, referenceFile, new TSqlObjectOptions());
+                DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
+
+                using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    _console.WriteLine($"Adding {referenceFile} to package");
+
+                    package.Close();
+                }
+
+                Model = TSqlModel.LoadFromDacpac(outputFile.FullName);
             }
             else // This should never be hit since ValidateReference will throw for invalid file types
             {
