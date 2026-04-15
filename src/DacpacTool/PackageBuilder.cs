@@ -7,6 +7,7 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 
@@ -54,7 +55,39 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _console.WriteLine($"Adding {referenceFile} to package");
 
                     var entry = z.GetEntry("model.xml");
-                    throw new Exception("Entry found: " + entry.FullName); 
+
+                    using (var modelStream = entry.Open())
+                    {
+                        var doc = XDocument.Load(modelStream);
+
+                        var modelElement = doc.Root;
+
+                        var appendedContent = XElement.Parse("""
+<Element Type="SqlAssembly" Name="[BinPackingSqlClr]">
+<Relationship Name="AssemblySources">
+<Entry>
+<Element Type="SqlAssemblySource">
+<Property Name="Source">
+<Value>
+boe
+</Value>
+</Property>
+</Element>
+</Entry>
+</Relationship>
+<Relationship Name="Authorizer">
+<Entry>
+<References ExternalSource="BuiltIns" Name="[dbo]"/>
+</Entry>
+</Relationship>
+</Element>
+""");
+
+                    modelElement.Add(appendedContent);
+                    
+                    modelStream.SetLength(0);
+                    doc.Save(modelStream);
+                }
                 }
 
                 var modelLoadOptions = new ModelLoadOptions { LoadAsScriptBackedModel = true };
