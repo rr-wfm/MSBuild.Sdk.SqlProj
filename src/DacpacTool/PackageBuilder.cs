@@ -87,6 +87,10 @@ boe
                     
                     modelStream.SetLength(0);
                     doc.Save(modelStream);
+
+                    modelStream.Position = 0;
+                    var hash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
+                    throw new Exception("hash: " + hash);
                 }
                 }
 
