@@ -17,7 +17,13 @@
         {
             "source": "./",
             "target": "./",
-            "include": ["sqlproj.csproj", "README.md"]
+            "include": ["sqlproj.csproj", "README.md"],
+            "modifiers": [
+              {
+                "condition": "(erDiagram)",
+                "include": ["sqlproj_erdiagram.json"]
+              }
+            ]
         }
     ],
     "symbols": {

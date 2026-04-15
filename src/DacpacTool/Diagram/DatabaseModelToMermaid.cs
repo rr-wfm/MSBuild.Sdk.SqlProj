@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -82,9 +83,41 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             var nullable = column.IsNullable ? "(NULL)" : string.Empty;
 
-            var storeType = column.StoreType?.Replace(", ", "-", StringComparison.OrdinalIgnoreCase).Replace(",", "-", StringComparison.OrdinalIgnoreCase) ?? string.Empty;
+            var storeType = SanitizeStoreType(column.StoreType ?? string.Empty);
 
             sb.AppendLine(CultureInfo.InvariantCulture, $"    {formattedColumnName} {storeType}{nullable} {pkfk}");
+        }
+
+        private static string SanitizeStoreType(string storeType)
+        {
+            if (string.IsNullOrEmpty(storeType))
+            {
+                return string.Empty;
+            }
+
+            var sb = new System.Text.StringBuilder(storeType.Length);
+            var lastWasSeparator = false;
+
+            foreach (var c in storeType)
+            {
+                if (char.IsLetterOrDigit(c) || c is '.' or '_' or '-' or '(' or ')')
+                {
+                    sb.Append(c);
+                    lastWasSeparator = false;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(c) || c is ',' or '*' or '+' or '/' or '=' or ':')
+                {
+                    if (!lastWasSeparator)
+                    {
+                        sb.Append('-');
+                        lastWasSeparator = true;
+                    }
+                }
+            }
+
+            return sb.ToString().Trim('-');
         }
 
         private static string Sanitize(string name)

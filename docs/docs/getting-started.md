@@ -24,10 +24,18 @@ See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqls
 dotnet new sqlproj -s Sql160
 ```
 
+The project template also supports additional options such as enabling code analysis and ER diagram generation:
+
+```bash
+dotnet new sqlproj --codeAnalysis true --erDiagram true
+```
+
+When `--erDiagram true` is specified, the template includes a sample `*_erdiagram.json` config file and wires it into the generated project so you can customize filtered diagram output immediately.
+
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <SqlServerVersion>Sql160</SqlServerVersion>

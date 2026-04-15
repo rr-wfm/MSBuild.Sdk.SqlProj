@@ -55,6 +55,14 @@
     <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_EntityRelationshipDiagramConfigFile Include="$(EntityRelationshipDiagramConfigFile)"
+                                          Condition="'$(EntityRelationshipDiagramConfigFile)' != ''" />
+    <_EntityRelationshipDiagramConfigFile Include="@(EntityRelationshipDiagramConfigFile)"
+                                          Condition="'$(EntityRelationshipDiagramConfigFile)' == ''" />
+    <_DistinctEntityRelationshipDiagramConfigFile Include="@(_EntityRelationshipDiagramConfigFile->Distinct())" />
+  </ItemGroup>
+
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
     <PropertyGroup>
       <NuspecProperties>
@@ -97,7 +105,8 @@
   <Target Name="ValidateEnvironment">
     <PropertyGroup>
       <DacpacToolTfm>net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
-      <DacpacToolExe>$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
+      <!-- Allow tests and advanced callers to override the exact tool path via -p:DacpacToolExe=... -->
+      <DacpacToolExe Condition="'$(DacpacToolExe)' == ''">$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
            Text="The current SDK bundles target framework '$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET SDK that supports 8.0, 9.0 or 10.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
@@ -183,7 +192,7 @@
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
   <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
-          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
+          Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
       <_BuildPropertyNames Include="$(KnownModelProperties)" />
@@ -240,7 +249,8 @@
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument)</DacpacToolCommand>
+      <ErDiagramConfigArgument>@(_DistinctEntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

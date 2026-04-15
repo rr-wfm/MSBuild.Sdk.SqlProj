@@ -73,6 +73,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Generate ER diagram from the dacpac", Name = "--generateerdiagram", Required = false, Alias = "-ged")]
         public bool GenerateErDiagram { get; set; }
 
+        [CliOption(Description = "JSON config file for ER diagram generation", Name = "--erdiagramconfig", Required = false, Alias = "-edc")]
+        public FileInfo[] ErDiagramConfig { get; set; }
+
         public async Task<int> RunAsync()
         {
             return await Program.BuildDacpac(this).ConfigureAwait(false);

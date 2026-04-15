@@ -39,7 +39,7 @@ To further customize the deployment process, you can use the following propertie
 In addition to these properties, you can also set any of the [documented](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.dacdeployoptions) deployment options. These are typically set in the project file, for example:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
     <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
@@ -83,7 +83,7 @@ dotnet publish \
 You can also set these properties in your project file if you prefer:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     ...
     <ContainerRepository>my-database-image</ContainerRepository>
@@ -112,7 +112,7 @@ This will execute SqlPackage inside the container, deploying the .dacpac to the 
 Instead of using `dotnet publish /t:PublishDatabase` to deploy changes to a database, you can also have a full SQL script generated that will create the database from scratch and then run that script against a SQL Server. This can be achieved by adding the following to the project file:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.1.1">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
   <PropertyGroup>
     <GenerateCreateScript>True</GenerateCreateScript>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>

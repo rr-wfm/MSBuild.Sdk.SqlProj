@@ -165,7 +165,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var diagramBuilder = new MermaidDiagramBuilder(new ActualConsole());
 
-                diagramBuilder.BuildErDiagram(packageBuilder.Model, options.TargetDatabaseName ?? options.Name);
+                diagramBuilder.BuildErDiagrams(packageBuilder.Model, options.TargetDatabaseName ?? options.Name, options.ErDiagramConfig);
             }
 
             return 0;

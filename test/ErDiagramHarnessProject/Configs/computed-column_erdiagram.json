@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../src/MSBuild.Sdk.SqlProj/Sdk/EntityRelationshipDiagramConfig.schema.json",
+  "tables": [
+    "dbo.EntityTypeLookup",
+    "dbo.Entity",
+    "dbo.SpecializedEntity"
+  ],
+  "outputFileName": "computed-column_erdiagram.md"
+}
