@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
@@ -30,7 +31,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Using SQL Server version {version}");
         }
 
-        public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
+        public void AddReference(string referenceFile, FileInfo outputFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -44,16 +45,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else if (referenceType == "dll")
             {
-                DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
+                // https://github.com/microsoft/DacFx/issues/523
 
-                using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+                DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
+
+                using (var z = new ZipArchive(File.OpenWrite(outputFile.FullName), ZipArchiveMode.Update))
                 {
                     _console.WriteLine($"Adding {referenceFile} to package");
 
-                    package.Close();
+                    var entry = z.GetEntry("model.xml");
+                    throw new Exception("Entry found: " + entry.FullName); 
                 }
 
-                Model = TSqlModel.LoadFromDacpac(outputFile.FullName);
+                var modelLoadOptions = new ModelLoadOptions { LoadAsScriptBackedModel = true };
+                Model = TSqlModel.LoadFromDacpac(outputFile.FullName, modelLoadOptions);
             }
             else // This should never be hit since ValidateReference will throw for invalid file types
             {
