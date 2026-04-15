@@ -35,13 +35,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            ValidateReference(referenceFile);
+            string referenceType = ValidateReference(referenceFile);
 
-            _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
-            Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
+            if (referenceFile == ".dacpac")
+            {
+                _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+                Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
+            }
+            else if (referenceType == ".dll")
+            {
+                _console.WriteLine($"Adding assembly reference to {referenceFile}");
+                var name = Path.GetFileNameWithoutExtension(referenceFile);
+                name = name.Replace("]", "]]", StringComparison.OrdinalIgnoreCase);
+                var data = File.ReadAllBytes(referenceFile);
+                var bits = Convert.ToHexString(data);
+                var script = $"CREATE ASSEMBLY [{name}] FROM {bits}";
+                Model.AddOrUpdateObjects(script, referenceFile, new TSqlObjectOptions());
+            }
+            else // This should never be hit since ValidateReference will throw for invalid file types
+            {
+                throw new InvalidOperationException($"Invalid reference type {referenceType}");
+            }
         }
 
-        private static void ValidateReference(string referenceFile)
+        private static string ValidateReference(string referenceFile)
         {
             // Make sure the file exists
             if (!File.Exists(referenceFile))
@@ -51,9 +68,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             // Make sure the file is a .dacpac file
             string fileType = Path.GetExtension(referenceFile);
-            if (!fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
+            if (fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac", nameof(referenceFile));
+                return "dacpac";
+            }
+            else if (fileType.Equals(".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                return "dll";
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac or .dll", nameof(referenceFile));
             }
         }
 
