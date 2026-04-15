@@ -37,12 +37,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             string referenceType = ValidateReference(referenceFile);
 
-            if (referenceFile == ".dacpac")
+            if (referenceType == "dacpac")
             {
                 _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
                 Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
             }
-            else if (referenceType == ".dll")
+            else if (referenceType == "dll")
             {
                 _console.WriteLine($"Adding assembly reference to {referenceFile}");
                 var name = Path.GetFileNameWithoutExtension(referenceFile);
