@@ -49,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
 
-                using (var z = new ZipArchive(File.OpenWrite(outputFile.FullName), ZipArchiveMode.Update))
+                using (var z = new ZipArchive(File.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
                 {
                     _console.WriteLine($"Adding {referenceFile} to package");
 
