@@ -49,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 name = name.Replace("]", "]]", StringComparison.OrdinalIgnoreCase);
                 var data = File.ReadAllBytes(referenceFile);
                 var bits = Convert.ToHexString(data);
-                var script = $"CREATE ASSEMBLY [{name}] FROM {bits}";
+                var script = $"CREATE ASSEMBLY [{name}] FROM 0x{bits}";
                 Model.AddOrUpdateObjects(script, referenceFile, new TSqlObjectOptions());
             }
             else // This should never be hit since ValidateReference will throw for invalid file types
