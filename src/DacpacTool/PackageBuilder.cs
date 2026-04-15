@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
+using System.Security.Cryptography;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
