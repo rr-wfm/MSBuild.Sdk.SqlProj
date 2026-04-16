@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using System.Security.Cryptography;
+using System.Xml.XPath;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -55,9 +56,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     _console.WriteLine($"Adding {referenceFile} to package");
 
-                    var entry = z.GetEntry("model.xml");
+                    var modelEntry = z.GetEntry("model.xml");
 
-                    using (var modelStream = entry.Open())
+                    string newModelHash;
+
+                    using (var modelStream = modelEntry.Open())
                     {
                         var doc = XDocument.Load(modelStream);
 
@@ -84,15 +87,26 @@ boe
 </Element>
 """);
 
-                    modelElement.Add(appendedContent);
-                    
-                    modelStream.SetLength(0);
-                    doc.Save(modelStream);
+                        modelElement.Add(appendedContent);
+                        
+                        modelStream.SetLength(0);
+                        doc.Save(modelStream);
 
-                    modelStream.Position = 0;
-                    var hash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
-                    throw new Exception("hash: " + hash);
-                }
+                        modelStream.Position = 0;
+                        newModelHash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
+                    }
+
+                    var originEntry = z.GetEntry("Origin.xml");
+
+                    using (var originStream = originEntry.Open())
+                    {
+                        var doc = XDocument.Load(originStream);
+
+                        doc.XPathSelectElement("/DacOrigin/Checksums/Checksum[@Uri='model.xml']").SetValue(newModelHash);
+
+                        originStream.SetLength(0);
+                        doc.Save(originStream);
+                    }
                 }
 
                 var modelLoadOptions = new ModelLoadOptions { LoadAsScriptBackedModel = true };
