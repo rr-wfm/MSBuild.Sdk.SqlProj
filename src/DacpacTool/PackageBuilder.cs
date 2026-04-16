@@ -22,7 +22,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
 
-        private bool _dllReferenced;
+        private List<string> _dllReferences = new List<string>();
 
         public PackageBuilder(IConsole console)
         {
@@ -49,75 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else if (referenceType == "dll")
             {
-                // https://github.com/microsoft/DacFx/issues/523
-
-                DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
-
-                var dllBytes = File.ReadAllBytes(referenceFile);
-                var dllHex = "0x" + Convert.ToHexString(dllBytes);
-                var assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
-
-                using (var z = new ZipArchive(File.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
-                {
-                    _console.WriteLine($"Adding {referenceFile} to package");
-
-                    var modelEntry = z.GetEntry("model.xml");
-
-                    string newModelHash;
-
-                    using (var modelStream = modelEntry.Open())
-                    {
-                        var doc = XDocument.Load(modelStream);
-
-                        XNamespace ns = doc.Root.Name.Namespace;
-
-                        var appendedContent = new XElement(ns + "Element",
-                            new XAttribute("Type", "SqlAssembly"),
-                            new XAttribute("Name", $"[{assemblyName}]"),
-                            new XElement(ns + "Relationship",
-                                new XAttribute("Name", "AssemblySources"),
-                                new XElement(ns + "Entry",
-                                    new XElement(ns + "Element",
-                                        new XAttribute("Type", "SqlAssemblySource"),
-                                        new XElement(ns + "Property",
-                                            new XAttribute("Name", "Source"),
-                                            new XElement(ns + "Value",
-                                                new XCData(dllHex)))))),
-                            new XElement(ns + "Relationship",
-                                new XAttribute("Name", "Authorizer"),
-                                new XElement(ns + "Entry",
-                                    new XElement(ns + "References",
-                                        new XAttribute("ExternalSource", "BuiltIns"),
-                                        new XAttribute("Name", "[dbo]")))));
-
-                        doc.Root.Element(ns + "Model").Add(appendedContent);
-                        
-                        modelStream.SetLength(0);
-                        doc.Save(modelStream);
-
-                        modelStream.Position = 0;
-                        newModelHash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
-                    }
-
-                    var originEntry = z.GetEntry("Origin.xml");
-
-                    using (var originStream = originEntry.Open())
-                    {
-                        var doc = XDocument.Load(originStream);
-
-		                var elem = doc.Root.Elements().Single(e => e.Name.LocalName == "Checksums").Elements().Single(e => e.Name.LocalName == "Checksum" && e.Attribute("Uri")?.Value == "/model.xml");
-
-                        elem.SetValue(newModelHash);
-
-                        originStream.SetLength(0);
-                        doc.Save(originStream);
-                    }
-                }
-
-                var modelLoadOptions = new ModelLoadOptions { LoadAsScriptBackedModel = true };
-                Model = TSqlModel.LoadFromDacpac(outputFile.FullName, modelLoadOptions);
-            
-                _dllReferenced = true;
+                _dllReferences.Add(referenceFile);        
             }
             else // This should never be hit since ValidateReference will throw for invalid file types
             {
@@ -209,11 +141,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                if (_dllReferenced && modelError.ErrorCode == 70557)
-                {
-                    // Suppress "This assembly is corrupt or not valid": this is expected because DacFX expects a .NET Framework DLL which it validates with the current SDK which is .NET Core.
-                }
-                else if (modelError.Severity == ModelErrorSeverity.Error)
+                if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
@@ -279,13 +207,74 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Writing model to {outputFile.FullName}");
 
             packageOptions = packageOptions ?? new PackageOptions { };
-
-            if (_dllReferenced)
-            {
-                packageOptions.IgnoreValidationErrors = [ "SQL70557", "70557" ];
-            }
-
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
+
+            if (_dllReferences.Count > 0)
+            {
+                using (var z = new ZipArchive(File.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
+                {
+                    var modelEntry = z.GetEntry("model.xml");
+
+                    string newModelHash;
+
+                    using (var modelStream = modelEntry.Open())
+                    {
+                        var doc = XDocument.Load(modelStream);
+
+                        XNamespace ns = doc.Root.Name.Namespace;
+
+                        foreach(var referenceFile in _dllReferences)
+                        {
+                            _console.WriteLine($"Adding {referenceFile} to package");
+                            
+                            var dllBytes = File.ReadAllBytes(referenceFile);
+                            var dllHex = "0x" + Convert.ToHexString(dllBytes);
+                            var assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
+
+                            var appendedContent = new XElement(ns + "Element",
+                                new XAttribute("Type", "SqlAssembly"),
+                                new XAttribute("Name", $"[{assemblyName}]"),
+                                new XElement(ns + "Relationship",
+                                    new XAttribute("Name", "AssemblySources"),
+                                    new XElement(ns + "Entry",
+                                        new XElement(ns + "Element",
+                                            new XAttribute("Type", "SqlAssemblySource"),
+                                            new XElement(ns + "Property",
+                                                new XAttribute("Name", "Source"),
+                                                new XElement(ns + "Value",
+                                                    new XCData(dllHex)))))),
+                                new XElement(ns + "Relationship",
+                                    new XAttribute("Name", "Authorizer"),
+                                    new XElement(ns + "Entry",
+                                        new XElement(ns + "References",
+                                            new XAttribute("ExternalSource", "BuiltIns"),
+                                            new XAttribute("Name", "[dbo]")))));
+
+                            doc.Root.Element(ns + "Model").Add(appendedContent);
+                        }
+                        
+                        modelStream.SetLength(0);
+                        doc.Save(modelStream);
+
+                        modelStream.Position = 0;
+                        newModelHash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
+                    }
+
+                    var originEntry = z.GetEntry("Origin.xml");
+
+                    using (var originStream = originEntry.Open())
+                    {
+                        var doc = XDocument.Load(originStream);
+
+		                var elem = doc.Root.Elements().Single(e => e.Name.LocalName == "Checksums").Elements().Single(e => e.Name.LocalName == "Checksum" && e.Attribute("Uri")?.Value == "/model.xml");
+
+                        elem.SetValue(newModelHash);
+
+                        originStream.SetLength(0);
+                        doc.Save(originStream);
+                    }
+                }
+            }
         }
 
         public void SetMetadata(string name, string version)
