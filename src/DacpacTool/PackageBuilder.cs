@@ -89,7 +89,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                                         new XAttribute("ExternalSource", "BuiltIns"),
                                         new XAttribute("Name", "[dbo]")))));
 
-                        doc.Root.Add(appendedContent);
+                        doc.Root.Element(ns + "Model").Add(appendedContent);
                         
                         modelStream.SetLength(0);
                         doc.Save(modelStream);
