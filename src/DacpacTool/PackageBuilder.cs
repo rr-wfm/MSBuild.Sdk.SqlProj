@@ -226,7 +226,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 {
                     newIngnoreValidationErrors.AddRange(packageOptions.IgnoreValidationErrors);
                 }
-                newIngnoreValidationErrors.Add("SR0025"); // ClrObjectAssemblyReference, https://github.com/microsoft/DacFx/issues/462
+                newIngnoreValidationErrors.Add("SR0029"); // AllReferencesMustBeResolved, https://github.com/microsoft/DacFx/issues/462
 
                 packageOptions.IgnoreValidationErrors = newIngnoreValidationErrors;
             }
