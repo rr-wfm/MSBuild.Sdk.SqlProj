@@ -52,6 +52,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, new PackageOptions { });
 
+                var dllBytes = File.ReadAllBytes(referenceFile);
+                var dllHex = "0x" + Convert.ToHexString(dllBytes);
+                var assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
+
                 using (var z = new ZipArchive(File.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
                 {
                     _console.WriteLine($"Adding {referenceFile} to package");
@@ -64,30 +68,28 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     {
                         var doc = XDocument.Load(modelStream);
 
-                        var modelElement = doc.Root;
+                        XNamespace ns = doc.Root.Name.Namespace;
 
-                        var appendedContent = XElement.Parse("""
-<Element Type="SqlAssembly" Name="[BinPackingSqlClr]">
-<Relationship Name="AssemblySources">
-<Entry>
-<Element Type="SqlAssemblySource">
-<Property Name="Source">
-<Value>
-boe
-</Value>
-</Property>
-</Element>
-</Entry>
-</Relationship>
-<Relationship Name="Authorizer">
-<Entry>
-<References ExternalSource="BuiltIns" Name="[dbo]"/>
-</Entry>
-</Relationship>
-</Element>
-""");
+                        var appendedContent = new XElement(ns + "Element",
+                            new XAttribute("Type", "SqlAssembly"),
+                            new XAttribute("Name", $"[{assemblyName}]"),
+                            new XElement(ns + "Relationship",
+                                new XAttribute("Name", "AssemblySources"),
+                                new XElement(ns + "Entry",
+                                    new XElement(ns + "Element",
+                                        new XAttribute("Type", "SqlAssemblySource"),
+                                        new XElement(ns + "Property",
+                                            new XAttribute("Name", "Source"),
+                                            new XElement(ns + "Value",
+                                                new XCData(dllHex)))))),
+                            new XElement(ns + "Relationship",
+                                new XAttribute("Name", "Authorizer"),
+                                new XElement(ns + "Entry",
+                                    new XElement(ns + "References",
+                                        new XAttribute("ExternalSource", "BuiltIns"),
+                                        new XAttribute("Name", "[dbo]")))));
 
-                        modelElement.Add(appendedContent);
+                        doc.Root.Add(appendedContent);
                         
                         modelStream.SetLength(0);
                         doc.Save(modelStream);
