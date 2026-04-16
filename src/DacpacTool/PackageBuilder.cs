@@ -277,7 +277,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                         // fix empty references
                         //TODO reference the right assembly if multiple exist.
-                        var emptyAssemblyRelationsShips = doc.XPathSelectElements("//Relationship[@Name='Assembly']/Entry[not(node()) and not(@*)]");
+                        var emptyAssemblyRelationsShips = doc.Descendants(ns + "Relationship")
+                            .Where(r => r.Attribute("Name")?.Value == "Assembly")
+                            .SelectMany(r => r.Elements(ns + "Entry").Where(e => !e.HasElements && !e.Attributes().Any()));
                         foreach(var emptyRelationship in emptyAssemblyRelationsShips)
                         {
                             emptyRelationship.Add(new XElement(ns + "References", new XAttribute("Name", $"[{assemblyName}]")));
