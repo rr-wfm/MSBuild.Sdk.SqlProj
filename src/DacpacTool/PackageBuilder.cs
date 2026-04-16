@@ -141,18 +141,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
+                var ignoreMsg = "unresolved reference to Assembly";
                 if (modelError.ErrorCode == 71501
-                    && _dllReferences.Count > 0)
+                    && _dllReferences.Count > 0
+                    && modelError.GetOutputMessage(modelError.Severity).Contains(ignoreMsg, StringComparison.OrdinalIgnoreCase))
                 {
-                    var message = modelError.GetOutputMessage(modelError.Severity);
-                    if (message.Contains("unresolved reference to Assembly", StringComparison.OrdinalIgnoreCase))
-                    {
-                        _console.WriteLine($"Ignored error \"{message}\" since it is caused by the assembly workaround.");
-                        continue;
-                    }
+                    _console.WriteLine($"Ignored error \"{ignoreMsg}\" on {modelError.SourceName} since it is caused by the assembly workaround.");
                 }
-
-                if (modelError.Severity == ModelErrorSeverity.Error)
+                else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
