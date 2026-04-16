@@ -11,7 +11,6 @@ using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using System.Security.Cryptography;
-using System.Xml.XPath;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -22,6 +21,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
+
+        private bool _dllReferenced;
 
         public PackageBuilder(IConsole console)
         {
@@ -115,6 +116,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var modelLoadOptions = new ModelLoadOptions { LoadAsScriptBackedModel = true };
                 Model = TSqlModel.LoadFromDacpac(outputFile.FullName, modelLoadOptions);
+            
+                _dllReferenced = true;
             }
             else // This should never be hit since ValidateReference will throw for invalid file types
             {
@@ -206,7 +209,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                if (modelError.Severity == ModelErrorSeverity.Error)
+                if (_dllReferenced && modelError.ErrorCode == 70557)
+                {
+                    // Suppress "This assembly is corrupt or not valid": this is expected because DacFX expects a .NET Framework DLL which it validates with the current SDK which is .NET Core.
+                }
+                else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
