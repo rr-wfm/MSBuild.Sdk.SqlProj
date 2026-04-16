@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using System.Security.Cryptography;
+using System.Xml.XPath;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -243,13 +244,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                         XNamespace ns = doc.Root.Name.Namespace;
 
+                        string assemblyName = null;
                         foreach(var referenceFile in _dllReferences)
                         {
                             _console.WriteLine($"Adding {referenceFile} to package");
                             
                             var dllBytes = File.ReadAllBytes(referenceFile);
                             var dllHex = "0x" + Convert.ToHexString(dllBytes);
-                            var assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
+                            assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
 
                             var appendedContent = new XElement(ns + "Element",
                                 new XAttribute("Type", "SqlAssembly"),
@@ -271,6 +273,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                                             new XAttribute("Name", "[dbo]")))));
 
                             doc.Root.Element(ns + "Model").Add(appendedContent);
+                        }
+
+                        // fix empty references
+                        //TODO reference the right assembly if multiple exist.
+                        var emptyAssemblyRelationsShips = doc.XPathSelectElements("//Relationship[@Name='Assembly']/Entry[not(node()) and not(@*)]");
+                        foreach(var emptyRelationship in emptyAssemblyRelationsShips)
+                        {
+                            emptyRelationship.Add(new XElement(ns + "References", new XAttribute("Name", $"[{assemblyName}]")));
                         }
                         
                         modelStream.SetLength(0);
