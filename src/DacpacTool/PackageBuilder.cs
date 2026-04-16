@@ -102,7 +102,9 @@ boe
                     {
                         var doc = XDocument.Load(originStream);
 
-                        doc.XPathSelectElement("/DacOrigin/Checksums/Checksum[@Uri='model.xml']").SetValue(newModelHash);
+		                var elem = doc.Root.Elements().Single(e => e.Name.LocalName == "Checksums").Elements().Single(e => e.Name.LocalName == "Checksum" && e.Attribute("Uri")?.Value == "/model.xml");
+
+                        elem.SetValue(newModelHash);
 
                         originStream.SetLength(0);
                         doc.Save(originStream);
