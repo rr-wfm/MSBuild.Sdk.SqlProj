@@ -277,7 +277,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             _console.WriteLine($"Writing model to {outputFile.FullName}");
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
+
+            packageOptions = packageOptions ?? new PackageOptions { };
+
+            if (_dllReferenced)
+            {
+                packageOptions.IgnoreValidationErrors = [ "SQL70557" ];
+            }
+
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
         }
 
         public void SetMetadata(string name, string version)
