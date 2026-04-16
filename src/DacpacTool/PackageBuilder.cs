@@ -218,6 +218,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Writing model to {outputFile.FullName}");
 
             packageOptions = packageOptions ?? new PackageOptions { };
+
+            if (_dllReferences.Count > 0)
+            {
+                var newIngnoreValidationErrors = new List<string>();
+                if (packageOptions.IgnoreValidationErrors != null)
+                {
+                    newIngnoreValidationErrors.AddRange(packageOptions.IgnoreValidationErrors);
+                }
+                newIngnoreValidationErrors.Add("SR0025"); // ClrObjectAssemblyReference, https://github.com/microsoft/DacFx/issues/462
+
+                packageOptions.IgnoreValidationErrors = newIngnoreValidationErrors;
+            }
+
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
 
             if (_dllReferences.Count > 0)
