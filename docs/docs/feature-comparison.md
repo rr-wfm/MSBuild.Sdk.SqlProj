@@ -2,10 +2,10 @@
 
 ## Other approaches
 
-Microsoft provides two other project types, that provides features similar to this SDK.
+Microsoft provides two other project types, that have features similar to this SDK.
 
 - "Classic" SSDT projects in Visual Studio - only builds and works on Windows, and supports multiple designers.
-- Microsoft.Build.Sql based projects, SDK style project, that works on all platforms, and is supported by tooling in Visual Studio Code (VS Code) and SQL Server Management Studio (SSMS) - no Visual Studio support at the moment.
+- Microsoft.Build.Sql based projects - SDK-style projects, that work on all platforms, and are supported by tooling in Visual Studio Code (VS Code) and SQL Server Management Studio (SSMS) - no Visual Studio support at the moment.
 
 Microsoft has published [this comparison table](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/sql-projects-tools?view=sql-server-ver17#feature-set-comparison), and based on that, we have added this SDK used in combination with the SQL Database Projects Power Tools extension for Visual Studio.
 
@@ -47,6 +47,6 @@ Microsoft has published [this comparison table](https://learn.microsoft.com/en-u
 | Generate E-R diagrams during build | No | No | No | Yes |
 
 1. Local development instance is a SQL Server container.
-1. Any pre-installed Microsoft SQL database can be used as a local development instance.
-1. Local development instance is a SQL Server LocalDB instance.
-1. Limited subset of templates available
+2. Any pre-installed Microsoft SQL database can be used as a local development instance.
+3. Local development instance is a SQL Server LocalDB instance.
+4. Limited subset of templates available
