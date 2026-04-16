@@ -61,11 +61,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     string[] referenceDetails = reference.Split(';', 3, StringSplitOptions.RemoveEmptyEntries);
                     if (referenceDetails.Length == 1)
                     {
-                        packageBuilder.AddReference(referenceDetails[0], options.Output);
+                        packageBuilder.AddReference(referenceDetails[0]);
                     }
                     if (referenceDetails.Length == 2)
                     {
-                        packageBuilder.AddReference(referenceDetails[0], options.Output, referenceDetails[1]);
+                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
                     }
                     else
                     {
@@ -74,7 +74,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                             throw new ArgumentException(
                                 $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
                         }
-                        packageBuilder.AddReference(referenceDetails[0], options.Output, referenceDetails[1], suppressErrorsForMissingDependencies);
+                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
                     }
                 }
             }

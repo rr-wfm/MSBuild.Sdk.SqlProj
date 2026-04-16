@@ -36,7 +36,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Using SQL Server version {version}");
         }
 
-        public void AddReference(string referenceFile, FileInfo outputFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
+        public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
