@@ -282,7 +282,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (_dllReferenced)
             {
-                packageOptions.IgnoreValidationErrors = [ "SQL70557" ];
+                packageOptions.IgnoreValidationErrors = [ "SQL70557", "70557" ];
             }
 
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
