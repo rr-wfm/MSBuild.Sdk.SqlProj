@@ -11,7 +11,6 @@ using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using System.Security.Cryptography;
-using System.Xml.XPath;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -289,7 +288,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                         doc.Save(modelStream);
 
                         modelStream.Position = 0;
-                        newModelHash = string.Join("", SHA256.Create().ComputeHash(modelStream).Select(c => c.ToString("X2")));
+                        using var sha256 = SHA256.Create();
+                        newModelHash = string.Join("", sha256.ComputeHash(modelStream).Select(c => c.ToString("X2")));
                     }
 
                     var originEntry = z.GetEntry("Origin.xml");
