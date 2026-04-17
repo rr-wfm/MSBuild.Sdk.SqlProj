@@ -136,7 +136,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Validate the model
-            if (modelExceptions || !packageBuilder.ValidateModel())
+            if (modelExceptions || !packageBuilder.ValidateModel(options.HasAssemblyReferences))
             {
                 return 1;
             }

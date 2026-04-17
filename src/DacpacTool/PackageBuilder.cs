@@ -107,7 +107,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddScript(script, outputFile, "/postdeploy.sql");
         }
 
-        public bool ValidateModel()
+        public bool ValidateModel(bool hasAssemblyReferences = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -117,7 +117,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                if (modelError.Severity == ModelErrorSeverity.Error)
+                if (modelError.ErrorCode == 71501
+                    && hasAssemblyReferences
+                    && modelError.GetOutputMessage(modelError.Severity).Contains("unresolved reference to Assembly", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    _console.WriteLine($"Warning: Ignoring error for unresolved assembly reference because assemblies are added afterwards. At: {modelError.SourceName}");
+                }                    
+                else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));

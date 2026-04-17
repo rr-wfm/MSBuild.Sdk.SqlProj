@@ -204,7 +204,7 @@
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;ResolveAssemblyReferences;GetIncludedFiles"
           Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
@@ -244,6 +244,7 @@
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
+      <HasAssemblyReferencesArgument Condition="'@(AssemblyReference)' != ''">--hasassemblyreferences</HasAssemblyReferencesArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts);%(SuppressMissingDependenciesErrors)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
@@ -262,7 +263,7 @@
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(HasAssemblyReferencesArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
