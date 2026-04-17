@@ -38,4 +38,9 @@
     <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)"
           WorkingDirectory="../DacpacTool" />
   </Target>
+
+  <Target Name="IncludeDacpacToolFramework" AfterTargets="Build">
+    <Exec Command="dotnet publish -c $(Configuration) -o $(MSBuildThisFileDirectory)tools/framework"
+          WorkingDirectory="../DacpacToolFramework" />
+  </Target>
 </Project>
