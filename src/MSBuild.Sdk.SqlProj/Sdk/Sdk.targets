@@ -105,12 +105,7 @@
     <Message Importance="High" Text="Using target framework $(DacpacToolTfm) to run DacpacTool" />
   </Target>
 
-  <!--
-    Detects assembly (.dll) references contributed by <Reference> items directly or transitively
-    through referenced dacpac packages (DLLs sitting next to a referenced .dacpac). These cannot be
-    processed by DacpacTool (.NET Core) but are applied by DacpacToolFramework (.NET Framework) in a
-    post-compile step; see AddAssemblyReferences.
-  -->
+  <!-- Detects assembly (.dll) references contributed by <Reference> items directly or transitively through referenced dacpac packages. Handled by DacpacToolFramework via CreateAssembliesDacpac; the resulting intermediate dacpac is loaded by DacpacTool via basedacpac. -->
   <Target Name="ResolveAssemblyReferences" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences">
     <ItemGroup>
       <!-- Directories that contain referenced dacpacs - used to glob for sibling DLLs (transitive assembly references). -->
@@ -249,6 +244,7 @@
       <OutputPathArgument>@(IntermediateAssembly->'-o &quot;%(Identity)&quot;', ' ')</OutputPathArgument>
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
+      <BaseDacpacArgument Condition="Exists('$(IntermediateOutputPath)$(MSBuildProjectName).Assemblies.dacpac')">--basedacpac &quot;$(IntermediateOutputPath)$(MSBuildProjectName).Assemblies.dacpac&quot;</BaseDacpacArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts);%(SuppressMissingDependenciesErrors)&quot;', ' ')</ReferenceArguments>
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
@@ -267,7 +263,7 @@
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(BaseDacpacArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
@@ -287,32 +283,32 @@
 
   </Target>
 
-  <!--
-    Post-compile step that augments the dacpac produced by DacpacTool with SQL CLR assembly
-    references by invoking DacpacToolFramework (running on .NET Framework). Only runs when at
-    least one assembly reference was resolved.
-  -->
-  <Target Name="AddAssemblyReferences"
-          AfterTargets="CoreCompile"
+  <!-- Pre-compile step that builds an intermediate dacpac with CREATE ASSEMBLY objects via DacpacToolFramework; loaded by DacpacTool via basedacpac. Only runs when at least one assembly reference was resolved. -->
+  <Target Name="CreateAssembliesDacpac"
+          BeforeTargets="CoreCompile"
           DependsOnTargets="ResolveAssemblyReferences"
-          Inputs="$(TargetPath);@(AssemblyReference)"
-          Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).AssemblyReferences.stamp"
+          Inputs="@(AssemblyReference)"
+          Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).Assemblies.dacpac"
           Condition="'@(AssemblyReference)' != '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
     <Error Condition="!Exists('$(DacpacToolFrameworkExe)')"
            Text="Assembly references were detected but DacpacToolFramework could not be found at '$(DacpacToolFrameworkExe)'." />
     <PropertyGroup>
+      <AssembliesDacpacFile>$(IntermediateOutputPath)$(MSBuildProjectName).Assemblies.dacpac</AssembliesDacpacFile>
+      <AssembliesDacpacOutputArgument>-o &quot;$(AssembliesDacpacFile)&quot;</AssembliesDacpacOutputArgument>
+      <AssembliesDacpacNameArgument>-n &quot;$(MSBuildProjectName)&quot;</AssembliesDacpacNameArgument>
+      <AssembliesDacpacVersionArgument>-v &quot;$(PackageVersion)&quot;</AssembliesDacpacVersionArgument>
+      <AssembliesDacpacSqlServerVersionArgument>-sv $(SqlServerVersion)</AssembliesDacpacSqlServerVersionArgument>
+      <AssembliesDacpacPermissionSetArgument Condition="'$(AssemblyPermissionSet)' != ''">-ps $(AssemblyPermissionSet)</AssembliesDacpacPermissionSetArgument>
       <AssemblyReferenceArguments>@(AssemblyReference->'-asm &quot;%(Identity)&quot;', ' ')</AssemblyReferenceArguments>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; add-references -i &quot;$(TargetPath)&quot; $(AssemblyReferenceArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
+      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; build-assemblies $(AssembliesDacpacOutputArgument) $(AssembliesDacpacNameArgument) $(AssembliesDacpacVersionArgument) $(AssembliesDacpacSqlServerVersionArgument) $(AssembliesDacpacPermissionSetArgument) $(AssemblyReferenceArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
     </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" />
     <Message Importance="Low" Text="Running command: $(DacpacToolFrameworkCommand)" />
     <Exec Command="$(DacpacToolFrameworkCommand)" WorkingDirectory="$(ProjectDir)" />
 
     <!-- Copy the referenced assemblies to the output folder so downstream projects can consume them transitively. -->
     <Copy SourceFiles="@(AssemblyReference)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-
-    <!-- Touch a stamp file so this target is incremental. -->
-    <Touch Files="$(IntermediateOutputPath)$(MSBuildProjectName).AssemblyReferences.stamp" AlwaysCreate="true" />
   </Target>
 
   <!--Ensure that any SQL artifacts generated by the compile are cleaned up properly -->
