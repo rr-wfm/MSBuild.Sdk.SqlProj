@@ -136,7 +136,7 @@ namespace DacpacToolFramework
                     model.AddOrUpdateObjects(script, assemblyName + ".sql", new TSqlObjectOptions());
                 }
 
-                File.Delete(inputPath);
+                //File.Delete(inputPath);
                 DacPackageExtensions.BuildPackage(inputPath, model, metadata, new PackageOptions());
             }
 
