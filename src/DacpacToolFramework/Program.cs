@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
@@ -12,32 +11,25 @@ namespace DacpacToolFramework
     internal static class Program
     {
         /// <summary>
-        /// Builds a .dacpac that contains a <c>CREATE ASSEMBLY</c> object for each
-        /// SQL CLR assembly (.dll) passed in via <c>-asm</c>. The resulting dacpac is
-        /// intended to be loaded as the base model by DacpacTool, which continues the
-        /// build with the project's .sql content.
+        /// Adds a <c>CREATE ASSEMBLY</c> object for each SQL CLR assembly (.dll) passed in via
+        /// <c>-asm</c> to an existing dacpac produced by DacpacTool. The dacpac is rewritten in place.
         ///
         /// Usage:
-        ///   DacpacToolFramework.exe build-assemblies
-        ///       -o &lt;output.dacpac&gt;
-        ///       -n &lt;name&gt;
-        ///       [-sv &lt;SqlServerVersion&gt;]
+        ///   DacpacToolFramework.exe add-assemblies
+        ///       -i &lt;input.dacpac&gt;
         ///       [-ps &lt;Safe|ExternalAccess|Unsafe&gt;]
         ///       [-asm &lt;path-to-dll&gt; ...]
         ///       [--debug]
         /// </summary>
         private static int Main(string[] args)
         {
-            if (args == null || args.Length == 0 || !string.Equals(args[0], "build-assemblies", StringComparison.OrdinalIgnoreCase))
+            if (args == null || args.Length == 0 || !string.Equals(args[0], "add-assemblies", StringComparison.OrdinalIgnoreCase))
             {
                 WriteUsage();
                 return 1;
             }
 
-            string outputPath = null;
-            string name = null;
-            string version = "1.0.0";
-            var sqlServerVersion = SqlServerVersion.Sql160;
+            string inputPath = null;
             var defaultPermissionSet = AssemblyPermissionSet.Safe;
             var assemblies = new List<string>();
             var waitForDebugger = false;
@@ -46,21 +38,9 @@ namespace DacpacToolFramework
             {
                 switch (args[i])
                 {
-                    case "-o":
-                    case "--output":
-                        outputPath = args[++i];
-                        break;
-                    case "-n":
-                    case "--name":
-                        name = args[++i];
-                        break;
-                    case "-v":
-                    case "--version":
-                        version = args[++i];
-                        break;
-                    case "-sv":
-                    case "--sqlserverversion":
-                        sqlServerVersion = (SqlServerVersion)Enum.Parse(typeof(SqlServerVersion), args[++i], ignoreCase: true);
+                    case "-i":
+                    case "--input":
+                        inputPath = args[++i];
                         break;
                     case "-ps":
                     case "--permissionset":
@@ -88,20 +68,25 @@ namespace DacpacToolFramework
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(outputPath))
+            if (string.IsNullOrWhiteSpace(inputPath))
             {
-                Console.Error.WriteLine("Missing required argument: -o <output.dacpac>");
+                Console.Error.WriteLine("Missing required argument: -i <input.dacpac>");
                 return 1;
             }
-            if (string.IsNullOrWhiteSpace(name))
+            if (!File.Exists(inputPath))
             {
-                Console.Error.WriteLine("Missing required argument: -n <name>");
+                Console.Error.WriteLine($"Input dacpac not found: {inputPath}");
                 return 1;
+            }
+            if (assemblies.Count == 0)
+            {
+                Console.Out.WriteLine("No assemblies supplied; nothing to do.");
+                return 0;
             }
 
             try
             {
-                BuildAssembliesDacpac(outputPath, name, version, sqlServerVersion, defaultPermissionSet, assemblies);
+                AddAssembliesToDacpac(inputPath, defaultPermissionSet, assemblies);
                 return 0;
             }
             catch (Exception ex)
@@ -115,17 +100,27 @@ namespace DacpacToolFramework
             }
         }
 
-        private static void BuildAssembliesDacpac(
-            string outputPath,
-            string name,
-            string version,
-            SqlServerVersion sqlServerVersion,
+        private static void AddAssembliesToDacpac(
+            string inputPath,
             AssemblyPermissionSet defaultPermissionSet,
             List<string> assemblies)
         {
-            Console.Out.WriteLine($"Building assembly dacpac '{outputPath}' for SQL Server version {sqlServerVersion} with {assemblies.Count} assembly reference(s)");
+            Console.Out.WriteLine($"Adding {assemblies.Count} assembly reference(s) to '{inputPath}'");
 
-            using (var model = new TSqlModel(sqlServerVersion, new TSqlModelOptions()))
+            PackageMetadata metadata;
+            using (var package = DacPackage.Load(inputPath, DacSchemaModelStorageType.Memory))
+            {
+                metadata = new PackageMetadata
+                {
+                    Name = package.Name,
+                    Version = package.Version?.ToString() ?? "1.0.0.0",
+                    Description = package.Description,
+                };
+            }
+
+            using (var model = TSqlModel.LoadFromDacpac(
+                inputPath,
+                new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: true)))
             {
                 foreach (var assemblyPath in assemblies)
                 {
@@ -141,21 +136,11 @@ namespace DacpacToolFramework
                     model.AddOrUpdateObjects(script, assemblyName + ".sql", new TSqlObjectOptions());
                 }
 
-                var outputFile = new FileInfo(outputPath);
-                if (outputFile.Directory != null && !outputFile.Directory.Exists)
-                {
-                    outputFile.Directory.Create();
-                }
-                if (outputFile.Exists)
-                {
-                    outputFile.Delete();
-                }
-
-                var metadata = new PackageMetadata { Name = name, Version = version };
-                DacPackageExtensions.BuildPackage(outputFile.FullName, model, metadata, new PackageOptions());
+                File.Delete(inputPath);
+                DacPackageExtensions.BuildPackage(inputPath, model, metadata, new PackageOptions());
             }
 
-            Console.Out.WriteLine($"Wrote assembly dacpac to '{outputPath}'");
+            Console.Out.WriteLine($"Updated dacpac '{inputPath}'");
         }
 
         private static string BuildCreateAssemblyScript(string assemblyName, string assemblyPath, AssemblyPermissionSet permissionSet)
@@ -185,7 +170,7 @@ namespace DacpacToolFramework
 
         private static void WriteUsage()
         {
-            Console.Error.WriteLine("Usage: DacpacToolFramework.exe build-assemblies -o <output.dacpac> -n <name> [-sv <SqlServerVersion>] [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [--debug]");
+            Console.Error.WriteLine("Usage: DacpacToolFramework.exe add-assemblies -i <input.dacpac> [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [--debug]");
         }
     }
 
@@ -196,4 +181,3 @@ namespace DacpacToolFramework
         Unsafe,
     }
 }
-

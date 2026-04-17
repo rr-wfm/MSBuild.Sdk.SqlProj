@@ -30,25 +30,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Using SQL Server version {version}");
         }
 
-        /// <summary>
-        /// Loads an existing dacpac as the starting model so that the build can extend it.
-        /// Used when an intermediate dacpac was produced by DacpacToolFramework containing
-        /// <c>CREATE ASSEMBLY</c> objects for SQL CLR references.
-        /// </summary>
-        public void UsingDacpac(FileInfo baseDacpac)
-        {
-            ArgumentNullException.ThrowIfNull(baseDacpac);
-            if (!baseDacpac.Exists)
-            {
-                throw new ArgumentException($"Base dacpac file not found: {baseDacpac.FullName}", nameof(baseDacpac));
-            }
-
-            _console.WriteLine($"Loading base dacpac from {baseDacpac.FullName}");
-            Model = TSqlModel.LoadFromDacpac(
-                baseDacpac.FullName,
-                new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: true));
-        }
-
         public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
         {
             // Ensure that the model has been created

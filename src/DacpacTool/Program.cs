@@ -40,10 +40,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Set metadata for the package
             packageBuilder.SetMetadata(options.Name, options.Version);
 
-            // Set properties on the model (if defined).
-            // NOTE: SetProperty mutates packageBuilder.Options which is only consumed by UsingVersion().
-            // When loading from a base dacpac these options have no effect and must already be baked
-            // into the supplied dacpac.
+            // Set properties on the model (if defined)
             if (options.BuildProperty != null)
             {
                 foreach (var propertyValue in options.BuildProperty)
@@ -53,17 +50,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
             }
 
-            if (options.BaseDacpac != null)
-            {
-                // Load the base dacpac (typically produced by DacpacToolFramework with CREATE ASSEMBLY objects)
-                // and continue extending it with the project's .sql content.
-                packageBuilder.UsingDacpac(options.BaseDacpac);
-            }
-            else
-            {
-                // Build the empty model for the target SQL Server version
-                packageBuilder.UsingVersion(options.SqlServerVersion);
-            }
+            // Build the empty model for the target SQL Server version
+            packageBuilder.UsingVersion(options.SqlServerVersion);
 
             // Add references to the model
             if (options.Reference != null)
