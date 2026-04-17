@@ -142,7 +142,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Save the package to disk
-            packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
+            packageBuilder.SaveToDisk(options.Output, options.HasAssemblyReferences, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
             packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);

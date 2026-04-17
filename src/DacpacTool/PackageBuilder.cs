@@ -169,7 +169,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
+        public void SaveToDisk(FileInfo outputFile, bool hasAssemblyReferences = false, PackageOptions packageOptions = null)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
@@ -187,7 +187,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             _console.WriteLine($"Writing model to {outputFile.FullName}");
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
+            packageOptions = packageOptions ?? new PackageOptions { };
+            if (hasAssemblyReferences)
+            {
+                var ignoreErrors = new List<string>();
+                if (packageOptions.IgnoreValidationErrors != null)
+                {
+                    ignoreErrors.AddRange(packageOptions.IgnoreValidationErrors);
+                }
+                if (hasAssemblyReferences)
+                {
+                    ignoreErrors.Add("SR0029"); // AllReferencesMustBeResolved, https://github.com/microsoft/DacFx/issues/462
+                }
+                packageOptions.IgnoreValidationErrors = ignoreErrors;
+            }
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
         }
 
         public void SetMetadata(string name, string version)
