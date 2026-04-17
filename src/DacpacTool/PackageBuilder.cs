@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
-using System.Security.Cryptography;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -21,8 +18,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
-
-        private List<string> _dllReferences = new List<string>();
 
         public PackageBuilder(IConsole console)
         {
@@ -40,24 +35,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Ensure that the model has been created
             EnsureModelCreated();
 
-            string referenceType = ValidateReference(referenceFile);
+            ValidateReference(referenceFile);
 
-            if (referenceType == "dacpac")
-            {
-                _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
-                Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
-            }
-            else if (referenceType == "dll")
-            {
-                _dllReferences.Add(referenceFile);        
-            }
-            else // This should never be hit since ValidateReference will throw for invalid file types
-            {
-                throw new InvalidOperationException($"Invalid reference type {referenceType}");
-            }
+            _console.WriteLine($"Adding reference to {referenceFile} with external parts {externalParts} and SuppressMissingDependenciesErrors {suppressErrorsForMissingDependencies}");
+            Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
-        private static string ValidateReference(string referenceFile)
+        private static void ValidateReference(string referenceFile)
         {
             // Make sure the file exists
             if (!File.Exists(referenceFile))
@@ -67,17 +51,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             // Make sure the file is a .dacpac file
             string fileType = Path.GetExtension(referenceFile);
-            if (fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
+            if (!fileType.Equals(".dacpac", StringComparison.OrdinalIgnoreCase))
             {
-                return "dacpac";
-            }
-            else if (fileType.Equals(".dll", StringComparison.OrdinalIgnoreCase))
-            {
-                return "dll";
-            }
-            else
-            {
-                throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac or .dll", nameof(referenceFile));
+                throw new ArgumentException($"Invalid filetype {fileType}, was expecting .dacpac", nameof(referenceFile));
             }
         }
 
@@ -141,14 +117,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                var ignoreMsg = "unresolved reference to Assembly";
-                if (modelError.ErrorCode == 71501
-                    && _dllReferences.Count > 0
-                    && modelError.GetOutputMessage(modelError.Severity).Contains(ignoreMsg, StringComparison.OrdinalIgnoreCase))
-                {
-                    _console.WriteLine($"Ignored error \"{ignoreMsg}\" on {modelError.SourceName} since it is caused by the assembly workaround.");
-                }
-                else if (modelError.Severity == ModelErrorSeverity.Error)
+                if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
@@ -212,101 +181,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             _console.WriteLine($"Writing model to {outputFile.FullName}");
-
-            packageOptions = packageOptions ?? new PackageOptions { };
-
-            if (_dllReferences.Count > 0)
-            {
-                var newIngnoreValidationErrors = new List<string>();
-                if (packageOptions.IgnoreValidationErrors != null)
-                {
-                    newIngnoreValidationErrors.AddRange(packageOptions.IgnoreValidationErrors);
-                }
-                newIngnoreValidationErrors.Add("SR0029"); // AllReferencesMustBeResolved, https://github.com/microsoft/DacFx/issues/462
-
-                packageOptions.IgnoreValidationErrors = newIngnoreValidationErrors;
-            }
-
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
-
-            if (_dllReferences.Count > 0)
-            {
-                using (var z = new ZipArchive(File.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
-                {
-                    var modelEntry = z.GetEntry("model.xml");
-
-                    string newModelHash;
-
-                    using (var modelStream = modelEntry.Open())
-                    {
-                        var doc = XDocument.Load(modelStream);
-
-                        XNamespace ns = doc.Root.Name.Namespace;
-
-                        string assemblyName = null;
-                        foreach(var referenceFile in _dllReferences)
-                        {
-                            _console.WriteLine($"Adding {referenceFile} to package");
-                            
-                            var dllBytes = File.ReadAllBytes(referenceFile);
-                            var dllHex = "0x" + Convert.ToHexString(dllBytes);
-                            assemblyName = Path.GetFileNameWithoutExtension(referenceFile);
-
-                            var appendedContent = new XElement(ns + "Element",
-                                new XAttribute("Type", "SqlAssembly"),
-                                new XAttribute("Name", $"[{assemblyName}]"),
-                                new XElement(ns + "Relationship",
-                                    new XAttribute("Name", "AssemblySources"),
-                                    new XElement(ns + "Entry",
-                                        new XElement(ns + "Element",
-                                            new XAttribute("Type", "SqlAssemblySource"),
-                                            new XElement(ns + "Property",
-                                                new XAttribute("Name", "Source"),
-                                                new XElement(ns + "Value",
-                                                    new XCData(dllHex)))))),
-                                new XElement(ns + "Relationship",
-                                    new XAttribute("Name", "Authorizer"),
-                                    new XElement(ns + "Entry",
-                                        new XElement(ns + "References",
-                                            new XAttribute("ExternalSource", "BuiltIns"),
-                                            new XAttribute("Name", "[dbo]")))));
-
-                            doc.Root.Element(ns + "Model").Add(appendedContent);
-                        }
-
-                        // fix empty references
-                        //TODO reference the right assembly if multiple exist.
-                        var emptyAssemblyRelationsShips = doc.Descendants(ns + "Relationship")
-                            .Where(r => r.Attribute("Name")?.Value == "Assembly")
-                            .SelectMany(r => r.Elements(ns + "Entry").Where(e => !e.HasElements && !e.Attributes().Any()));
-                        foreach(var emptyRelationship in emptyAssemblyRelationsShips)
-                        {
-                            emptyRelationship.Add(new XElement(ns + "References", new XAttribute("Name", $"[{assemblyName}]")));
-                        }
-                        
-                        modelStream.SetLength(0);
-                        doc.Save(modelStream);
-
-                        modelStream.Position = 0;
-                        using var sha256 = SHA256.Create();
-                        newModelHash = string.Join("", sha256.ComputeHash(modelStream).Select(c => c.ToString("X2")));
-                    }
-
-                    var originEntry = z.GetEntry("Origin.xml");
-
-                    using (var originStream = originEntry.Open())
-                    {
-                        var doc = XDocument.Load(originStream);
-
-		                var elem = doc.Root.Elements().Single(e => e.Name.LocalName == "Checksums").Elements().Single(e => e.Name.LocalName == "Checksum" && e.Attribute("Uri")?.Value == "/model.xml");
-
-                        elem.SetValue(newModelHash);
-
-                        originStream.SetLength(0);
-                        doc.Save(originStream);
-                    }
-                }
-            }
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
         public void SetMetadata(string name, string version)
