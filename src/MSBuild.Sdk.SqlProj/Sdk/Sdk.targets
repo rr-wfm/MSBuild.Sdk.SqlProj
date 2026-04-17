@@ -120,6 +120,7 @@
       <!-- Unified list of assembly references flowing into the build. Only file paths ending in .dll are considered
            to avoid accidentally including simple-name system references that MSBuild may inject. -->
       <AssemblyReference Include="@(Reference)" Condition="'%(Extension)' == '.dll'" />
+      <AssemblyReference Include="@(_ResolvedProjectReferencePaths)" Condition="'%(Extension)' == '.dll'" />
       <AssemblyReference Include="@(_TransitiveAssemblyReference)" />
     </ItemGroup>
 
@@ -163,8 +164,10 @@
         <ExternalParts>dbl=%(_ResolvedProjectReferencePaths.DatabaseVariableLiteralValue)|dbv=%(_ResolvedProjectReferencePaths.DatabaseSqlCmdVariable)|srv=%(_ResolvedProjectReferencePaths.ServerSqlCmdVariable)</ExternalParts>
       </_ResolvedProjectReference>
 
-      <!-- Build a list of package/project references that include a dacpac file matching the package identity in their tools folder -->
-      <DacpacReference Include="@(_ResolvedPackageReference);@(_ResolvedProjectReference)" Condition="Exists(%(DacpacFile))" />
+      <!-- Build a list of package/project references that include a dacpac file matching the package identity in their tools folder.
+           DacpacReference is strictly .dacpac files - any .dll paths are routed to AssemblyReference in ResolveAssemblyReferences. -->
+      <DacpacReference Include="@(_ResolvedPackageReference);@(_ResolvedProjectReference)"
+                       Condition="Exists(%(DacpacFile)) AND '$([System.IO.Path]::GetExtension(%27%(DacpacFile)%27))' == '.dacpac'" />
     </ItemGroup>
 
     <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.DacpacFile)" />
