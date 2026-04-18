@@ -283,20 +283,22 @@
 
   </Target>
 
-  <!-- Post-compile step that adds SQL CLR assembly references to the dacpac produced by DacpacTool via DacpacToolFramework. Only runs when at least one assembly reference was resolved. -->
+  <!-- Post-compile step that adds SQL CLR assembly references to the dacpac produced by DacpacTool via DacpacToolFramework. Only runs when at least one assembly reference was resolved.
+       Operates on the intermediate dacpac in $(IntermediateOutputPath) (obj/) since CopyFilesToOutputDirectory has not yet copied it to $(TargetDir) (bin/) at this point. -->
   <Target Name="AddAssemblyReferences"
           AfterTargets="CoreCompile"
           DependsOnTargets="ResolveAssemblyReferences"
-          Inputs="$(TargetPath);@(AssemblyReference)"
+          Inputs="@(IntermediateAssembly);@(AssemblyReference)"
           Outputs="$(IntermediateOutputPath)$(MSBuildProjectName).AssemblyReferences.stamp"
           Condition="'@(AssemblyReference)' != '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
     <Error Condition="!Exists('$(DacpacToolFrameworkExe)')"
            Text="Assembly references were detected but DacpacToolFramework could not be found at '$(DacpacToolFrameworkExe)'." />
     <PropertyGroup>
+      <IntermediateDacpacPath>@(IntermediateAssembly->'%(FullPath)')</IntermediateDacpacPath>
       <AssembliesPermissionSetArgument Condition="'$(AssemblyPermissionSet)' != ''">-ps $(AssemblyPermissionSet)</AssembliesPermissionSetArgument>
       <AssemblyReferenceArguments>@(AssemblyReference->'-asm &quot;%(Identity)&quot;', ' ')</AssemblyReferenceArguments>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; add-assemblies -i &quot;$(TargetPath)&quot; $(AssembliesPermissionSetArgument) $(AssemblyReferenceArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
+      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; add-assemblies -i &quot;$(IntermediateDacpacPath)&quot; $(AssembliesPermissionSetArgument) $(AssemblyReferenceArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
     </PropertyGroup>
     <Message Importance="Low" Text="Running command: $(DacpacToolFrameworkCommand)" />
     <Exec Command="$(DacpacToolFrameworkCommand)" WorkingDirectory="$(ProjectDir)" />
