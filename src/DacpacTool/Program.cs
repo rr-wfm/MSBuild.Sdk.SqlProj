@@ -142,7 +142,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Save the package to disk
-            packageBuilder.SaveToDisk(options.Output, options.HasAssemblyReferences, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
+            packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
+
+            // Write a sidecar file listing any input files whose objects were deferred because they
+            // reference a CLR assembly that is not yet present in the model. DacpacToolFramework reads
+            // this file and re-adds those objects after inserting the CREATE ASSEMBLY scripts.
+            var deferredSidecar = options.Output.FullName + ".deferred.txt";
+            if (packageBuilder.DeferredAssemblyReferencingFiles.Count > 0)
+            {
+#pragma warning disable CA1849 // Call async methods when in an async method
+                File.WriteAllLines(deferredSidecar, packageBuilder.DeferredAssemblyReferencingFiles);
+#pragma warning restore CA1849
+            }
+            else if (File.Exists(deferredSidecar))
+            {
+                File.Delete(deferredSidecar);
+            }
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
             packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);

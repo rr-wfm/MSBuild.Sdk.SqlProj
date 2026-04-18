@@ -113,8 +113,10 @@
       <_TransitiveAssemblyReference Include="%(_DacpacReferenceDirectory.Identity)\*.dll" />
 
       <!-- Unified list of assembly references flowing into the build. Only file paths ending in .dll are considered
-           to avoid accidentally including simple-name system references that MSBuild may inject. -->
-      <AssemblyReference Include="@(Reference)" Condition="'%(Extension)' == '.dll'" />
+           to avoid accidentally including simple-name system references that MSBuild may inject. Framework/reference
+           assemblies contributed implicitly by the target framework (e.g. NETStandard.Library) are excluded via the
+           NuGetPackageId metadata check; such assemblies are not CLR assemblies that should be deployed. -->
+      <AssemblyReference Include="@(Reference)" Condition="'%(Extension)' == '.dll' AND '%(Reference.NuGetPackageId)' == ''" />
       <AssemblyReference Include="@(_ResolvedProjectReferencePaths)" Condition="'%(Extension)' == '.dll'" />
       <AssemblyReference Include="@(_TransitiveAssemblyReference)" />
     </ItemGroup>
@@ -295,10 +297,20 @@
            Text="Assembly references were detected but DacpacToolFramework could not be found at '$(DacpacToolFrameworkExe)'." />
     <PropertyGroup>
       <IntermediateDacpacPath>@(IntermediateAssembly->'%(FullPath)')</IntermediateDacpacPath>
+      <DeferredFilesSidecarPath>$(IntermediateDacpacPath).deferred.txt</DeferredFilesSidecarPath>
+    </PropertyGroup>
+    <!-- Read the sidecar file produced by DacpacTool listing input files whose objects could not be added
+         to the model because they reference an unresolved CLR assembly. DacpacToolFramework re-adds these
+         files via -sql after CREATE ASSEMBLY has been inserted. -->
+    <ReadLinesFromFile File="$(DeferredFilesSidecarPath)" Condition="Exists('$(DeferredFilesSidecarPath)')">
+      <Output TaskParameter="Lines" ItemName="DeferredAssemblyReferencingFile" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
       <AssembliesPermissionSetArgument Condition="'$(AssemblyPermissionSet)' != ''">-ps $(AssemblyPermissionSet)</AssembliesPermissionSetArgument>
       <AssemblyReferenceArguments>@(AssemblyReference->'-asm &quot;%(Identity)&quot;', ' ')</AssemblyReferenceArguments>
+      <DeferredSqlFileArguments>@(DeferredAssemblyReferencingFile->'-sql &quot;%(Identity)&quot;', ' ')</DeferredSqlFileArguments>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; add-assemblies -i &quot;$(IntermediateDacpacPath)&quot; $(AssembliesPermissionSetArgument) $(AssemblyReferenceArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
+      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; add-assemblies -i &quot;$(IntermediateDacpacPath)&quot; $(AssembliesPermissionSetArgument) $(AssemblyReferenceArguments) $(DeferredSqlFileArguments) $(DebugArgument)</DacpacToolFrameworkCommand>
     </PropertyGroup>
     <Message Importance="Low" Text="Running command: $(DacpacToolFrameworkCommand)" />
     <Exec Command="$(DacpacToolFrameworkCommand)" WorkingDirectory="$(ProjectDir)" />

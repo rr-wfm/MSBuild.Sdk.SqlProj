@@ -18,6 +18,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly HashSet<string> _deferredAssemblyReferencingFiles = new (StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Files that contain SQL CLR objects whose <c>EXTERNAL NAME</c> assembly cannot be resolved
+        /// during the initial DacpacTool build. These files are removed from the model in
+        /// <see cref="ValidateModel"/> so the dacpac can be saved successfully; DacpacToolFramework
+        /// then re-adds them after the <c>CREATE ASSEMBLY</c> objects have been inserted.
+        /// </summary>
+        public IReadOnlyCollection<string> DeferredAssemblyReferencingFiles => _deferredAssemblyReferencingFiles;
 
         public PackageBuilder(IConsole console)
         {
@@ -121,7 +130,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     && hasAssemblyReferences
                     && modelError.GetOutputMessage(modelError.Severity).Contains("unresolved reference to Assembly", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    _console.WriteLine($"Warning: Ignoring error for unresolved assembly reference because assemblies are added afterwards. At: {modelError.SourceName}");
+                    if (!string.IsNullOrEmpty(modelError.SourceName))
+                    {
+                        _deferredAssemblyReferencingFiles.Add(modelError.SourceName);
+                    }
+                    _console.WriteLine($"Warning: Deferring file with unresolved assembly reference; it will be re-added after CREATE ASSEMBLY by DacpacToolFramework. At: {modelError.SourceName}");
                 }                    
                 else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
@@ -145,6 +158,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else
             {
+                if (_deferredAssemblyReferencingFiles.Count > 0)
+                {
+                    RemoveDeferredAssemblyReferencingObjects();
+                }
                 _modelValid = true;
             }
 
@@ -169,7 +186,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void SaveToDisk(FileInfo outputFile, bool hasAssemblyReferences = false, PackageOptions packageOptions = null)
+        private void RemoveDeferredAssemblyReferencingObjects()
+        {
+            // Each deferred file was passed as the source identifier to Model.AddOrUpdateObjects in
+            // AddInputFile, so we can remove all objects originating from that file in one call.
+            // The objects will be re-added by DacpacToolFramework after the corresponding
+            // CREATE ASSEMBLY scripts have been inserted.
+            foreach (var file in _deferredAssemblyReferencingFiles)
+            {
+                _console.WriteLine($"Deferring objects defined in {file}; they will be re-added by DacpacToolFramework after CREATE ASSEMBLY.");
+                Model.DeleteObjects(file);
+            }
+        }
+
+        public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
@@ -187,21 +217,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             _console.WriteLine($"Writing model to {outputFile.FullName}");
-            packageOptions = packageOptions ?? new PackageOptions { };
-            if (hasAssemblyReferences)
-            {
-                var ignoreErrors = new List<string>();
-                if (packageOptions.IgnoreValidationErrors != null)
-                {
-                    ignoreErrors.AddRange(packageOptions.IgnoreValidationErrors);
-                }
-                if (hasAssemblyReferences)
-                {
-                    ignoreErrors.Add("SR0029"); // AllReferencesMustBeResolved, https://github.com/microsoft/DacFx/issues/462
-                }
-                packageOptions.IgnoreValidationErrors = ignoreErrors;
-            }
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
         public void SetMetadata(string name, string version)

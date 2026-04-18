@@ -32,6 +32,7 @@ namespace DacpacToolFramework
             string inputPath = null;
             var defaultPermissionSet = AssemblyPermissionSet.Safe;
             var assemblies = new List<string>();
+            var deferredSqlFiles = new List<string>();
             var waitForDebugger = false;
 
             for (int i = 1; i < args.Length; i++)
@@ -49,6 +50,10 @@ namespace DacpacToolFramework
                     case "-asm":
                     case "--assembly":
                         assemblies.Add(args[++i]);
+                        break;
+                    case "-sql":
+                    case "--sql-file":
+                        deferredSqlFiles.Add(args[++i]);
                         break;
                     case "--debug":
                         waitForDebugger = true;
@@ -78,15 +83,15 @@ namespace DacpacToolFramework
                 Console.Error.WriteLine($"Input dacpac not found: {inputPath}");
                 return 1;
             }
-            if (assemblies.Count == 0)
+            if (assemblies.Count == 0 && deferredSqlFiles.Count == 0)
             {
-                Console.Out.WriteLine("No assemblies supplied; nothing to do.");
+                Console.Out.WriteLine("No assemblies or deferred SQL files supplied; nothing to do.");
                 return 0;
             }
 
             try
             {
-                AddAssembliesToDacpac(inputPath, defaultPermissionSet, assemblies);
+                AddAssembliesToDacpac(inputPath, defaultPermissionSet, assemblies, deferredSqlFiles);
                 return 0;
             }
             catch (Exception ex)
@@ -103,9 +108,10 @@ namespace DacpacToolFramework
         private static void AddAssembliesToDacpac(
             string inputPath,
             AssemblyPermissionSet defaultPermissionSet,
-            List<string> assemblies)
+            List<string> assemblies,
+            List<string> deferredSqlFiles)
         {
-            Console.Out.WriteLine($"Adding {assemblies.Count} assembly reference(s) to '{inputPath}'");
+            Console.Out.WriteLine($"Adding {assemblies.Count} assembly reference(s) and {deferredSqlFiles.Count} deferred SQL file(s) to '{inputPath}'");
 
             PackageMetadata metadata;
             using (var package = DacPackage.Load(inputPath, DacSchemaModelStorageType.Memory))
@@ -120,7 +126,7 @@ namespace DacpacToolFramework
 
             using (var model = TSqlModel.LoadFromDacpac(
                 inputPath,
-                new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: true)))
+                new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: false)))
             {
                 foreach (var assemblyPath in assemblies)
                 {
@@ -136,7 +142,17 @@ namespace DacpacToolFramework
                     model.AddOrUpdateObjects(script, assemblyName + ".sql", new TSqlObjectOptions());
                 }
 
-                //File.Delete(inputPath);
+                foreach (var sqlFile in deferredSqlFiles)
+                {
+                    if (!File.Exists(sqlFile))
+                    {
+                        throw new FileNotFoundException($"Deferred SQL file not found: {sqlFile}", sqlFile);
+                    }
+
+                    Console.Out.WriteLine($"Re-adding deferred SQL file '{sqlFile}'");
+                    model.AddOrUpdateObjects(File.ReadAllText(sqlFile), sqlFile, new TSqlObjectOptions());
+                }
+
                 DacPackageExtensions.BuildPackage(inputPath, model, metadata, new PackageOptions());
             }
 
@@ -170,7 +186,7 @@ namespace DacpacToolFramework
 
         private static void WriteUsage()
         {
-            Console.Error.WriteLine("Usage: DacpacToolFramework.exe add-assemblies -i <input.dacpac> [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [--debug]");
+            Console.Error.WriteLine("Usage: DacpacToolFramework.exe add-assemblies -i <input.dacpac> [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [-sql <deferred.sql> ...] [--debug]");
         }
     }
 
