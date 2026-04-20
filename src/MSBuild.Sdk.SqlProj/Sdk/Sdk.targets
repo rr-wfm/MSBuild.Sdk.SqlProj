@@ -113,6 +113,26 @@
     <Message Importance="High" Text="Using target framework $(DacpacToolTfm) to run DacpacTool" />
   </Target>
 
+  <!-- Detects assembly (.dll) references contributed by <Reference> items directly or transitively through referenced dacpac packages. Handled by DacpacToolFramework via CreateAssembliesDacpac; the resulting intermediate dacpac is loaded by DacpacTool via basedacpac. -->
+  <Target Name="ResolveAssemblyReferences" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences">
+    <ItemGroup>
+      <!-- Directories that contain referenced dacpacs - used to glob for sibling DLLs (transitive assembly references). -->
+      <_DacpacReferenceDirectory Include="@(DacpacReference->'$([System.IO.Path]::GetDirectoryName(%27%(DacpacFile)%27))')" />
+      <_TransitiveAssemblyReference Include="%(_DacpacReferenceDirectory.Identity)\*.dll" />
+
+      <!-- Unified list of assembly references flowing into the build. Only file paths ending in .dll are considered
+           to avoid accidentally including simple-name system references that MSBuild may inject. Framework/reference
+           assemblies contributed implicitly by the target framework (e.g. NETStandard.Library) are excluded via the
+           NuGetPackageId metadata check; such assemblies are not CLR assemblies that should be deployed. -->
+      <AssemblyReference Include="@(Reference)" Condition="'%(Extension)' == '.dll' AND '%(Reference.NuGetPackageId)' == ''" />
+      <AssemblyReference Include="@(_ResolvedProjectReferencePaths)" Condition="'%(Extension)' == '.dll'" />
+      <AssemblyReference Include="@(_TransitiveAssemblyReference)" />
+    </ItemGroup>
+
+    <Message Importance="Normal" Condition="'@(AssemblyReference)' != ''"
+             Text="Resolved assembly references: @(AssemblyReference)" />
+  </Target>
+
   <!--
     Resolves package references to .dacpac packages by enumerating all package references, resolving their associated Pkg<package-id> property to get the physical
     location of the package and then checking if a that package contains a .dacpac file inside of the tools folder.
@@ -148,8 +168,10 @@
         <ExternalParts>dbl=%(_ResolvedProjectReferencePaths.DatabaseVariableLiteralValue)|dbv=%(_ResolvedProjectReferencePaths.DatabaseSqlCmdVariable)|srv=%(_ResolvedProjectReferencePaths.ServerSqlCmdVariable)</ExternalParts>
       </_ResolvedProjectReference>
 
-      <!-- Build a list of package/project references that include a dacpac file matching the package identity in their tools folder -->
-      <DacpacReference Include="@(_ResolvedPackageReference);@(_ResolvedProjectReference)" Condition="Exists(%(DacpacFile))" />
+      <!-- Build a list of package/project references that include a dacpac file matching the package identity in their tools folder.
+           DacpacReference is strictly .dacpac files - any .dll paths are routed to AssemblyReference in ResolveAssemblyReferences. -->
+      <DacpacReference Include="@(_ResolvedPackageReference);@(_ResolvedProjectReference)"
+                       Condition="Exists(%(DacpacFile)) AND '$([System.IO.Path]::GetExtension(%27%(DacpacFile)%27))' == '.dacpac'" />
     </ItemGroup>
 
     <Message Importance="normal" Text="Resolved dacpac file from package %(_ResolvedPackageReference.Identity) to %(_ResolvedPackageReference.DacpacFile)" />
@@ -191,7 +213,7 @@
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
-  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
+  <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;ResolveAssemblyReferences;GetIncludedFiles"
           Inputs="@(Content);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
@@ -232,6 +254,7 @@
       <MetadataArguments>-n &quot;$(MSBuildProjectName)&quot; -v &quot;$(PackageVersion)&quot;</MetadataArguments>
       <SqlServerVersionArgument>-sv $(SqlServerVersion)</SqlServerVersionArgument>
       <ReferenceArguments>@(DacpacReference->'-r &quot;%(DacpacFile);%(ExternalParts);%(SuppressMissingDependenciesErrors)&quot;', ' ')</ReferenceArguments>
+      <AssemblyReferenceArguments>@(AssemblyReference->'-asm &quot;%(Identity)&quot;', ' ')</AssemblyReferenceArguments>
       <InputFileArguments>-i &quot;$(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt&quot;</InputFileArguments>
       <BuildPropertyArguments>@(BuildPropertyNames->'-bp %(Identity)=%(PropertyValue)', ' ')</BuildPropertyArguments>
       <DeployPropertyArguments>@(DeployPropertyNames->'-dp %(Identity)=%(PropertyValue)', ' ')</DeployPropertyArguments>
@@ -250,7 +273,7 @@
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
       <ErDiagramConfigArgument>@(_DistinctEntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(AssemblyReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />

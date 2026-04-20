@@ -28,6 +28,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Reference(s) to include", Required = false, Name = "--reference", Alias = "-r")]
         public string[] Reference { get; set; }
         
+        [CliOption(Description = "Assembly reference(s) to include", Required = false, Name = "--assemblyreference", Alias = "-asm")]
+        public string[] AssemblyReference { get; set; }
+        
         [CliOption(Description = "Build properties to be set on the model", Name = "--buildproperty", Required = false, Alias = "-bp")]
         public string[] BuildProperty { get; set; }
         

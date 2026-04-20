@@ -41,6 +41,49 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             Model.AddReference(referenceFile, externalParts, suppressErrorsForMissingDependencies);
         }
 
+        public void AddAssemblyReference(string assemblyReferenceFile)
+        {
+            // Ensure that the model has been created
+            EnsureModelCreated();
+            
+            if (!File.Exists(assemblyReferenceFile))
+            {
+                throw new FileNotFoundException($"Assembly file not found: {assemblyReferenceFile}", assemblyReferenceFile);
+            }
+
+            var assemblyName = Path.GetFileNameWithoutExtension(assemblyReferenceFile);
+            var script = BuildCreateAssemblyScript(assemblyName, assemblyReferenceFile);
+            
+            Model.AddOrUpdateObjects(script, assemblyName + ".sql", new TSqlObjectOptions());
+
+            _console.WriteLine($"Added assembly from '{assemblyReferenceFile}'");
+        }
+
+        private static string BuildCreateAssemblyScript(string assemblyName, string assemblyPath, AssemblyPermissionSet permissionSet = AssemblyPermissionSet.Safe)
+        {
+            var bytes = File.ReadAllBytes(assemblyPath);
+            var hex = new StringBuilder(bytes.Length * 2 + 2);
+            hex.Append("0x");
+            foreach (var b in bytes)
+            {
+                hex.Append(b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            var permissionSetClause = permissionSet switch
+            {
+                AssemblyPermissionSet.Safe => "SAFE",
+                AssemblyPermissionSet.ExternalAccess => "EXTERNAL_ACCESS",
+                AssemblyPermissionSet.Unsafe => "UNSAFE",
+                _ => "SAFE",
+            };
+
+            return
+                $"CREATE ASSEMBLY [{assemblyName.Replace("]", "]]", StringComparison.OrdinalIgnoreCase)}]\r\n" +
+                $"    AUTHORIZATION [dbo]\r\n" +
+                $"    FROM {hex}\r\n" +
+                $"    WITH PERMISSION_SET = {permissionSetClause};\r\n";
+        }
+
         private static void ValidateReference(string referenceFile)
         {
             // Make sure the file exists
@@ -117,7 +160,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                if (modelError.Severity == ModelErrorSeverity.Error)
+                if (modelError.ErrorCode == 70557
+                    && modelError.GetOutputMessage(modelError.Severity).Contains("assembly is corrupt or not valid", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // ignore error to show that it fails in SaveToDisk
+                }
+                else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
@@ -181,7 +229,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             _console.WriteLine($"Writing model to {outputFile.FullName}");
-            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
+            packageOptions = packageOptions ?? new PackageOptions { };
+            packageOptions.IgnoreValidationErrors = ["SQL70557"];
+            DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions);
         }
 
         public void SetMetadata(string name, string version)

@@ -79,6 +79,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
             }
 
+            // Add assembly references to the model
+            if (options.AssemblyReference != null)
+            {
+                foreach (var assemblyReference in options.AssemblyReference)
+                {
+                    packageBuilder.AddAssemblyReference(assemblyReference);
+                }
+            }
+
             // Add SqlCmdVariables to the package (if defined)
             if (options.SqlCmdVar != null)
             {
