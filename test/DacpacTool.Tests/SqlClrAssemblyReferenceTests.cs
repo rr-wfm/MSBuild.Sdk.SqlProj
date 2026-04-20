@@ -76,6 +76,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var assemblies = model.GetObjects(DacQueryScopes.Default, Assembly.TypeClass).ToList();
             assemblies.ShouldContain(a => a.Name.Parts.Contains("SqlClrTestLibrary"),
                 "Expected CREATE ASSEMBLY [SqlClrTestLibrary] in dacpac.");
+
+            // Assert - a procedure that references the deferred function is also present and its
+            // dependency was correctly resolved (i.e. it was deferred transitively and re-added).
+            var procedure = model.GetObject(Procedure.TypeClass,
+                new ObjectIdentifier("dbo", "usp_SelectOne"), DacQueryScopes.Default);
+            procedure.ShouldNotBeNull("Expected stored procedure [dbo].[usp_SelectOne] in dacpac.");
+            var referenced = procedure.GetReferenced().Select(o => o.Name.ToString()).ToList();
+            referenced.ShouldContain("[dbo].[fn_ReturnOne]",
+                $"Procedure [dbo].[usp_SelectOne] should reference [dbo].[fn_ReturnOne], but only references: {string.Join(", ", referenced)}");
         }
     }
 }

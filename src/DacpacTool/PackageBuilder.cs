@@ -188,6 +188,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private void RemoveDeferredAssemblyReferencingObjects()
         {
+            // Expand the set of deferred files transitively: any object that depends on an object
+            // defined in a deferred file must itself be deferred, otherwise BuildPackage produces
+            // empty <Entry/> references in model.xml and the resulting dacpac is broken.
+            ExpandDeferredFilesWithReferencingObjects();
+
             // Each deferred file was passed as the source identifier to Model.AddOrUpdateObjects in
             // AddInputFile, so we can remove all objects originating from that file in one call.
             // The objects will be re-added by DacpacToolFramework after the corresponding
@@ -197,6 +202,45 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 _console.WriteLine($"Deferring objects defined in {file}; they will be re-added by DacpacToolFramework after CREATE ASSEMBLY.");
                 Model.DeleteObjects(file);
             }
+        }
+
+        private void ExpandDeferredFilesWithReferencingObjects()
+        {
+            // Walk dependents of objects in the currently deferred files and pull in any source
+            // files that contain referencing objects. Repeat until the set is stable, since a
+            // referencer may itself be referenced by other objects in other files.
+            bool added;
+            do
+            {
+                added = false;
+                var snapshot = _deferredAssemblyReferencingFiles.ToArray();
+                foreach (var obj in Model.GetObjects(DacQueryScopes.UserDefined))
+                {
+                    if (!ObjectOriginatesFromAny(obj, snapshot))
+                    {
+                        continue;
+                    }
+
+                    foreach (var referencing in obj.GetReferencing())
+                    {
+                        var src = referencing.GetSourceInformation();
+                        if (!string.IsNullOrEmpty(src?.SourceName)
+                            && _deferredAssemblyReferencingFiles.Add(src.SourceName))
+                        {
+                            _console.WriteLine($"Warning: Deferring file because it contains an object referencing a deferred object. At: {src.SourceName}");
+                            added = true;
+                        }
+                    }
+                }
+            }
+            while (added);
+        }
+
+        private static bool ObjectOriginatesFromAny(TSqlObject obj, IEnumerable<string> files)
+        {
+            var src = obj.GetSourceInformation();
+            return !string.IsNullOrEmpty(src?.SourceName)
+                && files.Contains(src.SourceName, StringComparer.OrdinalIgnoreCase);
         }
 
         public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
