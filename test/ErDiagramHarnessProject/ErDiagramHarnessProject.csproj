@@ -1,0 +1,18 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <SqlServerVersion>Sql160</SqlServerVersion>
+    <GenerateEntityRelationshipDiagram>true</GenerateEntityRelationshipDiagram>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EntityRelationshipDiagramConfigFile Include="Configs\sales_erdiagram.json" />
+    <EntityRelationshipDiagramConfigFile Include="Configs\hr_erdiagram.json" />
+    <EntityRelationshipDiagramConfigFile Include="Configs\special_erdiagram.json" />
+    <EntityRelationshipDiagramConfigFile Include="Configs\computed-column_erdiagram.json" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>

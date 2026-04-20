@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/rr-wfm/MSBuild.Sdk.SqlProj/master/src/MSBuild.Sdk.SqlProj/Sdk/EntityRelationshipDiagramConfig.schema.json",
+  "title": "MSBuild.Sdk.SqlProj ER Diagram Config",
+  "description": "Configuration for generating a filtered Mermaid ER diagram.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemas": {
+      "type": "array",
+      "description": "Includes all tables in the listed schemas.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "tables": {
+      "type": "array",
+      "description": "Includes specific named tables, even if they are outside the listed schemas.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "outputFileName": {
+      "type": "string",
+      "description": "Optional output file name for the generated diagram markdown.",
+      "minLength": 1
+    }
+  }
+}

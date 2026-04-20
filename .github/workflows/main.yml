@@ -618,7 +618,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Download SDK package
     - name: download-sdk-package
@@ -641,7 +641,7 @@ jobs:
       working-directory: ${{steps.download-sdk-package.outputs.download-path}}
 
     # Get a short-lived NuGet API key
-    - name: NuGet login (OIDC → temp API key)
+    - name: NuGet login (OIDC => temp API key)
       uses: NuGet/login@v1
       id: login
       with:

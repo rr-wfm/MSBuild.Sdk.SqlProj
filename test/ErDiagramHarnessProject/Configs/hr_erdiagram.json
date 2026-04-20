@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../src/MSBuild.Sdk.SqlProj/Sdk/EntityRelationshipDiagramConfig.schema.json",
+  "schemas": [
+    "hr"
+  ],
+  "outputFileName": "hr_erdiagram.md"
+}

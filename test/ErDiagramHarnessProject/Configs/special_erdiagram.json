@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../src/MSBuild.Sdk.SqlProj/Sdk/EntityRelationshipDiagramConfig.schema.json",
+  "tables": [
+    "sales.LineItem",
+    "dbo.Customer"
+  ],
+  "outputFileName": "special_erdiagram.md"
+}
