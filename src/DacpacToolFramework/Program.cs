@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Text;
 using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
@@ -34,6 +35,7 @@ namespace DacpacToolFramework
             var assemblies = new List<string>();
             var deferredSqlFiles = new List<string>();
             var waitForDebugger = false;
+            var trustInPreDeploy = false;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -54,6 +56,10 @@ namespace DacpacToolFramework
                     case "-sql":
                     case "--sql-file":
                         deferredSqlFiles.Add(args[++i]);
+                        break;
+                    case "-tip":
+                    case "--trustinpredeploy":
+                        trustInPreDeploy = true;
                         break;
                     case "--debug":
                         waitForDebugger = true;
@@ -92,6 +98,10 @@ namespace DacpacToolFramework
             try
             {
                 AddAssembliesToDacpac(inputPath, defaultPermissionSet, assemblies, deferredSqlFiles);
+                if (trustInPreDeploy && assemblies.Count > 0)
+                {
+                    InjectTrustedAssemblyPreDeployScript(inputPath, assemblies);
+                }
                 return 0;
             }
             catch (Exception ex)
@@ -186,7 +196,121 @@ namespace DacpacToolFramework
 
         private static void WriteUsage()
         {
-            Console.Error.WriteLine("Usage: DacpacToolFramework.exe add-assemblies -i <input.dacpac> [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [-sql <deferred.sql> ...] [--debug]");
+            Console.Error.WriteLine("Usage: DacpacToolFramework.exe add-assemblies -i <input.dacpac> [-ps Safe|ExternalAccess|Unsafe] [-asm <dll> ...] [-sql <deferred.sql> ...] [--trustinpredeploy] [--debug]");
+        }
+
+        /// <summary>
+        /// Prepends a block of T-SQL to the dacpac's pre-deployment script that registers each
+        /// referenced SQL CLR assembly in <c>sys.trusted_assemblies</c> via
+        /// <c>sys.sp_add_trusted_assembly</c> when it is not already trusted. This runs before
+        /// the model deployment performs CREATE ASSEMBLY, allowing CLR strict security to be
+        /// satisfied without manual operator intervention.
+        /// </summary>
+        private static void InjectTrustedAssemblyPreDeployScript(string inputPath, List<string> assemblies)
+        {
+            const string PreDeployPartUri = "/predeploy.sql";
+
+            var trustScript = BuildTrustAssembliesScript(assemblies);
+
+            using (var package = Package.Open(inputPath, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var partUri = new Uri(PreDeployPartUri, UriKind.Relative);
+                string existing = string.Empty;
+                if (package.PartExists(partUri))
+                {
+                    var existingPart = package.GetPart(partUri);
+                    using (var stream = existingPart.GetStream(FileMode.Open, FileAccess.Read))
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        existing = reader.ReadToEnd();
+                    }
+                    package.DeletePart(partUri);
+                }
+
+                var combined = trustScript;
+                if (!string.IsNullOrEmpty(existing))
+                {
+                    combined = trustScript + existing;
+                }
+
+                var part = package.CreatePart(partUri, "text/plain");
+                using (var stream = part.GetStream(FileMode.Create, FileAccess.Write))
+                {
+                    var buffer = Encoding.UTF8.GetBytes(combined);
+                    stream.Write(buffer, 0, buffer.Length);
+                }
+            }
+
+            Console.Out.WriteLine($"Injected trusted-assembly pre-deployment script for {assemblies.Count} assembly reference(s).");
+        }
+
+        private static string BuildTrustAssembliesScript(List<string> assemblies)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("-- BEGIN MSBuild.Sdk.SqlProj: trust referenced SQL CLR assemblies");
+            sb.AppendLine("IF OBJECT_ID('tempdb..#is_assembly_trusted') IS NOT NULL DROP PROCEDURE #is_assembly_trusted;");
+            sb.AppendLine("GO");
+            sb.AppendLine("CREATE PROCEDURE #is_assembly_trusted @hash varbinary(64)");
+            sb.AppendLine("AS");
+            sb.AppendLine("BEGIN");
+            sb.AppendLine("    RETURN IIF(EXISTS (SELECT * FROM sys.trusted_assemblies WHERE [hash] = @hash), 1, 0);");
+            sb.AppendLine("END");
+            sb.AppendLine("GO");
+
+            foreach (var assemblyPath in assemblies)
+            {
+                var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+                // Compute the SHA-512 hash at build time so the predeploy script only carries the
+                // 64-byte hash literal instead of the full assembly bytes (those are already
+                // embedded once in the corresponding CREATE ASSEMBLY ... FROM 0x... statement).
+                var hashHex = ToHexLiteral(ComputeSha512(assemblyPath));
+                var safeName = assemblyName.Replace("'", "''");
+
+                sb.AppendLine($"-- Trust assembly: {assemblyName}");
+                sb.AppendLine($"DECLARE @name sysname = N'{safeName}';");
+                sb.AppendLine("DECLARE @description nvarchar(4000) = @name;");
+                sb.AppendLine($"DECLARE @hash varbinary(64) = {hashHex};");
+                sb.AppendLine("DECLARE @is_assembly_trusted bit;");
+                sb.AppendLine("EXEC @is_assembly_trusted = #is_assembly_trusted @hash;");
+                sb.AppendLine("IF @is_assembly_trusted = 1");
+                sb.AppendLine("BEGIN");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' already trusted';");
+                sb.AppendLine("END");
+                sb.AppendLine("ELSE");
+                sb.AppendLine("BEGIN");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' not trusted yet, trusting...';");
+                sb.AppendLine("    EXEC sys.sp_add_trusted_assembly @hash = @hash, @description = @description;");
+                sb.AppendLine("    EXEC @is_assembly_trusted = #is_assembly_trusted @hash;");
+                sb.AppendLine("    IF @is_assembly_trusted = 0");
+                sb.AppendLine("    BEGIN");
+                sb.AppendLine("        DECLARE @msg nvarchar(max) = CONCAT('Trusting the assembly ', @name, ' failed. This may be caused by a lack of permissions. Execute the following command manually on the server to trust the assembly, then re-run the pipeline. declare @description nvarchar(4000) = ''', @description, '''; exec sys.sp_add_trusted_assembly @hash = ', CONVERT(varchar(max), @hash, 1), ', @description = @description');");
+                sb.AppendLine("        ;THROW 50000, @msg, 1;");
+                sb.AppendLine("    END");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' trusted';");
+                sb.AppendLine("END");
+                sb.AppendLine("GO");
+            }
+
+            sb.AppendLine("-- END MSBuild.Sdk.SqlProj: trust referenced SQL CLR assemblies");
+            return sb.ToString();
+        }
+
+        private static byte[] ComputeSha512(string filePath)
+        {
+            using var sha = System.Security.Cryptography.SHA512.Create();
+            using var stream = File.OpenRead(filePath);
+            return sha.ComputeHash(stream);
+        }
+
+        private static string ToHexLiteral(byte[] bytes)
+        {
+            var hex = new StringBuilder(bytes.Length * 2 + 2);
+            hex.Append("0x");
+            foreach (var b in bytes)
+            {
+                hex.Append(b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture));
+            }
+            return hex.ToString();
         }
     }
 

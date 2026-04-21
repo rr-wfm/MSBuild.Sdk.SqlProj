@@ -12,6 +12,9 @@
     <TargetExt>.dacpac</TargetExt>
     <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == ''">true</EnableSdkContainerSupport>
     <SqlPackageDownloadUrl>https://aka.ms/sqlpackage-linux</SqlPackageDownloadUrl>
+    <!-- When True, code is added to the pre-deployment script to trust each referenced SQL CLR assembly
+         (via sys.sp_add_trusted_assembly) before CREATE ASSEMBLY runs. Default: False. -->
+    <ClrAssemblyTrustInPreDeploy Condition="'$(ClrAssemblyTrustInPreDeploy)' == ''">False</ClrAssemblyTrustInPreDeploy>
 
     <!-- Setting this here so that we won't try to generate a documentation file and then fail on publish since it doesn't exist -->
     <GenerateDocumentationFile>False</GenerateDocumentationFile>

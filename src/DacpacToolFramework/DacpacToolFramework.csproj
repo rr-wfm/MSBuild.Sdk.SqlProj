@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.3.93" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- System.IO.Packaging lives in WindowsBase on .NET Framework. -->
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
 </Project>
