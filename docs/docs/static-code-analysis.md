@@ -83,4 +83,4 @@ They are based on these older repositories:
 
 You can also build your own rules. For an example of how to build a custom rule, see [this blog post](https://erikej.github.io/dacfx/dotnet/2024/04/04/dacfx-rules.html).
 
-To publish your own custom rules, pack your rule .dll in a NuGet package as shown in this rule project file [from GitHub](https://github.com/ErikEJ/SqlServer.Rules/blob/master/SqlServer.Rules/SqlServer.Rules.csproj).
+To publish your own custom rules, pack your rule .dll in a NuGet package as shown in this rule project file [from GitHub](https://github.com/ErikEJ/SqlServer.Rules/blob/master/src/SqlServer.Rules/SqlServer.Rules.csproj).
