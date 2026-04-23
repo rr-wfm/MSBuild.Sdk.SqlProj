@@ -1,4 +1,5 @@
 using System;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {

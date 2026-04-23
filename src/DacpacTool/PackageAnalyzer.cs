@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 using Microsoft.SqlServer.Dac.Model;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {

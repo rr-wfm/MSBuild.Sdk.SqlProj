@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DotMake.CommandLine;
 using Microsoft.SqlServer.Dac;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -154,13 +155,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
-            packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
-            packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
+            var packageHelper = new PackageHelper(new ActualConsole());
+
+            packageHelper.AddPreDeploymentScript(options.PreDeploy, options.Output);            
+            packageHelper.AddPostDeploymentScript(options.PostDeploy, options.Output);
 
             if (options.GenerateCreateScript)
             {
                 var deployOptions = options.ExtractDeployOptions();
-                packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
+                packageHelper.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
             }
 
             if (options.RunCodeAnalysis)

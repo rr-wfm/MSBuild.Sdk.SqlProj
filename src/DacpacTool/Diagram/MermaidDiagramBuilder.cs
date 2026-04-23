@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.SqlServer.Dac.Model;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 {

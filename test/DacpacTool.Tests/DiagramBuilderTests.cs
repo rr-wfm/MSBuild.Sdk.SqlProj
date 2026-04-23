@@ -5,6 +5,7 @@ using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
 using Shouldly;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {

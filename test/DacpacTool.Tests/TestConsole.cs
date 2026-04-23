@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
