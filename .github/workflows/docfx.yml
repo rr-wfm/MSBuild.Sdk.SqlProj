@@ -36,7 +36,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Install DocFX
         run: dotnet tool update -g docfx --version 2.78.5
