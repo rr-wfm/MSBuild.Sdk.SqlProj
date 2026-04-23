@@ -8,15 +8,158 @@ using System.Reflection;
 
 public sealed class PackageBuilder : IDisposable
 {
+    public TSqlModelOptions Options { get; } = new TSqlModelOptions();
+
+    public TSqlModel Model { get; private set; }
+
+    public PackageMetadata Metadata { get; private set; }
+
+    public bool TreatTSqlWarningsAsErrors { get; set; }
+
+    private static readonly char[] suppresionListSeparator = new [] { ',', ';' };
+    
+    private static readonly char[] suppressWarningsListSeparator = new char[] { '|' };
+    
+    private static readonly char[] buildPropertyKeyValueSeparator = new char[] { '=' };
+    
+    private static readonly char[] referenceDetailsSeparator = new char[] { ';' };
+
     private readonly IConsole _console;
+
     private bool? _modelValid;
 
     private List<int> _suppressedWarnings = new ();
+
     private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
 
     public PackageBuilder(IConsole console)
     {
         _console = console ?? throw new ArgumentNullException(nameof(console));
+    }
+
+    public static BuildPackageResult BuildAndSavePackage(IConsole console, BuildOptionsBase options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        using var packageBuilder = new PackageBuilder(console);
+    
+        // Set metadata for the package
+        packageBuilder.SetMetadata(options.Name, options.Version);
+
+        // Set properties on the model (if defined)
+        if (options.BuildProperty != null)
+        {
+            foreach (var propertyValue in options.BuildProperty)
+            {
+                string[] keyValuePair = propertyValue.Split(buildPropertyKeyValueSeparator, 2);
+                packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+            }
+        }
+
+        // Build the empty model for the target SQL Server version
+        packageBuilder.UsingVersion(options.SqlServerVersion);
+
+        // Add references to the model
+        if (options.Reference != null)
+        {
+            foreach (var reference in options.Reference)
+            {
+                string[] referenceDetails = reference.Split(referenceDetailsSeparator, 3, StringSplitOptions.RemoveEmptyEntries);
+                if (referenceDetails.Length == 1)
+                {
+                    packageBuilder.AddReference(referenceDetails[0]);
+                }
+                if (referenceDetails.Length == 2)
+                {
+                    packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
+                }
+                else
+                {
+                    if (!bool.TryParse(referenceDetails[2], out bool suppressErrorsForMissingDependencies))
+                    {
+                        throw new ArgumentException(
+                            $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
+                    }
+                    packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
+                }
+            }
+        }
+
+        // Add assembly references to the model
+        if (options.AssemblyReference != null)
+        {
+            foreach (var assemblyReference in options.AssemblyReference)
+            {
+                packageBuilder.AddAssemblyReference(assemblyReference);
+            }
+        }
+
+        // Add SqlCmdVariables to the package (if defined)
+        if (options.SqlCmdVar != null)
+        {
+            packageBuilder.AddSqlCmdVariables(options.SqlCmdVar.ToArray());
+        }
+
+        var modelExceptions = false;
+
+        // Add input files by iterating through $Project.InputFiles.txt
+        if (options.InputFile != null)
+        {
+            if (options.InputFile.Exists)
+            {
+#pragma warning disable CA1849 // Call async methods when in an async method - must wait for .NET 6 to be removed
+                foreach (var line in File.ReadLines(options.InputFile.FullName))
+                {
+                    FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
+                    if (!packageBuilder.AddInputFile(inputFile))
+                    {
+                        modelExceptions = true;
+                    }
+                }
+#pragma warning restore CA1849 // Call async methods when in an async method
+            }
+            else
+            {
+                throw new ArgumentException($"No input files found, missing {options.InputFile.Name}");
+            }
+        }
+
+        //Add Warnings options
+        packageBuilder.TreatTSqlWarningsAsErrors = options.WarnAsError;
+        if (options.SuppressWarnings != null)
+        {
+            packageBuilder.AddWarningsToSuppress(options.SuppressWarnings);
+        }
+
+        // Add warnings suppressions for particular files through $Project.WarningsSuppression.txt
+        if (options.SuppressWarningsListFile != null)
+        {
+            if (options.SuppressWarningsListFile.Exists)
+            {
+#pragma warning disable CA1849 // Call async methods when in an async method
+                foreach (var line in File.ReadLines(options.SuppressWarningsListFile.FullName))
+                {
+                    //Checks if there are suppression warnings list
+                    var parts = line.Split(suppressWarningsListSeparator, StringSplitOptions.RemoveEmptyEntries);
+                    var warningList = (parts.Length > 1) ? parts[1] : null;
+
+                    FileInfo inputFile = new FileInfo(parts[0]); // Validation occurs in AddInputFile
+                    packageBuilder.AddFileWarningsToSuppress(inputFile, warningList);
+                }
+#pragma warning restore CA1849 // Call async methods when in an async method
+            }
+        }
+
+        // Validate the model
+        if (!modelExceptions)
+        {
+            modelExceptions = !packageBuilder.ValidateModel();
+        }
+
+        // Save the package to disk
+        packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
+        
+        return new BuildPackageResult(packageBuilder.Model, modelExceptions);
     }
 
     public void UsingVersion(SqlServerVersion version)
@@ -322,11 +465,6 @@ public sealed class PackageBuilder : IDisposable
         Model = null;
     }
 
-    public TSqlModelOptions Options { get; } = new TSqlModelOptions();
-    public TSqlModel Model { get; private set; }
-
-    public PackageMetadata Metadata { get; private set; }
-
     private void EnsureModelCreated()
     {
         if (Model == null)
@@ -350,10 +488,6 @@ public sealed class PackageBuilder : IDisposable
             throw new InvalidOperationException("Model has not been validated. Call ValidateModel first.");
         }
     }
-
-    public bool TreatTSqlWarningsAsErrors { get; set; }
-
-    private static readonly char[] separator = new [] { ',', ';' };
 
     public void AddWarningsToSuppress(string suppressionList)
     {
@@ -384,7 +518,7 @@ public sealed class PackageBuilder : IDisposable
         var result = new List<int>();
         if (!string.IsNullOrEmpty(suppressionList))
         {
-            foreach (var str in suppressionList.Split(separator, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var str in suppressionList.Split(suppresionListSeparator, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (int.TryParse(str.Trim(), out var value))
                 {

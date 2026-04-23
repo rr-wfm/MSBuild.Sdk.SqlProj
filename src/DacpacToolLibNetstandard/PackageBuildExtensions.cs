@@ -7,7 +7,7 @@ using Microsoft.SqlServer.TransactSql.ScriptDom;
 using System.Collections;
 using System.Text;
 
-public static class Extensions
+public static class PackageBuildExtensions
 {
     static Type CustomSchemaDataType;
 
@@ -17,7 +17,7 @@ public static class Extensions
     static MethodInfo SetMetadataMethod;
     
 #pragma warning disable CA1810 // Initialize reference type static fields inline
-    static Extensions()
+    static PackageBuildExtensions()
 #pragma warning restore CA1810 // Initialize reference type static fields inline
     {
         var customType = Type.GetType("Microsoft.Data.Tools.Schema.SchemaModel.CustomSchemaData, Microsoft.Data.Tools.Schema.Sql");

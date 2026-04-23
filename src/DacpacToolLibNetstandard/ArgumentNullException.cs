@@ -3,7 +3,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 /// <summary>
 /// To implement ArgumentNullException.ThrowIfNull for .NET Standard.
 /// </summary>
-internal class ArgumentNullException : System.ArgumentNullException
+internal sealed class ArgumentNullException : System.ArgumentNullException
 {
     public ArgumentNullException() : base()
     {
