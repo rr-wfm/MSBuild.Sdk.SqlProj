@@ -156,10 +156,18 @@ public sealed class PackageBuilder : IDisposable
             modelExceptions = !packageBuilder.ValidateModel();
         }
 
+        var result = new BuildPackageResult(packageBuilder.Model, modelExceptions);
+        packageBuilder.Model = null; // Transfer ownership so Dispose() won't destroy it
+
+        if (modelExceptions)
+        {
+            return result;
+        }
+
         // Save the package to disk
         packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
-        
-        return new BuildPackageResult(packageBuilder.Model, modelExceptions);
+
+        return result;
     }
 
     public void UsingVersion(SqlServerVersion version)

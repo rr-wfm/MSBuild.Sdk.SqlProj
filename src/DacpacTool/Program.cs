@@ -31,12 +31,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options);
-            var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
 
+            var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
             await versionChecker.CheckForPackageUpdateAsync().ConfigureAwait(false);
 
             // Build package and save to disk
-            var buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
+            using var buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
 
             if (buildResult.HasValidationErrors)
             {

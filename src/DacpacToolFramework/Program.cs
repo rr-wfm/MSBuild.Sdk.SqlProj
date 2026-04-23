@@ -31,7 +31,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacToolFramework
             WaitForDebuggerToAttach(options);
 
             // Build package and save to disk
-            var buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
+            using var buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
 
             if (buildResult.HasValidationErrors)
             {

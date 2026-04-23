@@ -356,7 +356,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             // Use a regex designed to trigger catastrophic backtracking so the timeout path is deterministic in test.
             var regex = new Regex("dbl=(?<dbl>(a+)+)$", RegexOptions.None, TimeSpan.FromMilliseconds(1));
-            var method = typeof(DacpacToolLibNetstandard.Extensions).GetMethod("ParseExternalParts", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(string), typeof(Regex) }, null);
+            var method = typeof(PackageBuildExtensions).GetMethod("ParseExternalParts", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(string), typeof(Regex) }, null);
 
             // Act
             // The trailing '!' prevents a full match and forces catastrophic backtracking in the injected regex.
