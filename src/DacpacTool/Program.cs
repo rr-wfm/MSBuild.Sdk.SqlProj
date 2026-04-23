@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using DotMake.CommandLine;
+using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
 using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
@@ -35,12 +37,29 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
             await versionChecker.CheckForPackageUpdateAsync().ConfigureAwait(false);
 
-            // Build package and save to disk
-            using var buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
-
-            if (buildResult.HasValidationErrors)
+            // When a base dacpac is provided (built by DacpacToolFramework), skip building
+            BuildPackageResult buildResult;
+            if (options.BaseDacpac != null)
             {
-                return 1;
+                buildResult = null;
+                var basePath = Path.GetFullPath(options.BaseDacpac.FullName);
+                var outputPath = Path.GetFullPath(options.Output.FullName);
+
+                // Copy the base dacpac to the output location if they differ
+                if (!string.Equals(basePath, outputPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Copy(basePath, outputPath, overwrite: true);
+                }
+            }
+            else
+            {
+                // Build package and save to disk
+                buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
+
+                if (buildResult.HasValidationErrors)
+                {
+                    return 1;
+                }
             }
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
@@ -55,21 +74,42 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 packageHelper.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
             }
 
+            TSqlModel model = null;
             if (options.RunCodeAnalysis)
             {
+                model = GetModel(buildResult, options);
+
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
-                analyzer.Analyze(buildResult.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
+                analyzer.Analyze(model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
 
             if (options.GenerateErDiagram)
             {
+                model = model ?? GetModel(buildResult, options);
+
                 var diagramBuilder = new MermaidDiagramBuilder(new ActualConsole());
 
-                diagramBuilder.BuildErDiagrams(buildResult.Model, options.TargetDatabaseName ?? options.Name, options.ErDiagramConfig);
+                diagramBuilder.BuildErDiagrams(model, options.TargetDatabaseName ?? options.Name, options.ErDiagramConfig);
             }
 
             return 0;
+        }
+
+        private static TSqlModel GetModel(BuildPackageResult buildResult, BuildOptions options)
+        {
+            if (buildResult != null)
+            {
+                return buildResult.Model;
+            }
+
+            if (options.BaseDacpac != null)
+            {
+                return TSqlModel.LoadFromDacpac(options.BaseDacpac.FullName,
+                    new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: false));
+            }
+
+            throw new InvalidOperationException("Model not built or passed as BaseDacpac");        
         }
 
         internal static int InspectIncludes(InspectOptions options)

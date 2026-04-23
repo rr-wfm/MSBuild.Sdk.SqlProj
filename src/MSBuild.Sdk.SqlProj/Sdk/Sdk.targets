@@ -107,6 +107,8 @@
       <DacpacToolTfm>net$(BundledNETCoreAppTargetFrameworkVersion)</DacpacToolTfm>
       <!-- Allow tests and advanced callers to override the exact tool path via -p:DacpacToolExe=... -->
       <DacpacToolExe Condition="'$(DacpacToolExe)' == ''">$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
+      <!-- .NET Framework tool used when assembly references are present (CLR assemblies require .NET Framework). -->
+      <DacpacToolFrameworkExe Condition="'$(DacpacToolFrameworkExe)' == ''">$(MSBuildThisFileDirectory)../tools/framework/DacpacToolFramework.exe</DacpacToolFrameworkExe>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
            Text="The current SDK bundles target framework '$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET SDK that supports 8.0, 9.0 or 10.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
@@ -275,11 +277,32 @@
       <ErDiagramConfigArgument>@(_DistinctEntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
       <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(AssemblyReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolCommand>
     </PropertyGroup>
-    <!-- Run it, except during design-time builds -->
-    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
+
+    <!-- When assembly references are present, use DacpacToolFramework (.NET Framework) to build the dacpac,
+         then DacpacTool for post-processing only (pre/post deploy, create script, code analysis, ER diagrams). -->
+    <PropertyGroup Condition="'@(AssemblyReference)' != ''">
+      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(AssemblyReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument)</DacpacToolFrameworkCommand>
+      <BaseDacpacArgument>@(IntermediateAssembly->'--basedacpac &quot;%(Identity)&quot;', ' ')</BaseDacpacArgument>
+      <DacpacToolPostProcessCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(BaseDacpacArgument) $(OutputPathArgument) $(MetadataArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument)</DacpacToolPostProcessCommand>
+    </PropertyGroup>
+
+    <!-- When assembly references are present, first run DacpacToolFramework to build the dacpac -->
+    <Message Importance="Low" Text="Running DacpacToolFramework command: $(DacpacToolFrameworkCommand)" Condition="'@(AssemblyReference)' != ''" />
+    <Exec Command="$(DacpacToolFrameworkCommand)"
+          WorkingDirectory="$(ProjectDir)"
+          Condition="'@(AssemblyReference)' != '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
+
+    <!-- When assembly references are present, run DacpacTool for post-processing only -->
+    <Message Importance="Low" Text="Running DacpacTool post-process command: $(DacpacToolPostProcessCommand)" Condition="'@(AssemblyReference)' != ''" />
+    <Exec Command="$(DacpacToolPostProcessCommand)"
+          WorkingDirectory="$(ProjectDir)"
+          Condition="'@(AssemblyReference)' != '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
+
+    <!-- When no assembly references, run DacpacTool full build (original behavior) -->
+    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" Condition="'@(AssemblyReference)' == ''" />
     <Exec Command="$(DacpacToolCommand)"
           WorkingDirectory="$(ProjectDir)"
-          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
+          Condition="'@(AssemblyReference)' == '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"/>
 
     <!-- Copy any referenced .dacpac packages to the output folder -->
     <Copy SourceFiles="@(IncludedDacpacReferenceFiles)" DestinationFolder="$(TargetDir)" />

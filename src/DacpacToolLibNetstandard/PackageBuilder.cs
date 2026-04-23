@@ -156,16 +156,14 @@ public sealed class PackageBuilder : IDisposable
             modelExceptions = !packageBuilder.ValidateModel();
         }
 
-        var result = new BuildPackageResult(packageBuilder.Model, modelExceptions);
-        packageBuilder.Model = null; // Transfer ownership so Dispose() won't destroy it
-
-        if (modelExceptions)
+        if (!modelExceptions)
         {
-            return result;
+            // Save the package to disk (must happen before ownership transfer)
+            packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
         }
 
-        // Save the package to disk
-        packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
+        var result = new BuildPackageResult(packageBuilder.Model, modelExceptions);
+        packageBuilder.Model = null; // Transfer ownership so Dispose() won't destroy it
 
         return result;
     }
