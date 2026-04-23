@@ -18,6 +18,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         private List<int> _suppressedWarnings = new ();
         private Dictionary<string,List<int>> _suppressedFileWarnings = new Dictionary<string, List<int>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly HashSet<string> _deferredAssemblyReferencingFiles = new (StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Files that contain SQL CLR objects whose <c>EXTERNAL NAME</c> assembly cannot be resolved
+        /// during the initial DacpacTool build. These files are removed from the model in
+        /// <see cref="ValidateModel"/> so the dacpac can be saved successfully; DacpacToolFramework
+        /// then re-adds them after the <c>CREATE ASSEMBLY</c> objects have been inserted.
+        /// </summary>
+        public IReadOnlyCollection<string> DeferredAssemblyReferencingFiles => _deferredAssemblyReferencingFiles;
 
         public PackageBuilder(IConsole console)
         {
@@ -107,7 +116,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddScript(script, outputFile, "/postdeploy.sql");
         }
 
-        public bool ValidateModel()
+        public bool ValidateModel(bool hasAssemblyReferences = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -117,7 +126,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             int validationErrors = 0;
             foreach (var modelError in modelErrors)
             {
-                if (modelError.Severity == ModelErrorSeverity.Error)
+                if (modelError.ErrorCode == 71501
+                    && hasAssemblyReferences
+                    && modelError.GetOutputMessage(modelError.Severity).Contains("unresolved reference to Assembly", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!string.IsNullOrEmpty(modelError.SourceName))
+                    {
+                        _deferredAssemblyReferencingFiles.Add(modelError.SourceName);
+                    }
+                    _console.WriteLine($"Warning: Deferring file with unresolved assembly reference; it will be re-added after CREATE ASSEMBLY by DacpacToolFramework. At: {modelError.SourceName}");
+                }                    
+                else if (modelError.Severity == ModelErrorSeverity.Error)
                 {
                     validationErrors++;
                     _console.WriteLine(modelError.GetOutputMessage(modelError.Severity));
@@ -139,6 +158,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
             else
             {
+                if (_deferredAssemblyReferencingFiles.Count > 0)
+                {
+                    RemoveDeferredAssemblyReferencingObjects();
+                }
                 _modelValid = true;
             }
 
@@ -161,6 +184,63 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     ? ModelErrorSeverity.Error
                     : ModelErrorSeverity.Warning));
             }
+        }
+
+        private void RemoveDeferredAssemblyReferencingObjects()
+        {
+            // Expand the set of deferred files transitively: any object that depends on an object
+            // defined in a deferred file must itself be deferred, otherwise BuildPackage produces
+            // empty <Entry/> references in model.xml and the resulting dacpac is broken.
+            ExpandDeferredFilesWithReferencingObjects();
+
+            // Each deferred file was passed as the source identifier to Model.AddOrUpdateObjects in
+            // AddInputFile, so we can remove all objects originating from that file in one call.
+            // The objects will be re-added by DacpacToolFramework after the corresponding
+            // CREATE ASSEMBLY scripts have been inserted.
+            foreach (var file in _deferredAssemblyReferencingFiles)
+            {
+                _console.WriteLine($"Deferring objects defined in {file}; they will be re-added by DacpacToolFramework after CREATE ASSEMBLY.");
+                Model.DeleteObjects(file);
+            }
+        }
+
+        private void ExpandDeferredFilesWithReferencingObjects()
+        {
+            // Walk dependents of objects in the currently deferred files and pull in any source
+            // files that contain referencing objects. Repeat until the set is stable, since a
+            // referencer may itself be referenced by other objects in other files.
+            bool added;
+            do
+            {
+                added = false;
+                var snapshot = _deferredAssemblyReferencingFiles.ToArray();
+                foreach (var obj in Model.GetObjects(DacQueryScopes.UserDefined))
+                {
+                    if (!ObjectOriginatesFromAny(obj, snapshot))
+                    {
+                        continue;
+                    }
+
+                    foreach (var referencing in obj.GetReferencing())
+                    {
+                        var src = referencing.GetSourceInformation();
+                        if (!string.IsNullOrEmpty(src?.SourceName)
+                            && _deferredAssemblyReferencingFiles.Add(src.SourceName))
+                        {
+                            _console.WriteLine($"Warning: Deferring file because it contains an object referencing a deferred object. At: {src.SourceName}");
+                            added = true;
+                        }
+                    }
+                }
+            }
+            while (added);
+        }
+
+        private static bool ObjectOriginatesFromAny(TSqlObject obj, IEnumerable<string> files)
+        {
+            var src = obj.GetSourceInformation();
+            return !string.IsNullOrEmpty(src?.SourceName)
+                && files.Contains(src.SourceName, StringComparer.OrdinalIgnoreCase);
         }
 
         public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)

@@ -22,6 +22,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Target version of the model", Required = false, Name = "--sqlServerVersion", Alias = "-sv")]
         public SqlServerVersion SqlServerVersion { get; set; } = SqlServerVersion.Sql160;
         
+        [CliOption(Description = "Indicates that SQL CLR assembly (.dll) references will be added to the produced dacpac by DacpacToolFramework after the build", Required = false, Name = "--hasassemblyreferences", Alias = "-har")]
+        public bool HasAssemblyReferences { get; set; }
+
         [CliOption(Description = "Text file listing all input files", Name = "--inputfile", Required = false, Alias = "-i")]
         public FileInfo InputFile { get; set; }
         
