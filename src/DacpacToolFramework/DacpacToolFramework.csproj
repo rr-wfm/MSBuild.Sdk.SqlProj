@@ -3,19 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net48</TargetFramework>
-    <!--
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    -->
     <RootNamespace>MSBuild.Sdk.SqlProj.DacpacToolFramework</RootNamespace>
     <LangVersion>9.0</LangVersion>
     <AnalysisMode>all</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <!--
-    <Nullable>warnings</Nullable>
-    -->
   </PropertyGroup>
 
   <ItemGroup>
