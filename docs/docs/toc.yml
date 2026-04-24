@@ -10,11 +10,13 @@
   href: packaging.md
 - name: Publishing
   href: publishing.md
-- name: Entity Relationship diagram
+- name: Entity Relationship Diagrams
   href: entity-relationship-diagram.md
 - name: Static code analysis
   href: static-code-analysis.md
 - name: Integrations
   href: integrations.md
+- name: Feature Comparison
+  href: feature-comparison.md
 - name: Runtime and Limitations
   href: runtime-and-limitations.md

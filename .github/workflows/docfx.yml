@@ -36,19 +36,19 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Install DocFX
-        run: dotnet tool update -g docfx --version 2.78.5
+        run: dotnet tool install -g docfx --version 2.78.5
 
       - name: Build site
         run: docfx docs/docfx.json
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/_site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
