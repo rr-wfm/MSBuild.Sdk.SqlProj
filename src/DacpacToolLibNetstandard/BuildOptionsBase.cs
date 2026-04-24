@@ -3,6 +3,9 @@ using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
+/// <summary>
+/// This contains the build options implemented both in .NET Core (DacpacTool) and .NET Framework (DacpacToolFramework).
+/// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Needed for command line parsing")]
 public class BuildOptionsBase : BaseOptions
 {

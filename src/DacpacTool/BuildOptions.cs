@@ -5,6 +5,9 @@ using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
+    /// <summary>
+    /// This inherits from <see cref="BuildOptionsBase"/> which contains the options also implemented in .NET Framework DacpacTool (DacpacToolFramework).
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Used a DTO")]
     [CliCommand(Description = "Build a SQL Server Data-Tier Application Framework package (dacpac)", 
                 Name = "build")]

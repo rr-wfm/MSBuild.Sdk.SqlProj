@@ -1,6 +1,6 @@
 /// <summary>
 /// ModuleInitializerAttribute is not available in .NET Framework, so we define it ourselves for compatibility.
-/// https://github.com/thomhurst/TUnit/issues/3731#issuecomment-3654853871
+/// Fix found at: https://github.com/thomhurst/TUnit/issues/3731#issuecomment-3654853871
 /// </summary>
 namespace System.Runtime.CompilerServices
 {
