@@ -43,6 +43,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         [CliOption(Description = "Path to an existing dacpac built by DacpacToolFramework (skips model building)", Name = "--basedacpac", Required = false)]
         public FileInfo BaseDacpac { get; set; }
 
+        [CliOption(Description = "To add code is added to the pre-deployment script to trust each referenced SQL CLR assembly (via sys.sp_add_trusted_assembly) before CREATE ASSEMBLY runs.", Name = "--trustinpredeploy", Required = false)]
+        public bool TrustInPreDeploy { get; set; }
+
         public async Task<int> RunAsync()
         {
             return await Program.BuildDacpac(this).ConfigureAwait(false);

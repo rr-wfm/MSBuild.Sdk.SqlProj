@@ -203,7 +203,7 @@ public sealed class PackageBuilder : IDisposable
         _console.WriteLine($"Added assembly from '{assemblyReferenceFile}'");
     }
 
-    private static string BuildCreateAssemblyScript(string assemblyName, string assemblyPath, AssemblyPermissionSet permissionSet = AssemblyPermissionSet.Safe)
+    private static string BuildCreateAssemblyScript(string assemblyName, string assemblyPath)
     {
         var bytes = File.ReadAllBytes(assemblyPath);
         var hex = new StringBuilder(bytes.Length * 2 + 2);
@@ -213,19 +213,10 @@ public sealed class PackageBuilder : IDisposable
             hex.Append(b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        var permissionSetClause = permissionSet switch
-        {
-            AssemblyPermissionSet.Safe => "SAFE",
-            AssemblyPermissionSet.ExternalAccess => "EXTERNAL_ACCESS",
-            AssemblyPermissionSet.Unsafe => "UNSAFE",
-            _ => "SAFE",
-        };
-
         return
             $"CREATE ASSEMBLY [{assemblyName.Replace("]", "]]")}]\r\n" +
             $"    AUTHORIZATION [dbo]\r\n" +
-            $"    FROM {hex}\r\n" +
-            $"    WITH PERMISSION_SET = {permissionSetClause};\r\n";
+            $"    FROM {hex};\r\n";
     }
 
     private static void ValidateReference(string referenceFile)

@@ -54,9 +54,9 @@ While the SDK does not help you maintain a [refactor log](https://learn.microsof
 
 ## SQL CLR objects support
 
-It is not possible to include SQL CLR objects in `MSBuild.Sdk.SqlProj` projects, as they can only be built on .NET Framework.
+The SDK can reference an existing SQL CLR assembly and embed it in the produced `.dacpac` via `CREATE ASSEMBLY`. See [SQL CLR assembly references](references.md#sql-clr-assembly-references) for usage.
 
-You can work around this by "isolating" your SQL CLR objects in a separate `.sqlproj` project, build and pack the resulting `.dacpac` in a NuGet package on Windows, and then reference this package from your project. Read more about this approach in [this blog post](https://erikej.github.io/dacfx/sqlclr/2025/01/28/dacfx-sqlclr-msbuild-sdk-sqlproj.html).
+Note that adding assembly references requires **.NET Framework 4.8 on the build machine**, because the a Dacpac with an assembly can only be created on .NET Framework.
 
 ## Known limitations
 
