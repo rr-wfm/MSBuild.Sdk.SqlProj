@@ -109,7 +109,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act - invoke dotnet build for the scenario project
             var psi = new ProcessStartInfo("dotnet",
-                $"build \"{projectPath}\" -c Release --nologo")
+                $"build \"{projectPath}\" -c Release --nologo --verbosity normal")
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
