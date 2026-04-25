@@ -109,6 +109,8 @@
       <DacpacToolExe Condition="'$(DacpacToolExe)' == ''">$(MSBuildThisFileDirectory)../tools/$(DacpacToolTfm)/DacpacTool.dll</DacpacToolExe>
       <!-- .NET Framework tool used when assembly references are present (CLR assemblies require .NET Framework). -->
       <DacpacToolFrameworkExe Condition="'$(DacpacToolFrameworkExe)' == ''">$(MSBuildThisFileDirectory)../tools/framework/DacpacToolFramework.exe</DacpacToolFrameworkExe>
+      <!-- On non-Windows, .NET Framework executables must be run via Mono. -->
+      <_DacpacToolFrameworkRunner Condition="!$([MSBuild]::IsOSPlatform('Windows'))">mono </_DacpacToolFrameworkRunner>
     </PropertyGroup>
     <Error Condition="!Exists($(DacpacToolExe))"
            Text="The current SDK bundles target framework '$(BundledNETCoreAppTargetFrameworkVersion)' which is not supported by MSBuild.Sdk.SqlProj. Either install a .NET SDK that supports 8.0, 9.0 or 10.0, or file an issue at https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/ to add support. If you have preview SDKs installed, you may have to use a global.json file: https://docs.microsoft.com/dotnet/core/tools/global-json" />
@@ -282,10 +284,35 @@
     <!-- When assembly references are present, use DacpacToolFramework (.NET Framework) to build the dacpac,
          then DacpacTool for post-processing only (pre/post deploy, create script, code analysis, ER diagrams). -->
     <PropertyGroup Condition="'@(AssemblyReference)' != ''">
-      <DacpacToolFrameworkCommand>&quot;$(DacpacToolFrameworkExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(AssemblyReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument)</DacpacToolFrameworkCommand>
+      <DacpacToolFrameworkCommand>$(_DacpacToolFrameworkRunner)&quot;$(DacpacToolFrameworkExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(AssemblyReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument)</DacpacToolFrameworkCommand>
       <BaseDacpacArgument>@(IntermediateAssembly->'--basedacpac &quot;%(Identity)&quot;', ' ')</BaseDacpacArgument>
       <DacpacToolPostProcessCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(BaseDacpacArgument) $(OutputPathArgument) $(MetadataArguments) $(DeployPropertyArguments) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(AssemblyReferenceArguments) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument) $(TrustInPreDeployArgument)</DacpacToolPostProcessCommand>
     </PropertyGroup>
+
+    <!-- Validate the DacpacToolFramework environment when assembly references are present. -->
+    <PropertyGroup Condition="'@(AssemblyReference)' != '' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
+      <_NeedsFrameworkTool>true</_NeedsFrameworkTool>
+      <_NeedsMono Condition="'$(_DacpacToolFrameworkRunner)' != ''">true</_NeedsMono>
+      <!-- On Windows, read the .NET Framework 4.8 release key from the registry (>= 528040 means 4.8+). -->
+      <_NetFrameworkReleaseKey Condition="$([MSBuild]::IsOSPlatform('Windows'))">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', '0', RegistryView.Registry64, RegistryView.Registry32))</_NetFrameworkReleaseKey>
+      <_MonoExitCode>0</_MonoExitCode>
+    </PropertyGroup>
+
+    <!-- Check that the DacpacToolFramework executable exists in the package. -->
+    <Error Condition="'$(_NeedsFrameworkTool)' == 'true' AND !Exists($(DacpacToolFrameworkExe))"
+           Text="DacpacToolFramework was not found at '$(DacpacToolFrameworkExe)'. The MSBuild.Sdk.SqlProj package may be incomplete or corrupted. Please restore packages and try again." />
+
+    <!-- On Windows, verify that .NET Framework 4.8 or later is installed. -->
+    <Error Condition="'$(_NeedsFrameworkTool)' == 'true' AND '$(_NeedsMono)' != 'true' AND '$(_NetFrameworkReleaseKey)' != '' AND $([System.Int32]::Parse('$(_NetFrameworkReleaseKey)')) &lt; 528040"
+           Text=".NET Framework 4.8 or later is required to build projects with assembly references, but it was not found. Please install .NET Framework 4.8 (https://dotnet.microsoft.com/download/dotnet-framework/net48)." />
+
+    <!-- On non-Windows, verify that Mono is available. -->
+    <Exec Command="mono --version" IgnoreExitCode="true" StandardOutputImportance="Low" StandardErrorImportance="Low" ConsoleToMsBuild="true"
+          Condition="'$(_NeedsMono)' == 'true'">
+      <Output TaskParameter="ExitCode" PropertyName="_MonoExitCode" />
+    </Exec>
+    <Error Condition="'$(_NeedsMono)' == 'true' AND '$(_MonoExitCode)' != '0'"
+           Text="Mono is required to build projects with assembly references on non-Windows platforms, but it was not found. Please install Mono (https://www.mono-project.com/download/) and ensure it is available on the PATH." />
 
     <!-- When assembly references are present, first run DacpacToolFramework to build the dacpac -->
     <Message Importance="Low" Text="Running DacpacToolFramework command: $(DacpacToolFrameworkCommand)" Condition="'@(AssemblyReference)' != ''" />
