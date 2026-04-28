@@ -3,9 +3,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
+using System.Collections.Generic;
+using System.IO.Packaging;
+using System.Globalization;
 using DotMake.CommandLine;
 using Microsoft.SqlServer.Dac;
+using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
@@ -32,143 +38,91 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Wait for a debugger to attach
             WaitForDebuggerToAttach(options);
 
-            using var packageBuilder = new PackageBuilder(new ActualConsole());
             var versionChecker = new VersionChecker(new ActualConsole(), new VersionProvider());
-
             await versionChecker.CheckForPackageUpdateAsync().ConfigureAwait(false);
 
-            // Set metadata for the package
-            packageBuilder.SetMetadata(options.Name, options.Version);
-
-            // Set properties on the model (if defined)
-            if (options.BuildProperty != null)
+            // When a base dacpac is provided (built by DacpacToolFramework), skip building
+            BuildPackageResult buildResult;
+            if (options.BaseDacpac != null)
             {
-                foreach (var propertyValue in options.BuildProperty)
+                buildResult = null;
+                var basePath = Path.GetFullPath(options.BaseDacpac.FullName);
+                var outputPath = Path.GetFullPath(options.Output.FullName);
+
+                // Copy the base dacpac to the output location if they differ
+                if (!string.Equals(basePath, outputPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] keyValuePair = propertyValue.Split('=', 2);
-                    packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+                    File.Copy(basePath, outputPath, overwrite: true);
                 }
             }
-
-            // Build the empty model for the target SQL Server version
-            packageBuilder.UsingVersion(options.SqlServerVersion);
-
-            // Add references to the model
-            if (options.Reference != null)
+            else
             {
-                foreach (var reference in options.Reference)
+                // Build package and save to disk
+                buildResult = PackageBuilder.BuildAndSavePackage(new ActualConsole(), options);
+
+                if (buildResult.HasValidationErrors)
                 {
-                    string[] referenceDetails = reference.Split(';', 3, StringSplitOptions.RemoveEmptyEntries);
-                    if (referenceDetails.Length == 1)
-                    {
-                        packageBuilder.AddReference(referenceDetails[0]);
-                    }
-                    if (referenceDetails.Length == 2)
-                    {
-                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
-                    }
-                    else
-                    {
-                        if (!bool.TryParse(referenceDetails[2], out bool suppressErrorsForMissingDependencies))
-                        {
-                            throw new ArgumentException(
-                                $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
-                        }
-                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
-                    }
+                    return 1;
                 }
             }
-
-            // Add SqlCmdVariables to the package (if defined)
-            if (options.SqlCmdVar != null)
-            {
-                packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
-            }
-
-            var modelExceptions = false;
-
-            // Add input files by iterating through $Project.InputFiles.txt
-            if (options.InputFile != null)
-            {
-                if (options.InputFile.Exists)
-                {
-#pragma warning disable CA1849 // Call async methods when in an async method - must wait for .NET 6 to be removed
-                    foreach (var line in File.ReadLines(options.InputFile.FullName))
-                    {
-                        FileInfo inputFile = new FileInfo(line); // Validation occurs in AddInputFile
-                        if (!packageBuilder.AddInputFile(inputFile))
-                        {
-                            modelExceptions = true;
-                        }
-                    }
-#pragma warning restore CA1849 // Call async methods when in an async method
-                }
-                else
-                {
-                    throw new ArgumentException($"No input files found, missing {options.InputFile.Name}");
-                }
-            }
-
-            //Add Warnings options
-            packageBuilder.TreatTSqlWarningsAsErrors = options.WarnAsError;
-            if (options.SuppressWarnings != null)
-            {
-                packageBuilder.AddWarningsToSuppress(options.SuppressWarnings);
-            }
-
-            // Add warnings suppressions for particular files through $Project.WarningsSuppression.txt
-            if (options.SuppressWarningsListFile != null)
-            {
-                if (options.SuppressWarningsListFile.Exists)
-                {
-#pragma warning disable CA1849 // Call async methods when in an async method
-                    foreach (var line in File.ReadLines(options.SuppressWarningsListFile.FullName))
-                    {
-                        //Checks if there are suppression warnings list
-                        var parts = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                        var warningList = (parts.Length > 1) ? parts[1] : null;
-
-                        FileInfo inputFile = new FileInfo(parts[0]); // Validation occurs in AddInputFile
-                        packageBuilder.AddFileWarningsToSuppress(inputFile, warningList);
-                    }
-#pragma warning restore CA1849 // Call async methods when in an async method
-                }
-            }
-
-            // Validate the model
-            if (modelExceptions || !packageBuilder.ValidateModel())
-            {
-                return 1;
-            }
-
-            // Save the package to disk
-            packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
             // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
-            packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
-            packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
+            var packageHelper = new PackageHelper(new ActualConsole());
+
+            packageHelper.AddPreDeploymentScript(options.PreDeploy, options.Output);            
+            packageHelper.AddPostDeploymentScript(options.PostDeploy, options.Output);
+
+            if (options.TrustInPreDeploy)
+            {
+                // Add assembly references to the model
+                if (options.AssemblyReference != null && options.AssemblyReference.Length > 0)
+                {
+                    InjectTrustedAssemblyPreDeployScript(options.Output.FullName, options.AssemblyReference);
+                }
+            }
 
             if (options.GenerateCreateScript)
             {
                 var deployOptions = options.ExtractDeployOptions();
-                packageBuilder.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
+                packageHelper.GenerateCreateScript(options.Output, options.TargetDatabaseName ?? options.Name, deployOptions);
             }
 
+            TSqlModel model = null;
             if (options.RunCodeAnalysis)
             {
+                model = GetModel(buildResult, options);
+
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
-                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
+                analyzer.Analyze(model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
             }
 
             if (options.GenerateErDiagram)
             {
+                model = model ?? GetModel(buildResult, options);
+
                 var diagramBuilder = new MermaidDiagramBuilder(new ActualConsole());
 
-                diagramBuilder.BuildErDiagrams(packageBuilder.Model, options.TargetDatabaseName ?? options.Name, options.ErDiagramConfig);
+                diagramBuilder.BuildErDiagrams(model, options.TargetDatabaseName ?? options.Name, options.ErDiagramConfig);
             }
 
             return 0;
+        }
+
+        private static TSqlModel GetModel(BuildPackageResult buildResult, BuildOptions options)
+        {
+            if (buildResult != null)
+            {
+                return buildResult.Model;
+            }
+
+            if (options.BaseDacpac != null)
+            {
+                return TSqlModel.LoadFromDacpac(options.BaseDacpac.FullName,
+                    new ModelLoadOptions(DacSchemaModelStorageType.Memory, loadAsScriptBackedModel: false));
+            }
+
+            throw new InvalidOperationException("Model not built or passed as BaseDacpac");        
         }
 
         internal static int InspectIncludes(InspectOptions options)
@@ -193,6 +147,120 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Prepends a block of T-SQL to the dacpac's pre-deployment script that registers each
+        /// referenced SQL CLR assembly in <c>sys.trusted_assemblies</c> via
+        /// <c>sys.sp_add_trusted_assembly</c> when it is not already trusted. This runs before
+        /// the model deployment performs CREATE ASSEMBLY, allowing CLR strict security to be
+        /// satisfied without manual operator intervention.
+        /// </summary>
+        private static void InjectTrustedAssemblyPreDeployScript(string inputPath, string[] assemblies)
+        {
+            const string PreDeployPartUri = "/predeploy.sql";
+
+            var trustScript = BuildTrustAssembliesScript(assemblies);
+
+            using (var package = Package.Open(inputPath, FileMode.Open, FileAccess.ReadWrite))
+            {
+                var partUri = new Uri(PreDeployPartUri, UriKind.Relative);
+                string existing = string.Empty;
+                if (package.PartExists(partUri))
+                {
+                    var existingPart = package.GetPart(partUri);
+                    using (var stream = existingPart.GetStream(FileMode.Open, FileAccess.Read))
+                    using (var reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        existing = reader.ReadToEnd();
+                    }
+                    package.DeletePart(partUri);
+                }
+
+                var combined = trustScript;
+                if (!string.IsNullOrEmpty(existing))
+                {
+                    combined = trustScript + existing;
+                }
+
+                var part = package.CreatePart(partUri, "text/plain");
+                using (var stream = part.GetStream(FileMode.Create, FileAccess.Write))
+                {
+                    var buffer = Encoding.UTF8.GetBytes(combined);
+                    stream.Write(buffer, 0, buffer.Length);
+                }
+            }
+
+            Console.Out.WriteLine($"Injected trusted-assembly pre-deployment script for {assemblies.Length} assembly reference(s).");
+        }
+
+        private static string BuildTrustAssembliesScript(IEnumerable<string> assemblies)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("-- BEGIN MSBuild.Sdk.SqlProj: trust referenced SQL CLR assemblies");
+            sb.AppendLine("IF OBJECT_ID('tempdb..#is_assembly_trusted') IS NOT NULL DROP PROCEDURE #is_assembly_trusted;");
+            sb.AppendLine("GO");
+            sb.AppendLine("CREATE PROCEDURE #is_assembly_trusted @hash varbinary(64)");
+            sb.AppendLine("AS");
+            sb.AppendLine("BEGIN");
+            sb.AppendLine("    RETURN IIF(EXISTS (SELECT * FROM sys.trusted_assemblies WHERE [hash] = @hash), 1, 0);");
+            sb.AppendLine("END");
+            sb.AppendLine("GO");
+
+            foreach (var assemblyPath in assemblies)
+            {
+                var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+                // Compute the SHA-512 hash at build time so the predeploy script only carries the
+                // 64-byte hash literal instead of the full assembly bytes (those are already
+                // embedded once in the corresponding CREATE ASSEMBLY ... FROM 0x... statement).
+                var hashHex = ToHexLiteral(ComputeSha512(assemblyPath));
+                var safeName = assemblyName.Replace("'", "''", StringComparison.OrdinalIgnoreCase);
+
+                sb.AppendLine(CultureInfo.InvariantCulture, $"-- Trust assembly: {assemblyName}");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"DECLARE @name sysname = N'{safeName}';");
+                sb.AppendLine("DECLARE @description nvarchar(4000) = @name;");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"DECLARE @hash varbinary(64) = {hashHex};");
+                sb.AppendLine("DECLARE @is_assembly_trusted bit;");
+                sb.AppendLine("EXEC @is_assembly_trusted = #is_assembly_trusted @hash;");
+                sb.AppendLine("IF @is_assembly_trusted = 1");
+                sb.AppendLine("BEGIN");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' already trusted';");
+                sb.AppendLine("END");
+                sb.AppendLine("ELSE");
+                sb.AppendLine("BEGIN");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' not trusted yet, trusting...';");
+                sb.AppendLine("    EXEC sys.sp_add_trusted_assembly @hash = @hash, @description = @description;");
+                sb.AppendLine("    EXEC @is_assembly_trusted = #is_assembly_trusted @hash;");
+                sb.AppendLine("    IF @is_assembly_trusted = 0");
+                sb.AppendLine("    BEGIN");
+                sb.AppendLine("        DECLARE @msg nvarchar(max) = CONCAT('Trusting the assembly ', @name, ' failed. This may be caused by a lack of permissions. Execute the following command manually on the server to trust the assembly, then re-run the pipeline. declare @description nvarchar(4000) = ''', @description, '''; exec sys.sp_add_trusted_assembly @hash = ', CONVERT(varchar(max), @hash, 1), ', @description = @description');");
+                sb.AppendLine("        ;THROW 50000, @msg, 1;");
+                sb.AppendLine("    END");
+                sb.AppendLine("    PRINT 'Assembly ' + @name + ' trusted';");
+                sb.AppendLine("END");
+                sb.AppendLine("GO");
+            }
+
+            sb.AppendLine("-- END MSBuild.Sdk.SqlProj: trust referenced SQL CLR assemblies");
+            return sb.ToString();
+        }
+
+        private static byte[] ComputeSha512(string filePath)
+        {
+            using var sha = System.Security.Cryptography.SHA512.Create();
+            using var stream = File.OpenRead(filePath);
+            return sha.ComputeHash(stream);
+        }
+
+        private static string ToHexLiteral(byte[] bytes)
+        {
+            var hex = new StringBuilder(bytes.Length * 2 + 2);
+            hex.Append("0x");
+            foreach (var b in bytes)
+            {
+                hex.Append(b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture));
+            }
+            return hex.ToString();
         }
 
         internal static int DeployDacpac(DeployOptions options)

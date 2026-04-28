@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql160</SqlServerVersion>
+    <!-- Enables the trusted-assembly pre-deployment script injection feature under test. -->
+    <ClrAssemblyTrustInPreDeploy>True</ClrAssemblyTrustInPreDeploy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SqlClrTestLibrary\SqlClrTestLibrary.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>

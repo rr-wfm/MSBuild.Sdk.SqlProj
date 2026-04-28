@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using DotMake.CommandLine;
 
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
+
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     [CliCommand(Description = "Collect includes from pre- and post-deployment scripts", 

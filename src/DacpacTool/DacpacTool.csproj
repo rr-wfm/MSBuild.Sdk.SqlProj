@@ -12,9 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.3.93" />
     <PackageReference Include="NuGet.Versioning" Version="7.3.1" />
-    <PackageReference Include="DotMake.CommandLine" Version="3.2.0" />
+    <ProjectReference Include="..\DacpacToolLibNetstandard\DacpacToolLibNetstandard.csproj" />
   </ItemGroup>
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->

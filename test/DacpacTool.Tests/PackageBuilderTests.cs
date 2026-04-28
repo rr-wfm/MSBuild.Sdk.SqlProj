@@ -8,6 +8,7 @@ using Microsoft.SqlServer.Dac;
 using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
@@ -295,11 +296,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Act
             packageBuilder.SaveToDisk(tempFile, packageOptions);
 
-            packageBuilder.AddPreDeploymentScript(
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.AddPreDeploymentScript(
                 new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
                 tempFile);
 
-            packageBuilder.AddPostDeploymentScript(
+            packageHelper.AddPostDeploymentScript(
                 new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql"),
                 tempFile);
 
@@ -338,7 +340,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPreDeploymentScript(
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.AddPreDeploymentScript(
                 null,
                 tempFile);
 
@@ -372,7 +375,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPostDeploymentScript(
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.AddPostDeploymentScript(
                 null,
                 tempFile);
 
@@ -416,34 +420,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void AddPreDeployment_WrongOrder()
-        {
-            // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder(new TestConsole());
-            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
-
-
-            // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPreDeploymentScript(null, tempFile));
-        }
-
-        [TestMethod]
-        public void AddPostDeployment_WrongOrder()
-        {
-            // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
-            var packageBuilder = new PackageBuilder(new TestConsole());
-            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
-
-
-            // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPostDeploymentScript(null, tempFile));
-        }
-
-        [TestMethod]
         public void AddPrePostDeployment_PreNotExists()
         {
             // Arrange
@@ -455,7 +431,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPreDeploymentScript(
+            var packageHelper = new PackageHelper(new TestConsole());
+            Should.Throw<ArgumentException>(() => packageHelper.AddPreDeploymentScript(
                 new FileInfo("NonExistingScript.PreDeployment.sql"),
                 tempFile));
 
@@ -475,7 +452,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPostDeploymentScript(
+            var packageHelper = new PackageHelper(new TestConsole());
+            Should.Throw<ArgumentException>(() => packageHelper.AddPostDeploymentScript(
                 new FileInfo("NonExistingScript.PostDeployment.sql"),
                 tempFile));
 
@@ -688,7 +666,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.SaveToDisk(tempFile);
-            packageBuilder.GenerateCreateScript(tempFile, packageName, new DacDeployOptions());
+
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.GenerateCreateScript(tempFile, packageName, new DacDeployOptions());
 
             // Assert
             File.Exists(Path.Combine(tempFile.DirectoryName, $"{packageName}_Create.sql")).ShouldBeTrue();
@@ -734,7 +714,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             expectedCreateScriptFile.Close();
 
             // Act - Generate script
-            packageBuilder.GenerateCreateScript(tempFile, packageName, deployOptions);
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.GenerateCreateScript(tempFile, packageName, deployOptions);
 
             // Assert
             var expectedScriptContent = File.ReadAllText(Path.Combine(tempFile.DirectoryName, expectedCreateScriptFileName));
@@ -766,7 +747,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.GenerateCreateScript(tempFile, null, new DacDeployOptions()));
+            var packageHelper = new PackageHelper(new TestConsole());
+            Should.Throw<ArgumentException>(() => packageHelper.GenerateCreateScript(tempFile, null, new DacDeployOptions()));
 
             // Cleanup
             tempFile.Delete();

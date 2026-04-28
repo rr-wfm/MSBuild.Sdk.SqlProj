@@ -194,3 +194,40 @@ In order to solve circular references between databases that may have been incor
   </ItemGroup>
 </Project>
 ```
+
+## SQL CLR assembly references
+
+The SDK can reference an existing SQL CLR assembly and embed it in the produced `.dacpac` via a `CREATE ASSEMBLY` statement, so you can author the `CREATE FUNCTION ... EXTERNAL NAME` (and similar) T-SQL objects that depend on it directly in your SQL project.
+
+Build the SQL CLR code in a separate .NET Framework class library and add a `<ProjectReference>` (or a `<Reference>` to the resulting `.dll`) from your `MSBuild.Sdk.SqlProj` project:
+
+```xml
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
+  <ItemGroup>
+    <ProjectReference Include="..\MySqlClrLibrary\MySqlClrLibrary.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+Any `.dll` flowing into the build via `<Reference>`, `<ProjectReference>`, or as a sibling of a referenced `.dacpac` is picked up automatically and added to the dacpac as a `CREATE ASSEMBLY` object. No permission set is specified, so SQL Server will use the default (`SAFE`).
+
+### Requirements
+
+- The referenced assembly must target **.NET Framework** (typically `net48`, or `netstandard2.0` consumed under .NET Framework). Modern .NET assemblies are not supported by SQL Server CLR.
+- **.NET Framework 4.8 must be installed on the build machine.** When assemblies are referenced, the SDK shells out to a small Windows-only helper (`DacpacToolFramework.exe`, targeting `net48`) to create the Dacpac, because a Dacpac with an assembly can only be created on .NET Framework.
+
+### Trusting CLR assemblies during deployment
+
+When SQL Server has CLR strict security enabled (the default since SQL Server 2017), every assembly loaded via `CREATE ASSEMBLY` must either be signed or be registered in `sys.trusted_assemblies` before deployment. Set the `ClrAssemblyTrustInPreDeploy` MSBuild property to `True` to have the SDK automatically inject T-SQL into the dacpac's pre-deployment script that registers each referenced assembly via `sys.sp_add_trusted_assembly` (only when not already trusted):
+
+```xml
+<PropertyGroup>
+  <ClrAssemblyTrustInPreDeploy>True</ClrAssemblyTrustInPreDeploy>
+</PropertyGroup>
+```
+
+The `SHA2_512` hash of each referenced assembly is computed at build time and embedded as a 64-byte literal in the pre-deployment script, so the script remains small even for large assemblies (the assembly bytes themselves are only carried once, inside the corresponding `CREATE ASSEMBLY` statement). The principal performing the deployment must have `ALTER ANY DATABASE` (or sysadmin) permission to call `sp_add_trusted_assembly`; if it does not, the script throws an error containing the manual command an operator can run on the server to trust the assembly.
+
+### Isolating SQL CLR objects in a separate project
+
+If you do not want to mix CLR object definitions and regular schema in the same project, you can "isolate" your SQL CLR objects in a separate `.sqlproj`, build and pack the resulting `.dacpac` in a NuGet package on Windows, and then reference this package from your project. Read more about this approach in [this blog post](https://erikej.github.io/dacfx/sqlclr/2025/01/28/dacfx-sqlclr-msbuild-sdk-sqlproj.html).

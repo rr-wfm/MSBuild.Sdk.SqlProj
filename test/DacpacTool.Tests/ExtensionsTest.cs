@@ -9,6 +9,7 @@ using Microsoft.SqlServer.Dac.Model;
 using Microsoft.SqlTools.ServiceLayer.BatchParser.ExecutionEngineCode;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 {
@@ -263,8 +264,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var preDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql");
             var postDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql");
 
-            packageBuilder.AddPreDeploymentScript(preDeploymentFile, tempFile);
-            packageBuilder.AddPostDeploymentScript(postDeploymentFile, tempFile);
+            var packageHelper = new PackageHelper(new TestConsole());
+            packageHelper.AddPreDeploymentScript(preDeploymentFile, tempFile);
+            packageHelper.AddPostDeploymentScript(postDeploymentFile, tempFile);
 
             using var package = DacPackage.Load(tempFile.FullName);
 
@@ -354,7 +356,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             // Use a regex designed to trigger catastrophic backtracking so the timeout path is deterministic in test.
             var regex = new Regex("dbl=(?<dbl>(a+)+)$", RegexOptions.None, TimeSpan.FromMilliseconds(1));
-            var method = typeof(Extensions).GetMethod("ParseExternalParts", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(string), typeof(Regex) }, null);
+            var method = typeof(PackageBuildExtensions).GetMethod("ParseExternalParts", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(string), typeof(Regex) }, null);
 
             // Act
             // The trailing '!' prevents a full match and forces catastrophic backtracking in the injected regex.

@@ -1,7 +1,7 @@
-using System;
 using MSBuild.Sdk.SqlProj.DacpacToolLibNetstandard;
+using System;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+namespace MSBuild.Sdk.SqlProj.DacpacToolFramework
 {
     public class ActualConsole : IConsole
     {
@@ -16,3 +16,4 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
     }
 }
+

@@ -13,6 +13,8 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DacpacTool/DacpacTool.csproj" />
+    <Project Path="src/DacpacToolLibNetstandard/DacpacToolLibNetstandard.csproj" />
+    <Project Path="src/DacpacToolFramework/DacpacToolFramework.csproj" />
     <Project Path="src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj" />
   </Folder>
   <Folder Name="/test/">

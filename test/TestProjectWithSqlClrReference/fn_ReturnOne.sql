@@ -1,0 +1,3 @@
+CREATE FUNCTION [dbo].[fn_ReturnOne] ()
+RETURNS INT
+AS EXTERNAL NAME [SqlClrTestLibrary].[SqlClrTestLibrary.SqlObjects].[ReturnOne];

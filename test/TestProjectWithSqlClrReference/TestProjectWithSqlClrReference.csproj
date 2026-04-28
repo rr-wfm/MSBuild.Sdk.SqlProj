@@ -1,0 +1,17 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <SqlServerVersion>Sql160</SqlServerVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Project reference to a .NET Framework class library containing a SQL CLR assembly.
+         The resulting .dll is picked up as an AssemblyReference and added to the dacpac
+         via CREATE ASSEMBLY by DacpacToolFramework. -->
+    <ProjectReference Include="..\SqlClrTestLibrary\SqlClrTestLibrary.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\MSBuild.Sdk.SqlProj\Sdk\Sdk.targets" />
+</Project>
