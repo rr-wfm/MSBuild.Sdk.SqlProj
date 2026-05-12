@@ -58,6 +58,35 @@ It is not possible to include SQL CLR objects in `MSBuild.Sdk.SqlProj` projects,
 
 You can work around this by "isolating" your SQL CLR objects in a separate `.sqlproj` project, build and pack the resulting `.dacpac` in a NuGet package on Windows, and then reference this package from your project. Read more about this approach in [this blog post](https://erikej.github.io/dacfx/sqlclr/2025/01/28/dacfx-sqlclr-msbuild-sdk-sqlproj.html).
 
+## XML schema collections (`.xsd`) support
+
+`MSBuild.Sdk.SqlProj` does not currently process `.xsd` files added as build inputs the same way as classic `.sqlproj` projects.
+
+If your existing project uses an entry like this:
+
+```xml
+<ItemGroup>
+  <Build Include="XMLSchemaCollection1.xsd">
+    <RelationalSchema>dbo</RelationalSchema>
+    <XMLSchemaCollectionName>XMLSchemaCollection1</XMLSchemaCollectionName>
+  </Build>
+</ItemGroup>
+```
+
+use a `.sql` file instead that creates the XML schema collection directly:
+
+```sql
+CREATE XML SCHEMA COLLECTION [dbo].[XMLSchemaCollection1]
+    AS N'<?xml version="1.0" encoding="utf-16"?>
+<xs:schema id="XMLSchemaCollection1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+Some xml schema content....
+</xs:schema>';
+```
+
+In practice, the workaround is to copy the contents of the `.xsd` file into the `N'...'` string of a `CREATE XML SCHEMA COLLECTION` statement and include that `.sql` file in your project instead of the `.xsd` file. If the schema content contains single quotes, escape them by doubling them (`''`). 
+
+> Note that large schemas may exceed the 4,000-character `NVARCHAR` literal limit, in which case you will need to split and concatenate the string or otherwise construct an `NVARCHAR(MAX)` value.
+
 ## Known limitations
 
 Since this is not an entire project system but only an MSBuild SDK we cannot provide IntelliSense for objects defined within the project. This limitation can be circumvented by connecting the SQL editor to a live database that is used for development purposes.
