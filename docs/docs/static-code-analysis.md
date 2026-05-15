@@ -15,7 +15,7 @@ Static code analysis can be enabled by adding the `RunSqlCodeAnalysis` property 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
-    <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Smells.*</CodeAnalysisRules>
+    <CodeAnalysisRules>-SqlServer.Rules.SRD0006;-Microsoft.Rules*</CodeAnalysisRules>
   </PropertyGroup>
 </Project>
 ```
@@ -57,24 +57,20 @@ Individual rule violations or groups of rules can be configured to be reported a
 
 ## Use additional rule packages
 
-We know of the following public rules NuGet packages, that you can add to your project.
+We know of the following public rules NuGet package, that you can add to your project.
 
 > These rule sets were included with the SDK in version 2.7.x and 2.8.x, but must be added explicitly with SDK version 2.9.x and later.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="4.0.0">
-    <PrivateAssets>all</PrivateAssets>
-    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-  </PackageReference>
-  <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="4.0.0">
+  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.0.0">
     <PrivateAssets>all</PrivateAssets>
     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
   </PackageReference>
 </ItemGroup>
 ```
 
-They are based on these older repositories:
+The rules in the package are based on these older repositories:
 
 - [SqlServer.Rules](https://github.com/tcartwright/SqlServer.Rules/blob/master/docs/table_of_contents.md)
 - [Smells](https://github.com/davebally/TSQL-Smells)

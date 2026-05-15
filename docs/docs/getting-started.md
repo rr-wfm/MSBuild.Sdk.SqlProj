@@ -44,13 +44,9 @@ You should now have a project file with the following contents:
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- These packages adds additional code analysis rules -->
-    <!-- We recommend using these, but they can be removed if desired -->
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="3.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="3.0.0">
+    <!-- This package adds additional code analysis rules -->
+    <!-- We recommend using it, but it can be removed if desired -->
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

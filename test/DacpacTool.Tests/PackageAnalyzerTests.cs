@@ -38,7 +38,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
-            testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SML005 : Smells : Avoid use of 'Select *'");
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
 
@@ -49,7 +48,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-Smells.SML005;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
+            var packageAnalyzer = new PackageAnalyzer(_console, "-SqlServer.Rules.SRD0006;-SqlServer.Rules.SRD999;+!SqlServer.Rules.SRN0002;");
 
             // Act
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
@@ -247,7 +246,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006;+!SqlServer.Rules.SRD0002;+!Smells.SML005");
+            var packageAnalyzer = new PackageAnalyzer(_console, "+!SqlServer.Rules.SRD0006;+!SqlServer.Rules.SRD0002");
 
             // Act
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
@@ -256,7 +255,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain("proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
             testConsole.Lines.ShouldContain("-1(1,1): Error SRD0002 : SqlServer.Rules : Table does not have a primary key.");
-            testConsole.Lines.Any(l => l.Contains("): Error SML005 : Smells : Avoid use of 'Select *'")).ShouldBeTrue();
             testConsole.Lines.Count(l => l.Contains("): Error ")).ShouldBe(3);
             testConsole.Lines.ShouldContain($"Successfully analyzed package '{result.fileInfo.FullName}'");
         }
@@ -438,7 +436,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var result = new List<FileInfo>();
             var path = ProjectSource.ProjectDirectory();
             result.Add(new FileInfo(Path.Combine(path, "SqlServer.Rules.dll")));
-            result.Add(new FileInfo(Path.Combine(path, "TSQLSmellSCA.dll")));
 
             return result.ToArray();
         }
