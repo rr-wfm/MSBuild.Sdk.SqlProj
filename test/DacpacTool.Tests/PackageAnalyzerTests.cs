@@ -34,7 +34,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
             
             // Assert
-            testConsole.Lines.Count.ShouldBe(16);
+            testConsole.Lines.Count.ShouldBe(12);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Warning SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
@@ -54,7 +54,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(14);
+            testConsole.Lines.Count.ShouldBe(11);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Any(l => l.Contains("SRD0006")).ShouldBeFalse();
@@ -76,7 +76,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(14);
+            testConsole.Lines.Count.ShouldBe(10);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.Any(l => l.Contains("SRD")).ShouldBeFalse();
@@ -96,7 +96,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(16);
+            testConsole.Lines.Count.ShouldBe(12);
 
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
             testConsole.Lines.ShouldContain($"proc1.sql(1,47): Error SRD0006 : SqlServer.Rules : Avoid using SELECT *.");
@@ -136,7 +136,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
 
             // Assert
-            testConsole.Lines.Count.ShouldBe(16);
+            testConsole.Lines.Count.ShouldBe(12);
 
             testConsole.Lines.Count(l => l.Contains("Using analyzers: ")).ShouldBe(1);
             testConsole.Lines.ShouldContain($"Analyzing package '{result.fileInfo.FullName}'");
