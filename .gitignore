@@ -350,3 +350,4 @@ src/MSBuild.Sdk.SqlProj/tools/
 
 # Ignore LICENSE.txt files (needed to pack License into NuGet packages)
 LICENSE.txt
+/.claude
