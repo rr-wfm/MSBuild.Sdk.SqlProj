@@ -46,7 +46,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 foreach (var propertyValue in options.BuildProperty)
                 {
                     string[] keyValuePair = propertyValue.Split('=', 2);
-                    packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+                    try
+                    {
+                        packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine($"ERROR: {ex.Message}");
+                        return 1;
+                    }
                 }
             }
 
