@@ -1,6 +1,6 @@
 # Packaging
 
-`MSBuild.Sdk.SqlProj` version 2.8.1 and later supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command.
+`MSBuild.Sdk.SqlProj` supports packaging your project into a [NuGet](https://www.nuget.org) package using the `dotnet pack` command.
 
 ## Package your project
 

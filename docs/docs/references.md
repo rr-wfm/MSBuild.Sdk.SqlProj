@@ -18,7 +18,7 @@
 </Project>
 ```
 
-It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference` (introduced in version 2.5.0). For example:
+It will assume that the `.dacpac` file is inside the `tools` folder of the referenced package and that it has the same name as the NuGet package. Referenced packages that do not adhere to this convention will be silently ignored. However, you have the ability to override this convention by using the `DacpacName` attribute on the `PackageReference`. For example:
 
 ### Override the dacpac name
 
@@ -156,7 +156,7 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 
 ## Referencing system databases
 
-Microsoft has released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use at least version 2.5.0 of MSBuild.Sdk.SqlProj as you'll need to use the `DacpacName` feature for package references described above. For example:
+Microsoft has released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use the `DacpacName` feature for package references described above. For example:
 
 ```xml
 <Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
@@ -165,7 +165,7 @@ Microsoft has released NuGet packages containing the definitions of the `master`
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.2" DacpacName="master" DatabaseVariableLiteralValue="master" />
+    <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.7" DacpacName="master" DatabaseVariableLiteralValue="master" />
   </ItemGroup>
 </Project>
 ```
