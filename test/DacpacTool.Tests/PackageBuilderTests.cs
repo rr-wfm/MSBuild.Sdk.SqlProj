@@ -535,6 +535,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void SetProperty_InvalidEnumValue_ErrorListsValidValues()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder(new TestConsole());
+
+            // Act & Assert — issue #933: T-SQL syntax (READ_WRITE) is rejected with a clear error
+            // naming the property and listing the valid C# enum member names.
+            var ex = Should.Throw<ArgumentException>(() =>
+                packageBuilder.SetProperty("QueryStoreDesiredState", "READ_WRITE"));
+            ex.Message.ShouldContain("QueryStoreDesiredState");
+            ex.Message.ShouldContain("READ_WRITE");
+            ex.Message.ShouldContain("ReadWrite");
+            ex.Message.ShouldContain("Off");
+            ex.Message.ShouldContain("ReadOnly");
+        }
+
+        [TestMethod]
         public void SetMetadata()
         {
             // Arrange

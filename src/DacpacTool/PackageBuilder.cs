@@ -215,15 +215,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "AutoShrink" => bool.Parse(value),
                     "AutoUpdateStatistics" => bool.Parse(value),
                     "AutoUpdateStatisticsAsync" => bool.Parse(value),
-                    "CatalogCollation" => Enum.Parse<CatalogCollation>(value),
+                    "CatalogCollation" => ParseEnum<CatalogCollation>(key, value),
                     "ChangeTrackingAutoCleanup" => bool.Parse(value),
                     "ChangeTrackingEnabled" => bool.Parse(value),
                     "ChangeTrackingRetentionPeriod" => int.Parse(value, CultureInfo.InvariantCulture),
-                    "ChangeTrackingRetentionUnit" => Enum.Parse<TimeUnit>(value),
+                    "ChangeTrackingRetentionUnit" => ParseEnum<TimeUnit>(key, value),
                     "Collation" => value,
                     "CompatibilityLevel" => int.Parse(value, CultureInfo.InvariantCulture),
                     "ConcatNullYieldsNull" => bool.Parse(value),
-                    "Containment" => Enum.Parse<Containment>(value),
+                    "Containment" => ParseEnum<Containment>(key, value),
                     "CursorCloseOnCommit" => bool.Parse(value),
                     "CursorDefaultGlobalScope" => bool.Parse(value),
                     "DatabaseStateOffline" => bool.Parse(value),
@@ -241,19 +241,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "DbScopedConfigQueryOptimizerHotfixesSecondary" => bool.Parse(value),
                     "DefaultFullTextLanguage" => value,
                     "DefaultLanguage" => value,
-                    "DelayedDurabilityMode" => Enum.Parse<DelayedDurabilityMode>(value),
+                    "DelayedDurabilityMode" => ParseEnum<DelayedDurabilityMode>(key, value),
                     "FileStreamDirectoryName" => value,
                     "FullTextEnabled" => bool.Parse(value),
                     "HonorBrokerPriority" => bool.Parse(value),
                     "MemoryOptimizedElevateToSnapshot" => bool.Parse(value),
                     "NestedTriggersOn" => bool.Parse(value),
-                    "NonTransactedFileStreamAccess" => Enum.Parse<NonTransactedFileStreamAccess>(value),
+                    "NonTransactedFileStreamAccess" => ParseEnum<NonTransactedFileStreamAccess>(key, value),
                     "NumericRoundAbortOn" => bool.Parse(value),
                     "OptimizedLocking" => bool.Parse(value),
-                    "PageVerifyMode" => Enum.Parse<PageVerifyMode>(value),
-                    "ParameterizationOption" => Enum.Parse<ParameterizationOption>(value),
-                    "QueryStoreCaptureMode" => Enum.Parse<QueryStoreCaptureMode>(value),
-                    "QueryStoreDesiredState" => Enum.Parse<QueryStoreDesiredState>(value),
+                    "PageVerifyMode" => ParseEnum<PageVerifyMode>(key, value),
+                    "ParameterizationOption" => ParseEnum<ParameterizationOption>(key, value),
+                    "QueryStoreCaptureMode" => ParseEnum<QueryStoreCaptureMode>(key, value),
+                    "QueryStoreDesiredState" => ParseEnum<QueryStoreDesiredState>(key, value),
                     "QueryStoreFlushInterval" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QueryStoreIntervalLength" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QueryStoreMaxPlansPerQuery" => int.Parse(value, CultureInfo.InvariantCulture),
@@ -261,18 +261,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     "QueryStoreStaleQueryThreshold" => int.Parse(value, CultureInfo.InvariantCulture),
                     "QuotedIdentifierOn" => bool.Parse(value),
                     "ReadOnly" => bool.Parse(value),
-                    "RecoveryMode" => Enum.Parse<RecoveryMode>(value),
+                    "RecoveryMode" => ParseEnum<RecoveryMode>(key, value),
                     "RecursiveTriggersOn" => bool.Parse(value),
-                    "ServiceBrokerOption" => Enum.Parse<ServiceBrokerOption>(value),
+                    "ServiceBrokerOption" => ParseEnum<ServiceBrokerOption>(key, value),
                     "SupplementalLoggingOn" => bool.Parse(value),
                     "TargetRecoveryTimePeriod" => int.Parse(value, CultureInfo.InvariantCulture),
-                    "TargetRecoveryTimeUnit" => Enum.Parse<TimeUnit>(value),
+                    "TargetRecoveryTimeUnit" => ParseEnum<TimeUnit>(key, value),
                     "TornPageProtectionOn" => bool.Parse(value),
                     "TransactionIsolationReadCommittedSnapshot" => bool.Parse(value),
                     "TransformNoiseWords" => bool.Parse(value),
                     "Trustworthy" => bool.Parse(value),
                     "TwoDigitYearCutoff" => short.Parse(value, CultureInfo.InvariantCulture),
-                    "UserAccessOption" => Enum.Parse<UserAccessOption>(value),
+                    "UserAccessOption" => ParseEnum<UserAccessOption>(key, value),
                     "VardecimalStorageFormatOn" => bool.Parse(value),
                     "WithEncryption" => bool.Parse(value),
                     _ => throw new ArgumentException($"Unknown property with name {key}", nameof(key))
@@ -293,6 +293,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 throw new ArgumentException($"Unable to parse value for property with name {key}: {value}", nameof(value));
             }
+        }
+
+        private static T ParseEnum<T>(string key, string value) where T : struct, Enum
+        {
+            if (Enum.TryParse<T>(value, out var result) && Enum.IsDefined(result))
+            {
+                return result;
+            }
+
+            var validValues = string.Join(", ", Enum.GetNames<T>());
+            throw new ArgumentException(
+                $"{key} value {value} is invalid. Expected one of: {validValues}.",
+                nameof(value));
         }
 
         public void Dispose()

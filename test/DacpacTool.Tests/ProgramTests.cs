@@ -163,6 +163,53 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public async Task BuildDacpac_InvalidEnumProperty_ReturnsOneAndWritesError()
+        {
+            var outputPath = new FileInfo(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dacpac"));
+            var inputList = CreateInputListFile("../../../../TestProject/Tables/MyTable.sql");
+
+            using var writer = new StringWriter();
+            var originalOut = Console.Out;
+
+            try
+            {
+                Console.SetOut(writer);
+
+                var options = new BuildOptions
+                {
+                    Name = "MyPackage",
+                    Version = "1.0.0.0",
+                    Output = outputPath,
+                    InputFile = inputList,
+                    BuildProperty = ["QueryStoreDesiredState=READ_WRITE"],
+                };
+
+                var result = await Program.BuildDacpac(options);
+
+                result.ShouldBe(1);
+                var output = writer.ToString();
+                output.ShouldContain("ERROR:");
+                output.ShouldContain("QueryStoreDesiredState");
+                output.ShouldContain("ReadWrite");
+                File.Exists(outputPath.FullName).ShouldBeFalse();
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+
+                if (outputPath.Exists)
+                {
+                    outputPath.Delete();
+                }
+
+                if (inputList.Exists)
+                {
+                    inputList.Delete();
+                }
+            }
+        }
+
+        [TestMethod]
         public async Task BuildDacpac_WhenInputFileHasModelException_ReturnsOne()
         {
             var outputPath = new FileInfo(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.dacpac"));
