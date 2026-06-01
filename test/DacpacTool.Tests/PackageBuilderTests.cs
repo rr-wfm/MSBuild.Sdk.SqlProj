@@ -865,6 +865,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     new object[] { optionsType.GetProperty("ChangeTrackingEnabled"), "False", false },
                     new object[] { optionsType.GetProperty("UserAccessOption"), "Restricted", UserAccessOption.Restricted },
                     new object[] { optionsType.GetProperty("WithEncryption"), "True", true },
+                    new object[] { optionsType.GetProperty("AcceleratedDatabaseRecovery"), "True", true },
+                    new object[] { optionsType.GetProperty("OptimizedLocking"), "False", false },
+                    new object[] { optionsType.GetProperty("DataRetentionEnabled"), "True", true },
+                    new object[] { optionsType.GetProperty("DbScopedConfigDWCompatibilityLevel"), "14", 14 },
                 };
             }
 
