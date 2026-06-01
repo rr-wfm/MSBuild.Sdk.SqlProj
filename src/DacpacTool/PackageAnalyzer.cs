@@ -47,7 +47,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var rules = service.GetRules();
 
-                if (!rules.Any(r => r.Namespace == "SqlServer.Rules" || r.Namespace == "Smells"))
+                if (!rules.Any(r => r.Namespace == "SqlServer.Rules"))
                 {
                     _console.WriteLine("DacpacTool warning SQLPROJ0001: No additional well-known rules files found, consider adding more rules via PackageReference - see the documentation here: https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/static-code-analysis.html. You can ignore this warning by adding '<NoWarn>$(NoWarn);SQLPROJ0001</NoWarn>' to your project file.");
                 }
