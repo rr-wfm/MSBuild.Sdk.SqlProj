@@ -6,6 +6,7 @@ MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the versio
 
 | MSBuild.Sdk.SqlProj version | .NET runtime version |
 | ------------ | -------------------- |
+| 4.0.0 | 8.0, 9.0, 10.0 |
 | 3.2.0 | 8.0, 9.0, 10.0 |
 | 3.0.0 | 8.0, 9.0 |
 | 2.9.0 | 6.0, 8.0 |
