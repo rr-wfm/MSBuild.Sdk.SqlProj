@@ -1,6 +1,6 @@
 # Static code analysis
 
-Starting with version 2.7.0 of the SDK, there is support for running static code analysis during build. The SDK includes the following sets of rules:
+There is support for running static code analysis during build. The SDK includes the following sets of rules:
 
 - [Transact-SQL Design Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193411(v=vs.100))
 - [Transact-SQL Naming Issues](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2010/dd193246(v=vs.100))
@@ -29,7 +29,7 @@ The optional `CodeAnalysisRules` property allows you to disable individual rules
 
 ## Suppress rules per file
 
-Starting with version 3.0.0 of the SDK, you can also disable rules per file. Add a `StaticCodeAnalysis.SuppressMessages.xml` file to the project root, with contents similar to this:
+You can also disable rules per file. Add a `StaticCodeAnalysis.SuppressMessages.xml` file to the project root, with contents similar to this:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -58,8 +58,6 @@ Individual rule violations or groups of rules can be configured to be reported a
 ## Use additional rule packages
 
 We know of the following public rules NuGet package that you can add to your project.
-
-> These rule sets were included with the SDK in version 2.7.x and 2.8.x, but must be added explicitly with SDK version 2.9.x and later.
 
 ```xml
 <ItemGroup>
