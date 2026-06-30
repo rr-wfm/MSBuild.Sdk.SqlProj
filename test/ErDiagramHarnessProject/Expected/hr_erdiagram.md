@@ -1,4 +1,4 @@
-```mermaid
+﻿```mermaid
 erDiagram
   "hr.Employee" {
     EmployeeId int PK

@@ -1,4 +1,4 @@
-```mermaid
+﻿```mermaid
 erDiagram
   "dbo.Customer" {
     CustomerId int PK
@@ -8,6 +8,8 @@ erDiagram
     AnyColor computed(NULL) 
     IsColorSelected computed(NULL) 
   }
+  "sales.Invoice" {
+  }
   "sales.LineItem" {
     LineItemId int PK
     InvoiceId int FK
@@ -15,6 +17,4 @@ erDiagram
     DisplayValue computed(NULL) 
   }
   "sales.LineItem" }o--|| "sales.Invoice" : FK_sales_LineItem_sales_Invoice
-  "sales.Invoice" {
-  }
 ```

@@ -1,5 +1,9 @@
-```mermaid
+﻿```mermaid
 erDiagram
+  "dbo.Customer" {
+  }
+  "hr.Employee" {
+  }
   "sales.Invoice" {
     InvoiceId int PK
     CustomerId int FK
@@ -14,8 +18,4 @@ erDiagram
     DisplayValue computed(NULL) 
   }
   "sales.LineItem" }o--|| "sales.Invoice" : FK_sales_LineItem_sales_Invoice
-  "dbo.Customer" {
-  }
-  "hr.Employee" {
-  }
 ```
