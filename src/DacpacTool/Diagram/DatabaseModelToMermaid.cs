@@ -56,8 +56,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             // Sort foreign keys for the same determinism reason as the tables above.
             foreach (var foreignKey in table.ForeignKeys
-                .OrderBy(fk => Sanitize($"{fk.PrincipalTable.Schema}.{fk.PrincipalTable.Name}"), StringComparer.Ordinal)
-                .ThenBy(fk => Sanitize(fk.Name ?? string.Empty), StringComparer.Ordinal))
+                .OrderBy(fk => fk.PrincipalTable.Schema, StringComparer.Ordinal)
+                .ThenBy(fk => fk.PrincipalTable.Name, StringComparer.Ordinal)
+                .ThenBy(fk => fk.Name ?? string.Empty, StringComparer.Ordinal))
             {
                 var relationship = "}o--|";
 
