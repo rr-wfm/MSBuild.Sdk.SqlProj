@@ -1,4 +1,4 @@
-```mermaid
+﻿```mermaid
 erDiagram
   "dbo.Entity" {
     EntityId int PK
@@ -13,6 +13,6 @@ erDiagram
     EntityId int FK
     EntityTypeCode computed(NULL) FK
   }
-  "dbo.SpecializedEntity" }o--o| "dbo.EntityTypeLookup" : FK_dbo_SpecializedEntity_dbo_EntityTypeLookup
   "dbo.SpecializedEntity" }o--o| "dbo.Entity" : FK_dbo_SpecializedEntity_EntityId_EntityTypeCode_dbo_Entity
+  "dbo.SpecializedEntity" }o--o| "dbo.EntityTypeLookup" : FK_dbo_SpecializedEntity_dbo_EntityTypeLookup
 ```

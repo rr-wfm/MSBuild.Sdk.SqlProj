@@ -27,7 +27,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             sb.AppendLine("erDiagram");
 
-            foreach (var table in tables)
+            // Emit tables in a deterministic order. TSqlModel.GetObjects(...) does not guarantee a
+            // stable order and the Windows and Linux builds of DacFx enumerate differently, which
+            // would otherwise produce platform-dependent diagrams.
+            foreach (var table in tables
+                .OrderBy(t => t.Schema, StringComparer.Ordinal)
+                .ThenBy(t => t.Name, StringComparer.Ordinal))
             {
                 AddTable(sb, table);
             }
@@ -49,7 +54,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
 
             sb.AppendLine("  }");
 
-            foreach (var foreignKey in table.ForeignKeys)
+            // Sort foreign keys for the same determinism reason as the tables above.
+            foreach (var foreignKey in table.ForeignKeys
+                .OrderBy(fk => fk.PrincipalTable.Schema, StringComparer.Ordinal)
+                .ThenBy(fk => fk.PrincipalTable.Name, StringComparer.Ordinal)
+                .ThenBy(fk => fk.Name ?? string.Empty, StringComparer.Ordinal))
             {
                 var relationship = "}o--|";
 
