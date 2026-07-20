@@ -32,7 +32,7 @@ jobs:
 
     # Install .NET SDKs for 8.0, 9.0 and 10.0
     - name: Setup dotnet SDKs
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
           10.0.x
@@ -186,7 +186,7 @@ jobs:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
  
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ matrix.dotnet }}
 
@@ -312,7 +312,7 @@ jobs:
         path: ~/dacpac-package
 
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'
 
@@ -416,7 +416,7 @@ jobs:
         path: test/TestProjectWithSDKRef/nuget-packages
  
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'
 
@@ -532,7 +532,7 @@ jobs:
         path: test/TestProjectWithSDKRef/nuget-packages
  
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'
 
@@ -616,7 +616,7 @@ jobs:
     - deploy-publish
     steps:
     # Setup .NET SDK
-    - uses: actions/setup-dotnet@v5
+    - uses: actions/setup-dotnet@v6
       with:
         dotnet-version: '10.0.x'
 
