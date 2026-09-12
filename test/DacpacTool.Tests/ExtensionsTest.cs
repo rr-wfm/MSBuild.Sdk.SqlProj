@@ -234,6 +234,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void GetPrePlanScript_WithoutEmbeddedScript_ReturnsNull()
+        {
+            var packagePath = new TestModelBuilder()
+                .AddTable("MyTable", ("Column1", "nvarchar(100)"))
+                .SaveAsPackage();
+
+            using var package = DacPackage.Load(packagePath);
+
+            package.GetPrePlanScript().ShouldBeNull();
+        }
+
+        [TestMethod]
         public void GetPostDeploymentScript_WithoutEmbeddedScript_ReturnsNull()
         {
             var packagePath = new TestModelBuilder()
@@ -246,7 +258,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void GetPreAndPostDeploymentScripts_WithEmbeddedScripts_ReturnScriptContents()
+        public void GetDeploymentScripts_WithEmbeddedScripts_ReturnScriptContents()
         {
             var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
@@ -260,14 +272,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             packageBuilder.SaveToDisk(tempFile, packageOptions);
 
+            var prePlanFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql");
             var preDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql");
             var postDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql");
 
+            packageBuilder.AddPrePlanScript(prePlanFile, tempFile);
             packageBuilder.AddPreDeploymentScript(preDeploymentFile, tempFile);
             packageBuilder.AddPostDeploymentScript(postDeploymentFile, tempFile);
 
             using var package = DacPackage.Load(tempFile.FullName);
 
+            package.GetPrePlanScript().ShouldMatch(@"PRINT N'Pre plan'[\r\n]*PRINT N'Pre-plan include'[\r\n]*GO[\r\n]*");
             package.GetPreDeploymentScript().ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*GO[\r\n]*");
             var postDeploymentScript = package.GetPostDeploymentScript();
             postDeploymentScript.ShouldContain("PRINT 'Inserting record into MyTable'");

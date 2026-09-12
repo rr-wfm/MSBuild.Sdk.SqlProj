@@ -100,6 +100,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddScript(script, outputFile, "/predeploy.sql");
         }
 
+        public void AddPrePlanScript(FileInfo script, FileInfo outputFile)
+        {
+            ArgumentNullException.ThrowIfNull(outputFile);
+
+            AddScript(script, outputFile, "/preplan.sql");
+        }
+
         public void AddPostDeploymentScript(FileInfo script, FileInfo outputFile)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
@@ -347,7 +354,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             if (_modelValid != true)
             {
-                throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
+                throw new InvalidOperationException("Cannot add deployment scripts before model has been validated.");
             }
 
             if (script == null)

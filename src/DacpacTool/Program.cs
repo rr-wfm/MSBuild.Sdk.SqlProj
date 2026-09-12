@@ -152,7 +152,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Save the package to disk
             packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
-            // Add predeployment and postdeployment scripts (must happen after SaveToDisk)
+            // Add pre-plan, predeployment, and postdeployment scripts (must happen after SaveToDisk)
+            packageBuilder.AddPrePlanScript(options.PrePlan, options.Output);
             packageBuilder.AddPreDeploymentScript(options.PreDeploy, options.Output);
             packageBuilder.AddPostDeploymentScript(options.PostDeploy, options.Output);
 
@@ -183,7 +184,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var scriptInspector = new ScriptInspector();
 
-            // Add predeployment and postdeployment scripts
+            // Add pre-plan, predeployment, and postdeployment scripts
+            if (options.PrePlan != null)
+            {
+                scriptInspector.AddPrePlanScript(options.PrePlan);
+            }
             if (options.PreDeploy != null)
             {
                 scriptInspector.AddPreDeploymentScript(options.PreDeploy);

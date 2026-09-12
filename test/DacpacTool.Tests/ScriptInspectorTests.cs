@@ -25,6 +25,22 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void GetIncludedFiles_PrePlanScript()
+        {
+            // Arrange
+            var packageInspector = new ScriptInspector();
+
+            // Act
+            packageInspector.AddPrePlanScript(
+                new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql"));
+
+            // Assert
+            var expectedFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script1.sql");
+            packageInspector.IncludedFiles.Count().ShouldBe(1);
+            packageInspector.IncludedFiles.First().ShouldBe(expectedFile.FullName);
+        }
+
+        [TestMethod]
         public void GetIncludedFiles_NoIncludes()
         {
             // Arrange
@@ -61,6 +77,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageInspector = new ScriptInspector();
 
             // Act
+            packageInspector.AddPrePlanScript(
+                new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql"));
+
             packageInspector.AddPreDeploymentScript(
                 new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql"));
 
@@ -68,11 +87,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.PostDeployment.SimpleInclude.sql"));
 
             // Assert
-            var expectedFile1 = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script1.sql");
-            var expectedFile2 = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script1.sql");
-            packageInspector.IncludedFiles.Count().ShouldBe(2);
+            var expectedFile1 = new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script1.sql");
+            var expectedFile2 = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script1.sql");
+            var expectedFile3 = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script1.sql");
+            packageInspector.IncludedFiles.Count().ShouldBe(3);
             packageInspector.IncludedFiles.First().ShouldBe(expectedFile1.FullName);
-            packageInspector.IncludedFiles.Last().ShouldBe(expectedFile2.FullName);
+            packageInspector.IncludedFiles.Skip(1).First().ShouldBe(expectedFile2.FullName);
+            packageInspector.IncludedFiles.Last().ShouldBe(expectedFile3.FullName);
         }
     }
 }

@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PrePlan Include="Pre-Plan\Script.PrePlan.sql" />
     <PostDeploy Include="Post-Deployment\Script.Post Deployment.sql" />
     <PreDeploy Include="Pre-Deployment\Script.PreDeployment.SimpleInclude.sql" />
     <RefactorLog Include="RefactorLog\TestProjectWithPrePost.refactorlog" />

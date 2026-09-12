@@ -19,6 +19,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddIncludedFiles(script);
         }
 
+        public void AddPrePlanScript(FileInfo script)
+        {
+            ArgumentNullException.ThrowIfNull(script);
+
+            AddIncludedFiles(script);
+        }
+
         public void AddPostDeploymentScript(FileInfo script)
         {
             ArgumentNullException.ThrowIfNull(script);
