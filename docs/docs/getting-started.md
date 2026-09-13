@@ -67,11 +67,11 @@ Then run a `dotnet build` and you'll find a .dacpac file with the same name as y
 
 The project file can have extension `.csproj` or `.fsproj`.
 
-All `.sql` files in the same directory as the project file, except for those in the `Pre-Deployment` and `Post-Deployment` folders, are added to the package by default.
+All `.sql` files in the same directory as the project file, except for those in the `Pre-Plan`, `Pre-Deployment`, and `Post-Deployment` folders, are added to the package by default.
 
 To exclude files from the package, add a `<Content Remove="Directory\File.sql" />`.
 
-If you are using Visual Studio, to make files excluded from the package appear in Solution Explorer (like scripts for Pre-Deployment and Post-Deployment), add `<None Include="Directory\File.sql" />`.
+If you are using Visual Studio, to make files excluded from the package appear in Solution Explorer (like scripts for Pre-Plan, Pre-Deployment, and Post-Deployment), add `<None Include="Directory\File.sql" />`.
 
 Wildcards are supported for all nodes (`Content`, `None`, etc.). For example, `<None Include="Directory\**" />`.
 
