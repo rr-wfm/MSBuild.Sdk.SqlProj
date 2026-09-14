@@ -4,6 +4,7 @@
         <SqlServerVersion>#{SqlServerVersion}</SqlServerVersion>
         <RunSqlCodeAnalysis>#{CodeAnalysis}</RunSqlCodeAnalysis>
         <GenerateEntityRelationshipDiagram>#{ErDiagram}</GenerateEntityRelationshipDiagram>
+        <ProjectGuid>#{ProjectGuid}</ProjectGuid>
         <!-- For additional properties that can be set here, please refer to https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/project-configuration.html#model-properties -->
     </PropertyGroup>
 

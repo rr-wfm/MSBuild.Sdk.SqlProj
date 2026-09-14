@@ -93,18 +93,19 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void AddPreDeploymentScript(FileInfo script, FileInfo outputFile)
+        public void AddOutputArtifacts(FileInfo preDeployScript, FileInfo postDeployScript, Guid? projectGuid, FileInfo outputFile)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
-            AddScript(script, outputFile, "/predeploy.sql");
-        }
+            using var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite);
 
-        public void AddPostDeploymentScript(FileInfo script, FileInfo outputFile)
-        {
-            ArgumentNullException.ThrowIfNull(outputFile);
+            AddScript(preDeployScript, package, "/predeploy.sql");
+            AddScript(postDeployScript, package, "/postdeploy.sql");
 
-            AddScript(script, outputFile, "/postdeploy.sql");
+            if (projectGuid.HasValue)
+            {
+                new DacOriginModifier(_console).SetProjectGuid(package, projectGuid.Value);
+            }
         }
 
         public bool ValidateModel()
@@ -343,8 +344,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        private void AddScript(FileInfo script, FileInfo outputFile, string path)
+        public void AddScript(FileInfo script, Package package, string path)
         {
+            ArgumentNullException.ThrowIfNull(package);
+
             if (_modelValid != true)
             {
                 throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
@@ -360,13 +363,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new ArgumentException($"Unable to find script file {script.FullName}", nameof(script));
             }
 
-            using (var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite))
-            {
-                _console.WriteLine($"Adding {script.FullName} to package");
-                WritePart(script, package, path);
-
-                package.Close();
-            }
+            _console.WriteLine($"Adding {script.FullName} to package");
+            WritePart(script, package, path);
         }
 
         private static void WritePart(FileInfo file, Package package, string path)

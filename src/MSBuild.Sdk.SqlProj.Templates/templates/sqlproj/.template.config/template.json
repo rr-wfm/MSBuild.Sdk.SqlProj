@@ -104,6 +104,14 @@
         "displayName": "Enable ER Diagram",
         "description": "Enable Entity-Relationship diagram generation for the SQL project",
         "replaces": "#{ErDiagram}"
+      },
+       "projectGuid":{
+        "type": "generated",
+        "generator": "guid",
+        "replaces": "#{ProjectGuid}",
+        "parameters": {
+          "defaultFormat":"D"
+        }
       }
     }
   }

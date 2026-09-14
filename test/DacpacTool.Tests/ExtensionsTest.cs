@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -263,8 +264,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var preDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql");
             var postDeploymentFile = new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql");
 
-            packageBuilder.AddPreDeploymentScript(preDeploymentFile, tempFile);
-            packageBuilder.AddPostDeploymentScript(postDeploymentFile, tempFile);
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                packageBuilder.AddScript(preDeploymentFile, writePackage, "/predeploy.sql");
+                packageBuilder.AddScript(postDeploymentFile, writePackage, "/postdeploy.sql");
+            }
 
             using var package = DacPackage.Load(tempFile.FullName);
 
