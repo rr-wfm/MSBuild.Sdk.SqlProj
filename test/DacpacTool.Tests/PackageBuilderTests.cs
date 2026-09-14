@@ -295,17 +295,23 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Act
             packageBuilder.SaveToDisk(tempFile, packageOptions);
 
-            packageBuilder.AddPrePlanScript(
-                new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql"),
-                tempFile);
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                packageBuilder.AddScript(
+                    new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql"),
+                    writePackage,
+                    "/preplan.sql");
 
-            packageBuilder.AddPreDeploymentScript(
-                new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
-                tempFile);
+                packageBuilder.AddScript(
+                    new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
+                    writePackage,
+                    "/predeploy.sql");
 
-            packageBuilder.AddPostDeploymentScript(
-                new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql"),
-                tempFile);
+                packageBuilder.AddScript(
+                    new FileInfo("../../../../TestProjectWithPrePost/Post-Deployment/Script.Post Deployment.sql"),
+                    writePackage,
+                    "/postdeploy.sql");
+            }
 
             // Assert
             var package = Package.Open(tempFile.FullName);
@@ -347,12 +353,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPrePlanScript(
-                null,
-                tempFile);
-            packageBuilder.AddPreDeploymentScript(
-                null,
-                tempFile);
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                packageBuilder.AddScript(
+                    null,
+                    writePackage,
+                    "/preplan.sql");
+
+                packageBuilder.AddScript(
+                    null,
+                    writePackage,
+                    "/predeploy.sql");
+            }
 
             // Assert
             var package = Package.Open(tempFile.FullName);
@@ -389,9 +401,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act
-            packageBuilder.AddPostDeploymentScript(
-                null,
-                tempFile);
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                packageBuilder.AddScript(
+                    null,
+                    writePackage,
+                    "/postdeploy.sql");
+            }
 
             // Assert
             var package = Package.Open(tempFile.FullName);
@@ -436,41 +452,45 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void AddPreDeployment_WrongOrder()
         {
             // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql160);
 
+            using var memoryStream = new MemoryStream();
+            using var package = Package.Open(memoryStream, FileMode.Create);
 
             // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPreDeploymentScript(null, tempFile));
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddScript(null, package, "/predeploy.sql"));
         }
 
         [TestMethod]
         public void AddPrePlan_WrongOrder()
         {
             // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql160);
 
+            using var memoryStream = new MemoryStream();
+            using var package = Package.Open(memoryStream, FileMode.Create);
+
             // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPrePlanScript(null, tempFile));
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddScript(null, package, "/preplan.sql"));
         }
 
         [TestMethod]
         public void AddPostDeployment_WrongOrder()
         {
             // Arrange
-            var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
             packageBuilder.UsingVersion(SqlServerVersion.Sql160);
 
+            using var memoryStream = new MemoryStream();
+            using var package = Package.Open(memoryStream, FileMode.Create);
 
             // Act & Assert
-            Should.Throw<InvalidOperationException>(() => packageBuilder.AddPostDeploymentScript(null, tempFile));
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddScript(null, package, "/postdeploy.sql"));
         }
 
         [TestMethod]
@@ -485,9 +505,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPreDeploymentScript(
-                new FileInfo("NonExistingScript.PreDeployment.sql"),
-                tempFile));
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                Should.Throw<ArgumentException>(() => packageBuilder.AddScript(
+                    new FileInfo("NonExistingScript.PreDeployment.sql"),
+                    writePackage,
+                    "/predeploy.sql"));
+            }
 
             // Cleanup
             tempFile.Delete();
@@ -505,9 +529,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPrePlanScript(
-                new FileInfo("NonExistingScript.PrePlan.sql"),
-                tempFile));
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                Should.Throw<ArgumentException>(() => packageBuilder.AddScript(
+                    new FileInfo("NonExistingScript.PrePlan.sql"),
+                    writePackage,
+                    "/preplan.sql"));
+            }
 
             // Cleanup
             tempFile.Delete();
@@ -525,9 +553,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(tempFile);
 
             // Act & Assert
-            Should.Throw<ArgumentException>(() => packageBuilder.AddPostDeploymentScript(
-                new FileInfo("NonExistingScript.PostDeployment.sql"),
-                tempFile));
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                Should.Throw<ArgumentException>(() => packageBuilder.AddScript(
+                    new FileInfo("NonExistingScript.PostDeployment.sql"),
+                    writePackage,
+                    "/postdeploy.sql"));
+            }
 
             // Cleanup
             tempFile.Delete();
