@@ -195,8 +195,6 @@
   <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
           Inputs="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
-      <!-- Deployment scripts are package artifacts, not model inputs. -->
-      <Content Remove="@(PrePlan)" />
       <!-- Get the values for known model properties specified in the project file -->
       <_BuildPropertyNames Include="$(KnownModelProperties)" />
       <BuildPropertyNames Include="@(_BuildPropertyNames)" Condition=" '$(%(Identity))' != '' ">
