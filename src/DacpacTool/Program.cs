@@ -152,7 +152,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             // Save the package to disk
             packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
-            // Add predeployment and postdeployment scripts and set the ProjectGuid in Origin.xml
+            // Add pre-plan, predeployment, and postdeployment scripts and set the ProjectGuid in Origin.xml
             // (must happen after SaveToDisk). The package is opened only once for all of these.
             Guid? projectGuid = null;
             if (!string.IsNullOrWhiteSpace(options.ProjectGuid))
@@ -166,7 +166,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 projectGuid = parsedProjectGuid;
             }
 
-            packageBuilder.AddOutputArtifacts(options.PreDeploy, options.PostDeploy, projectGuid, options.Output);
+            packageBuilder.AddOutputArtifacts(options.PrePlan, options.PreDeploy, options.PostDeploy, projectGuid, options.Output);
 
             if (options.GenerateCreateScript)
             {
@@ -195,7 +195,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         {
             var scriptInspector = new ScriptInspector();
 
-            // Add predeployment and postdeployment scripts
+            // Add pre-plan, predeployment, and postdeployment scripts
+            if (options.PrePlan != null)
+            {
+                scriptInspector.AddPrePlanScript(options.PrePlan);
+            }
             if (options.PreDeploy != null)
             {
                 scriptInspector.AddPreDeploymentScript(options.PreDeploy);

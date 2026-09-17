@@ -268,12 +268,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void InspectIncludes_WithPreAndPostScripts_WritesBothIncludedFiles()
+        public void InspectIncludes_WithDeploymentScripts_WritesAllIncludedFiles()
         {
+            var expectedPrePlanFile = new FileInfo($"{TestProjectPath}/Pre-Plan/Script1.sql");
             var expectedPreFile = new FileInfo($"{TestProjectPath}/Pre-Deployment/Script1.sql");
             var expectedPostFile = new FileInfo($"{TestProjectPath}/Post-Deployment/Script1.sql");
             var options = new InspectOptions
             {
+                PrePlan = new FileInfo($"{TestProjectPath}/Pre-Plan/Script.PrePlan.sql"),
                 PreDeploy = new FileInfo($"{TestProjectPath}/Pre-Deployment/Script.PreDeployment.SimpleInclude.sql"),
                 PostDeploy = new FileInfo($"{TestProjectPath}/Post-Deployment/Script.PostDeployment.SimpleInclude.sql"),
             };
@@ -289,6 +291,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 var output = writer.ToString().Replace("\r\n", "\n");
 
                 result.ShouldBe(0);
+                output.ShouldContain($"{expectedPrePlanFile.FullName}\n");
                 output.ShouldContain($"{expectedPreFile.FullName}\n");
                 output.ShouldContain($"{expectedPostFile.FullName}\n");
             }

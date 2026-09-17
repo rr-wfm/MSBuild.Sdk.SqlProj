@@ -282,7 +282,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void AddPreDeployment_FilesExist()
+        public void AddDeploymentScripts_FilesExist()
         {
             // Arrange
             var tempFile = new FileInfo(Path.GetTempFileName());
@@ -298,6 +298,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
             {
                 packageBuilder.AddScript(
+                    new FileInfo("../../../../TestProjectWithPrePost/Pre-Plan/Script.PrePlan.sql"),
+                    writePackage,
+                    "/preplan.sql");
+
+                packageBuilder.AddScript(
                     new FileInfo("../../../../TestProjectWithPrePost/Pre-Deployment/Script.PreDeployment.sql"),
                     writePackage,
                     "/predeploy.sql");
@@ -310,9 +315,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var package = Package.Open(tempFile.FullName);
+            var prePlanPart = package.GetPart(new Uri("/preplan.sql", UriKind.Relative));
             var prePart = package.GetPart(new Uri("/predeploy.sql", UriKind.Relative));
             var postPart = package.GetPart(new Uri("/postdeploy.sql", UriKind.Relative));
             var refactorPart = package.GetPart(new Uri("/refactor.xml", UriKind.Relative));
+
+            prePlanPart.ShouldNotBeNull();
+            prePlanPart.ContentType.ShouldBe("text/plain");
+            prePlanPart.GetStream().ShouldNotBeNull();
 
             prePart.ShouldNotBeNull();
             prePart.ContentType.ShouldBe("text/plain");
@@ -348,11 +358,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 packageBuilder.AddScript(
                     null,
                     writePackage,
+                    "/preplan.sql");
+
+                packageBuilder.AddScript(
+                    null,
+                    writePackage,
                     "/predeploy.sql");
             }
 
             // Assert
             var package = Package.Open(tempFile.FullName);
+
+            package.GetParts()
+                .Where(p => p.Uri == new Uri("/preplan.sql", UriKind.Relative))
+                .FirstOrDefault()
+                .ShouldBeNull();
 
             package.GetParts()
                 .Where(p => p.Uri == new Uri("/predeploy.sql", UriKind.Relative))
@@ -444,6 +464,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public void AddPrePlan_WrongOrder()
+        {
+            // Arrange
+            var packageBuilder = new PackageBuilder(new TestConsole());
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
+
+            using var memoryStream = new MemoryStream();
+            using var package = Package.Open(memoryStream, FileMode.Create);
+
+            // Act & Assert
+            Should.Throw<InvalidOperationException>(() => packageBuilder.AddScript(null, package, "/preplan.sql"));
+        }
+
+        [TestMethod]
         public void AddPostDeployment_WrongOrder()
         {
             // Arrange
@@ -476,6 +511,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     new FileInfo("NonExistingScript.PreDeployment.sql"),
                     writePackage,
                     "/predeploy.sql"));
+            }
+
+            // Cleanup
+            tempFile.Delete();
+        }
+
+        [TestMethod]
+        public void AddPrePlan_NotExists()
+        {
+            // Arrange
+            var tempFile = new FileInfo(Path.GetTempFileName());
+            var packageBuilder = new PackageBuilder(new TestConsole());
+            packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
+            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
+            packageBuilder.ValidateModel();
+            packageBuilder.SaveToDisk(tempFile);
+
+            // Act & Assert
+            using (var writePackage = Package.Open(tempFile.FullName, FileMode.Open, FileAccess.ReadWrite))
+            {
+                Should.Throw<ArgumentException>(() => packageBuilder.AddScript(
+                    new FileInfo("NonExistingScript.PrePlan.sql"),
+                    writePackage,
+                    "/preplan.sql"));
             }
 
             // Cleanup

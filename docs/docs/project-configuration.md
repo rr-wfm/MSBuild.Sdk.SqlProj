@@ -66,6 +66,30 @@ You can suppress warnings for a specific file by adding `SuppressTSqlWarnings` f
 > [!NOTE]
 > Warnings suppressed at the project level are always applied to every file in the project, regardless of what is configured at the file level.
 
+## Pre-plan scripts
+
+A pre-plan script runs before DacFX reads the target database and creates the deployment plan. It can prepare the target for model comparison, for example by migrating data before changing a column to non-nullable.
+
+Add one pre-plan script to the project with the `PrePlan` item:
+
+```xml
+  <ItemGroup>
+    <PrePlan Include="Pre-Plan\Script.PrePlan.sql" />
+  </ItemGroup>
+```
+
+Only one pre-plan script can be included in a project. To compose it from multiple files, use SQLCMD `:r` includes in the main script, just as with pre-deployment and post-deployment scripts:
+
+```sql
+:r .\Migrations\PrepareCustomer.sql
+:r .\Migrations\PrepareOrders.sql
+```
+
+The pre-plan script is stored in the `.dacpac` and is excluded from the database model. Included files are also tracked as build inputs, so changing one rebuilds the package.
+
+> [!IMPORTANT]
+> Pre-plan scripts require DacFX or SqlPackage 170.5.96 or later when deploying the `.dacpac`. Older deployment tooling ignores the pre-plan script. During publish, DacFX executes and commits the script in a separate transaction before model comparison. Pre-plan statements must be valid inside a transaction, and scripts should be safe to run more than once.
+
 ## Pre-deployment and post-deployment scripts
 
 [These scripts](https://learn.microsoft.com/sql/tools/sql-database-projects/concepts/pre-post-deployment-scripts) will be automatically executed when deploying the `.dacpac` to SQL Server.

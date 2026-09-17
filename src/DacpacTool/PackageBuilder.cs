@@ -93,12 +93,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void AddOutputArtifacts(FileInfo preDeployScript, FileInfo postDeployScript, Guid? projectGuid, FileInfo outputFile)
+        public void AddOutputArtifacts(FileInfo prePlanScript, FileInfo preDeployScript, FileInfo postDeployScript, Guid? projectGuid, FileInfo outputFile)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
             using var package = Package.Open(outputFile.FullName, FileMode.Open, FileAccess.ReadWrite);
 
+            AddScript(prePlanScript, package, "/preplan.sql");
             AddScript(preDeployScript, package, "/predeploy.sql");
             AddScript(postDeployScript, package, "/postdeploy.sql");
 
@@ -350,7 +351,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             if (_modelValid != true)
             {
-                throw new InvalidOperationException("Cannot add pre and post scripts before model has been validated.");
+                throw new InvalidOperationException("Cannot add deployment scripts before model has been validated.");
             }
 
             if (script == null)

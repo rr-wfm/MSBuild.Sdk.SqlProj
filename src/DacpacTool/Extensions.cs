@@ -154,6 +154,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return streamReader.ReadToEnd();
         }
 
+        public static string GetPrePlanScript(this DacPackage package)
+        {
+            ArgumentNullException.ThrowIfNull(package);
+
+            var stream = package.PrePlanScript;
+            if (stream == null)
+            {
+                return null;
+            }
+
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
+        }
+
         public static string GetPostDeploymentScript(this DacPackage package)
         {
             ArgumentNullException.ThrowIfNull(package);
