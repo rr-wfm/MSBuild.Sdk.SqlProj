@@ -88,7 +88,7 @@ Only one pre-plan script can be included in a project. To compose it from multip
 The pre-plan script is stored in the `.dacpac` and is excluded from the database model. Included files are also tracked as build inputs, so changing one rebuilds the package.
 
 > [!IMPORTANT]
-> Pre-plan scripts require DacFX or SqlPackage 170.5.94-preview or later when deploying the `.dacpac`. Older deployment tooling ignores the pre-plan script. During publish, DacFX executes and commits the script in a separate transaction before model comparison. Pre-plan statements must be valid inside a transaction, and scripts should be safe to run more than once.
+> Pre-plan scripts require DacFX or SqlPackage 170.5.96 or later when deploying the `.dacpac`. Older deployment tooling ignores the pre-plan script. During publish, DacFX executes and commits the script in a separate transaction before model comparison. Pre-plan statements must be valid inside a transaction, and scripts should be safe to run more than once.
 
 ## Pre-deployment and post-deployment scripts
 
