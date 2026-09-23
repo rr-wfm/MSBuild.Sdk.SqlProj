@@ -267,7 +267,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     deployer.RunPreDeploymentScriptFromReferences(options.Input, options.TargetDatabaseName);
                 }
 
-                deployer.Deploy(options.Input, options.TargetDatabaseName);
+                if (!deployer.Deploy(options.Input, options.TargetDatabaseName))
+                {
+                    return 1;
+                }
 
                 if (options.RunScriptsFromReferences)
                 {

@@ -456,6 +456,12 @@ jobs:
           exit 1
         fi
 
+    # Exercise deployment failure handling against the running SQL Server
+    - name: test deployment failure handling
+      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f net10.0 --filter TestCategory=SqlServer
+      env:
+        SQLPROJ_TEST_CONNECTION_STRING: "Server=localhost;User ID=sa;Password=${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }};Encrypt=False"
+
     # Upload binary log
     - name: upload
       uses: actions/upload-artifact@v7
