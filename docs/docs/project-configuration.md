@@ -111,22 +111,23 @@ To include these scripts into your `.dacpac` add the following to your `.csproj`
 
 It is important to note that scripts in the `Pre-Deployment` and `Post-Deployment` folders are excluded from the build process by default. This is because these scripts typically don't define database objects, such as tables and stored procedure, but perform other tasks that cannot be represented in the model. If these aren't excluded your build might break with a SQL46010 error. Instead, you should create a script file that includes all of those scripts using the `:r <path-to-script>.sql` syntax and then reference that script in your project file (as shown above).
 
-### Why these scripts are excluded from build
-
-By default the pre- and/or post-deployment script of referenced packages (both [Package References](references.md#package-references) and [Project References](references.md#project-references)) are not run when using `dotnet publish`. This can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
-
 ### Run scripts from referenced packages
+
+When publishing directly to a database with `dotnet publish /t:PublishDatabase`, pre-deployment and post-deployment scripts from [package references](references.md#package-references) and [project references](references.md#project-references) are skipped by default. Set `RunScriptsFromReferences` to `True` to run them:
 
 ```xml
   <PropertyGroup>
     <RunScriptsFromReferences>True</RunScriptsFromReferences>
-    ...
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MyDatabasePackage" Version="1.0.0" />
   </ItemGroup>
 ```
+
+The referenced pre-deployment scripts run before the main `.dacpac` is deployed. The referenced post-deployment scripts run after the deployment succeeds; they are skipped if it fails. The main project's own pre-deployment and post-deployment scripts are part of its `.dacpac` and do not require this setting.
+
+`RunScriptsFromReferences` applies to direct database publishing through this SDK. Publishing a container image uses SqlPackage, which does not run scripts from referenced packages.
 
 ## SQLCMD variables
 
