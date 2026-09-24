@@ -30,6 +30,8 @@ In order to get started contributing code, make sure you have the following inst
 
 This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.Tests` folder.
 
+The deployment integration tests require a disposable SQL Server instance. Set `SQLPROJ_TEST_CONNECTION_STRING` to a SQL-authenticated connection string, such as `Server=localhost;User ID=sa;Password=<password>;Encrypt=False`, then run `dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f net10.0 --filter TestCategory=SqlServer`. These tests create and drop uniquely named databases and need permission to do so. They are skipped when the variable is unset and run in the `deploy-publish` CI job.
+
 In order to test your changes on your development machine you should first run `dotnet build` from the `src/MSBuild.Sdk.SqlProj` folder. This will build the command line tool for the supported target frameworks and copy those outputs to the `src/MSBuild.Sdk.SqlProj/tools/<target-framework>` folders. You can then build any of the test projects in the `test` folder to try out your changes without having to build the SDK package and push it a NuGet package feed. This works because these projects reference the `Sdk.props` and `Sdk.targets` files directly like for example `TestProjectWithPackageReference.csproj`:
 
 ```xml
