@@ -1,0 +1,21 @@
+<Project>
+  <Import Project="../../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+    <!-- Database model settings required by the template analyzer defaults. -->
+    <PageVerifyMode>Checksum</PageVerifyMode>
+    <QueryStoreDesiredState>ReadWrite</QueryStoreDesiredState>
+    <QueryStoreCaptureMode>Auto</QueryStoreCaptureMode>
+    <TargetRecoveryTimePeriod>60</TargetRecoveryTimePeriod>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Match the SQL project template's analyzer package and asset settings. -->
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="../../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets" />
+</Project>
