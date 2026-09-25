@@ -172,6 +172,143 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             result.Output.ShouldContain(Path.Combine(directory, "missing.publish.xml"));
         }
 
+        [TestMethod]
+        [DataRow("PublishDatabase", false, false)]
+        [DataRow("PublishDatabase", false, true)]
+        [DataRow("PublishDatabase", true, false)]
+        [DataRow("PublishDatabase", true, true)]
+        [DataRow("PrepareSqlPublish", false, false)]
+        [DataRow("PrepareSqlPublish", false, true)]
+        [DataRow("PrepareSqlPublish", true, false)]
+        [DataRow("PrepareSqlPublish", true, true)]
+        public async Task PublishHooks_ApplyExplicitSettingsBeforeInvokingTool(string beforeTarget, bool withProfile, bool equalToDefaults)
+        {
+            var server = equalToDefaults ? "(local)" : "runtime-server";
+            var database = equalToDefaults ? "Consumer" : "runtime-db";
+            var composite = equalToDefaults;
+            if (withProfile)
+            {
+                WriteProfile("profile-server", "profile-db", !composite);
+                SetProperties(new XElement("PublishProfile", profilePath));
+            }
+            SetVariables("project default", "before hook");
+            var argumentsPath = Path.Combine(directory, "publish-arguments.txt");
+            var document = XDocument.Load(project);
+            // Skip compilation and leave the package missing so the real deploy
+            // command validates its arguments but cannot contact a database.
+            document.Root.Add(new XElement("Target", new XAttribute("Name", "Build")));
+            document.Root.Add(new XElement("Target", new XAttribute("Name", "ConfigurePublish"),
+                new XAttribute("BeforeTargets", beforeTarget),
+                new XElement("PropertyGroup",
+                    new XElement("TargetServerName", server), new XElement("TargetDatabaseName", database),
+                    new XElement("IncludeCompositeObjects", composite), new XElement("CommandTimeout", "77"),
+                    withProfile ? new XElement("PublishProfile", profilePath) : null),
+                new XElement("ItemGroup", new XElement("SqlCmdVariable", new XAttribute("Condition", "'%(SqlCmdVariable.Identity)' == 'Environment'"),
+                    new XElement("Value", "runtime value")))));
+            document.Root.Add(new XElement("Target", new XAttribute("Name", "CapturePublishArguments"),
+                new XAttribute("AfterTargets", "PrepareSqlPublish"),
+                new XElement("WriteLinesToFile", new XAttribute("File", argumentsPath),
+                    new XAttribute("Lines", "@(_SqlProjPublishArgument->'%(Identity)=%(Value)')"),
+                    new XAttribute("Overwrite", "true"))));
+            document.Save(project);
+
+            var result = await Run("msbuild", project, "-t:PublishDatabase");
+            result.ExitCode.ShouldNotBe(0, result.Output);
+            result.Output.ShouldContain("does not exist");
+            result.Output.ShouldContain($"Using target server '{server}'");
+            result.Output.ShouldContain("Setting property CommandTimeout to value 77");
+            result.Output.ShouldContain($"Setting property IncludeCompositeObjects to value {composite}");
+            result.Output.ShouldContain("Adding SQLCMD variable 'Environment' with value 'runtime value'");
+            var arguments = File.ReadAllLines(argumentsPath);
+            arguments.ShouldContain($"--targetServerName={server}");
+            arguments.ShouldContain($"--targetDatabaseName={database}");
+            arguments.ShouldContain($"--property=IncludeCompositeObjects={composite.ToString().ToLowerInvariant()}");
+            if (withProfile)
+            {
+                arguments.ShouldContain($"--profile={profilePath}");
+            }
+        }
+
+        [TestMethod]
+        public async Task CreateTarget_UsesSdkFallbacksWithoutExplicitProperties()
+        {
+            var result = await Run("msbuild", project, "-t:CreatePublishProfile", $"-p:PublishProfile={profilePath}");
+            result.ExitCode.ShouldBe(0, result.Output);
+            var profile = DacProfile.Load(profilePath);
+            profile.TargetDatabaseName.ShouldBe("Consumer");
+            new SqlConnectionStringBuilder(profile.TargetConnectionString).DataSource.ShouldBe("(local)");
+        }
+
+        [TestMethod]
+        [DataRow("PublishDatabase")]
+        [DataRow("PrepareSqlPublish")]
+        public async Task PublishHooks_CanSelectProfile(string beforeTarget)
+        {
+            WriteProfile("runtime-profile-server", "runtime-profile-db", false);
+            var document = XDocument.Load(project);
+            document.Root.Add(new XElement("Target", new XAttribute("Name", "Build")));
+            document.Root.Add(new XElement("Target", new XAttribute("Name", "SelectProfile"),
+                new XAttribute("BeforeTargets", beforeTarget),
+                new XElement("PropertyGroup", new XElement("PublishProfile", Path.GetFileName(profilePath)))));
+            document.Save(project);
+
+            var result = await Run("msbuild", project, "-t:PublishDatabase");
+            result.ExitCode.ShouldNotBe(0, result.Output);
+            result.Output.ShouldContain("does not exist");
+            result.Output.ShouldContain("Using target server 'runtime-profile-server'");
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("ExplicitDatabase", "false")]
+        [DataRow("Consumer", "true")]
+        public async Task CreateScript_RetainsDefaultsAndExplicitOptions(string database, string composite)
+        {
+            SetProperties(new XElement("GenerateCreateScript", "true"));
+            if (database != null)
+            {
+                SetProperties(new XElement("TargetDatabaseName", database), new XElement("IncludeCompositeObjects", composite));
+            }
+            File.WriteAllText(Path.Combine(directory, "Widget.sql"), "CREATE TABLE dbo.Widget (Id INT NOT NULL PRIMARY KEY);");
+            var result = await Run("build", project);
+            result.ExitCode.ShouldBe(0, result.Output);
+            var expectedDatabase = database ?? "Consumer";
+            var scriptPath = Path.Combine(directory, "bin", "Debug", "netstandard2.0", $"{expectedDatabase}_Create.sql");
+            File.Exists(scriptPath).ShouldBeTrue(result.Output);
+            File.ReadAllText(scriptPath).ShouldContain(expectedDatabase);
+
+            // A fresh copy-target invocation must resolve defaults independently
+            // of CoreCompile, including when a consumer skips reference builds.
+            var copySnapshot = await Run("msbuild", project, "-t:GetCopyToOutputDirectoryItems", "-getItem:CopySqlArtifactFiles");
+            copySnapshot.ExitCode.ShouldBe(0, copySnapshot.Output);
+            using var copyJson = JsonDocument.Parse(copySnapshot.Output[copySnapshot.Output.IndexOf('{')..]);
+            var copyItems = copyJson.RootElement.GetProperty("Items").GetProperty("CopySqlArtifactFiles").EnumerateArray().ToArray();
+            copyItems.Length.ShouldBe(1);
+            copyItems[0].GetProperty("FullPath").GetString().ShouldBe(scriptPath);
+
+            var clientDirectory = Directory.CreateDirectory(Path.Combine(directory, "client")).FullName;
+            var clientProject = Path.Combine(clientDirectory, "Client.csproj");
+            new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                new XElement("PropertyGroup", new XElement("TargetFramework", "netstandard2.0")),
+                new XElement("ItemGroup", new XElement("ProjectReference", new XAttribute("Include", project),
+                    new XAttribute("ReferenceOutputAssembly", "false"))))).Save(clientProject);
+            var clientBuild = await Run("build", clientProject, "-p:BuildProjectReferences=false");
+            clientBuild.ExitCode.ShouldBe(0, clientBuild.Output);
+            var copiedScript = Path.Combine(clientDirectory, "bin", "Debug", "netstandard2.0", $"{expectedDatabase}_Create.sql");
+            File.Exists(copiedScript).ShouldBeTrue(clientBuild.Output);
+            File.ReadAllText(copiedScript).ShouldBe(File.ReadAllText(scriptPath));
+
+            // Check the exact effective build property without relying on a
+            // particular DacFx formatting of the generated SQL.
+            var snapshot = await Run("msbuild", project, "-t:CoreCompile", "-getItem:DeployPropertyNames");
+            snapshot.ExitCode.ShouldBe(0, snapshot.Output);
+            using var json = JsonDocument.Parse(snapshot.Output[snapshot.Output.IndexOf('{')..]);
+            var options = json.RootElement.GetProperty("Items").GetProperty("DeployPropertyNames").EnumerateArray()
+                .Where(item => item.GetProperty("Identity").GetString() == "IncludeCompositeObjects").ToArray();
+            options.Length.ShouldBe(1);
+            options[0].GetProperty("PropertyValue").GetString().ShouldBe(composite ?? "true");
+        }
+
         private void WriteProfile(string server, string database, bool includeComposite)
         {
             new XDocument(new XElement("Project", new XElement("PropertyGroup",

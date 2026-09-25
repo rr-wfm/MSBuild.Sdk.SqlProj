@@ -210,6 +210,11 @@
      <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
        <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
      </DeployPropertyNames>
+     <!-- Apply the create-script default without populating the user property;
+          publishing must distinguish explicit settings from SDK fallbacks. -->
+     <DeployPropertyNames Include="IncludeCompositeObjects" Condition="'$(IncludeCompositeObjects)' == ''">
+       <PropertyValue>$(_SqlProjDefaultComposite)</PropertyValue>
+     </DeployPropertyNames>
 
       <!-- Compile the list of references -->
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
@@ -251,7 +256,7 @@
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
-      <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
+      <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '' And '$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
@@ -295,10 +300,14 @@
 
   <!-- Lists all dacpac files of interest to the current project, so that a referencing class library can copy these to its output directory -->
   <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <_SqlProjCopyDatabase>$(TargetDatabaseName)</_SqlProjCopyDatabase>
+      <_SqlProjCopyDatabase Condition="'$(_SqlProjCopyDatabase)' == ''">$(_SqlProjDefaultDatabase)</_SqlProjCopyDatabase>
+    </PropertyGroup>
     <ItemGroup>
       <CopyDacpacFiles Include="$(TargetPath)"/>
       <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
-      <CopySqlArtifactFiles Include="$(TargetDir)$(TargetDatabaseName)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
+      <CopySqlArtifactFiles Include="$(TargetDir)$(_SqlProjCopyDatabase)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
     </ItemGroup>
     <ItemGroup>
       <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles);@(CopySqlArtifactFiles)">
