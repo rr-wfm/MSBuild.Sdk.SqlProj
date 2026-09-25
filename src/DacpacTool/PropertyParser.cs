@@ -133,12 +133,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             object propertyValue;
             var property = GetDacDeployOptionsProperty(name);
 
-            if (property == null)
+            if (property == null || !property.CanWrite)
             {
                 throw new ArgumentException($@"Unknown property with name {name}", nameof(name));
             }
 
-            if (name == "SqlCommandVariableValues")
+            if (string.Equals(name, "SqlCommandVariableValues", StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("SQLCMD variables should be set using the --sqlcmdvar command line argument and not as a property.");
             }
@@ -154,10 +154,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     propertyValue =  StringToTypedValue(value, property.PropertyType);
                 }
 
-                if (propertyValue != null)
+                if (propertyValue == null)
                 {
-                    property.SetValue(deployOptions, propertyValue);
+                    throw new ArgumentException($"Unsupported value type for property with name {name}", nameof(name));
                 }
+                property.SetValue(deployOptions, propertyValue);
             }
             catch (FormatException)
             {

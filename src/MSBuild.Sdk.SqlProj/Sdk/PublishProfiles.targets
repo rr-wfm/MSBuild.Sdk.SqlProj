@@ -1,0 +1,89 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Keep SDK fallbacks separate from user properties. Filling the public
+       properties during evaluation loses the distinction between an untouched
+       default and an explicit target-time assignment of the same value. -->
+  <PropertyGroup>
+    <_SqlProjDefaultServer Condition="'$(BuildingInsideVisualStudio)' != 'true'">(local)</_SqlProjDefaultServer>
+    <_SqlProjDefaultServer Condition="'$(BuildingInsideVisualStudio)' == 'true'">(localdb)\mssqllocaldb</_SqlProjDefaultServer>
+    <_SqlProjDefaultDatabase>$(MSBuildProjectName)</_SqlProjDefaultDatabase>
+    <_SqlProjDefaultComposite>true</_SqlProjDefaultComposite>
+  </PropertyGroup>
+
+  <UsingTask TaskName="SqlProjRunDacpacTool" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)RunDacpacTool.cs" />
+    </Task>
+  </UsingTask>
+
+  <Target Name="ResolvePublishProfile">
+    <PropertyGroup>
+      <_SqlProjPublishProfile Condition="'$(PublishProfile)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(PublishProfile)'))</_SqlProjPublishProfile>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Creation only needs the bundled tool; it does not compile SQL or deploy. -->
+  <Target Name="CreatePublishProfile" DependsOnTargets="ValidateEnvironment;ResolvePublishProfile">
+    <Error Condition="'$(_SqlProjPublishProfile)' == ''" Text="Set PublishProfile to the .publish.xml file to create." />
+    <PropertyGroup>
+      <_SqlProjCreateServer>$(TargetServerName)</_SqlProjCreateServer>
+      <_SqlProjCreateServer Condition="'$(_SqlProjCreateServer)' == ''">$(_SqlProjDefaultServer)</_SqlProjCreateServer>
+      <_SqlProjCreateDatabase>$(TargetDatabaseName)</_SqlProjCreateDatabase>
+      <_SqlProjCreateDatabase Condition="'$(_SqlProjCreateDatabase)' == ''">$(_SqlProjDefaultDatabase)</_SqlProjCreateDatabase>
+    </PropertyGroup>
+    <ItemGroup>
+      <_SqlProjCreateArgument Include="--output"><Value>$(_SqlProjPublishProfile)</Value></_SqlProjCreateArgument>
+      <_SqlProjCreateArgument Include="--targetServerName"><Value>$(_SqlProjCreateServer)</Value></_SqlProjCreateArgument>
+      <_SqlProjCreateArgument Include="--targetPort" Condition="'$(TargetPort)' != ''"><Value>$(TargetPort)</Value></_SqlProjCreateArgument>
+      <_SqlProjCreateArgument Include="--targetDatabaseName"><Value>$(_SqlProjCreateDatabase)</Value></_SqlProjCreateArgument>
+      <_SqlProjCreateArgument Include="--force" Condition="'$(OverwritePublishProfile)' == 'true'"><Switch>true</Switch></_SqlProjCreateArgument>
+    </ItemGroup>
+    <SqlProjRunDacpacTool ToolPath="$(DacpacToolExe)" Command="create-publish-profile"
+                         Arguments="@(_SqlProjCreateArgument)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target Name="PrepareSqlPublish" DependsOnTargets="ValidateEnvironment">
+    <!-- Resolve here, after BeforeTargets hooks, including profile selection. -->
+    <PropertyGroup>
+      <_SqlProjPublishProfile />
+      <_SqlProjPublishProfile Condition="'$(PublishProfile)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(PublishProfile)'))</_SqlProjPublishProfile>
+    </PropertyGroup>
+    <Error Condition="'$(_SqlProjPublishProfile)' != '' And !Exists('$(_SqlProjPublishProfile)')"
+           Text="Publish profile does not exist: $(_SqlProjPublishProfile)" />
+    <ItemGroup>
+      <_SqlProjPublishArgument Include="--input"><Value>$(TargetPath)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--profile" Condition="'$(_SqlProjPublishProfile)' != ''"><Value>$(_SqlProjPublishProfile)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--targetServerName" Condition="'$(TargetServerName)' != ''"><Value>$(TargetServerName)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--defaultTargetServerName"><Value>$(_SqlProjDefaultServer)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--targetDatabaseName" Condition="'$(TargetDatabaseName)' != ''"><Value>$(TargetDatabaseName)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--defaultTargetDatabaseName"><Value>$(_SqlProjDefaultDatabase)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--targetPort" Condition="'$(TargetPort)' != ''"><Value>$(TargetPort)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--targetUser" Condition="'$(TargetUser)' != ''"><Value>$(TargetUser)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--targetPassword" Condition="'$(TargetPassword)' != ''"><Value>$(TargetPassword)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--encrypt" Condition="'$(TargetEncrypt)' != ''"><Value>$(TargetEncrypt)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishPropertyName Include="$(KnownDeployProperties)" />
+      <_SqlProjPublishProperty Include="@(_SqlProjPublishPropertyName)">
+        <Value>$(%(_SqlProjPublishPropertyName.Identity))</Value>
+      </_SqlProjPublishProperty>
+      <_SqlProjPublishArgument Include="--property" Condition="'%(_SqlProjPublishProperty.Value)' != ''">
+        <Value>%(_SqlProjPublishProperty.Identity)=%(_SqlProjPublishProperty.Value)</Value>
+      </_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--defaultProperty"><Value>IncludeCompositeObjects=$(_SqlProjDefaultComposite)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--sqlcmdvar" Condition="'%(SqlCmdVariable.Value)' != ''"><Value>%(SqlCmdVariable.Identity)=%(SqlCmdVariable.Value)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--defaultSqlCmdVar" Condition="'%(SqlCmdVariable.Value)' == '' And '%(SqlCmdVariable.DefaultValue)' != ''"><Value>%(SqlCmdVariable.Identity)=%(SqlCmdVariable.DefaultValue)</Value></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--runScriptsFromReferences" Condition="'$(RunScriptsFromReferences)' == 'true'"><Switch>true</Switch></_SqlProjPublishArgument>
+      <_SqlProjPublishArgument Include="--debug" Condition="'$(MSBuildSdkSqlProjDebug)' == 'true'"><Switch>true</Switch></_SqlProjPublishArgument>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishDatabase" DependsOnTargets="Build">
+    <!-- A dependency would run before BeforeTargets="PublishDatabase" hooks.
+         Call the entire preparation/deployment pipeline after those hooks. -->
+    <CallTarget Targets="_SqlProjPublishDatabase" />
+  </Target>
+
+  <Target Name="_SqlProjPublishDatabase" DependsOnTargets="PrepareSqlPublish">
+    <SqlProjRunDacpacTool ToolPath="$(DacpacToolExe)" Command="deploy"
+                         Arguments="@(_SqlProjPublishArgument)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+</Project>

@@ -22,6 +22,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public SqlConnectionStringBuilder ConnectionStringBuilder { get; private set; } = new SqlConnectionStringBuilder();
         public DacDeployOptions DeployOptions { get; private set; } = new DacDeployOptions();
 
+        internal void UseProfile(PublishProfileReader profile)
+        {
+            ArgumentNullException.ThrowIfNull(profile);
+            ConnectionStringBuilder = new SqlConnectionStringBuilder(profile.TargetConnectionString);
+            DeployOptions = profile.DeployOptions;
+        }
+
         public void UseTargetServer(string targetServer)
         {
             _console.WriteLine($"Using target server '{targetServer}'");
@@ -36,6 +43,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void UseSqlAuthentication(string username, string password)
         {
+            ConnectionStringBuilder.IntegratedSecurity = false;
+            ConnectionStringBuilder.Authentication = SqlAuthenticationMethod.NotSpecified;
             ConnectionStringBuilder.UserID = username;
             if (string.IsNullOrWhiteSpace(password))
             {
@@ -144,12 +153,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 return;
             }
 
-            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString);
-            if (!isPreDeploy)
-            {
-                // Only set initial catalog for post-deployment script since database might not exist yet for pre-deployment
-                builder.InitialCatalog = targetDatabaseName;
-            }
+            var builder = GetScriptConnectionString(targetDatabaseName, isPreDeploy);
 
             var executionEngineConditions = new ExecutionEngineConditions { IsSqlCmd = true };
             using var engine = new ExecutionEngine();
@@ -185,6 +189,18 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
+        internal SqlConnectionStringBuilder GetScriptConnectionString(string targetDatabaseName, bool isPreDeploy)
+        {
+            var builder = new SqlConnectionStringBuilder(ConnectionStringBuilder.ConnectionString);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetDatabaseName);
+            if (!isPreDeploy)
+            {
+                // Only set initial catalog for post-deployment script since database might not exist yet for pre-deployment.
+                builder.InitialCatalog = targetDatabaseName;
+            }
+            return builder;
+        }
+
         private Dictionary<string, string> AddSqlCmdVariables(string targetDatabaseName)
         {
             var result = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase)
@@ -218,6 +234,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         public void SetDeployProperties(string[] deployProperties) => this.DeployOptions.SetDeployProperties(deployProperties, _console);
 
+        internal void ValidateAuthentication()
+        {
+            if (ConnectionStringBuilder.Authentication != SqlAuthenticationMethod.NotSpecified &&
+                ConnectionStringBuilder.Authentication != SqlAuthenticationMethod.SqlPassword)
+            {
+                throw new ArgumentException("Unsupported authentication mode. DacpacTool deploy supports integrated security and SQL password authentication only; use --targetUser to override or another deployment client for Entra authentication.");
+            }
+            // Let SqlClient validate conflicting supported authentication settings without opening a connection.
+            using var connection = new SqlConnection(ConnectionStringBuilder.ConnectionString);
+        }
+
         private void EnsureConnectionStringComplete()
         {
             if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.DataSource))
@@ -225,6 +252,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("A target server has not been set. Call UseTargetServer first.");
             }
 
+            ValidateAuthentication();
             if (string.IsNullOrWhiteSpace(ConnectionStringBuilder.UserID) && ConnectionStringBuilder.IntegratedSecurity == false)
             {
                 throw new InvalidOperationException("No authentication information has been set. Call UseSqlServerAuthentication or UseWindowsAuthentication first.");

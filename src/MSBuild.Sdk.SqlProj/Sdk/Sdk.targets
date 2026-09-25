@@ -20,6 +20,10 @@
 
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
+  <!-- SQL profiles are read as deployment data, not imported as .NET .pubxml projects. -->
+  <PropertyGroup Condition="'$(PublishProfile)' != ''">
+    <PublishProfileImported>true</PublishProfileImported>
+  </PropertyGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
   <ItemGroup>
@@ -206,6 +210,11 @@
      <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
        <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
      </DeployPropertyNames>
+     <!-- Apply the create-script default without populating the user property;
+          publishing must distinguish explicit settings from SDK fallbacks. -->
+     <DeployPropertyNames Include="IncludeCompositeObjects" Condition="'$(IncludeCompositeObjects)' == ''">
+       <PropertyValue>$(_SqlProjDefaultComposite)</PropertyValue>
+     </DeployPropertyNames>
 
       <!-- Compile the list of references -->
       <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
@@ -247,7 +256,7 @@
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
       <TreatTSqlWarningsAsErrorsArgument Condition="'$(TreatTSqlWarningsAsErrors)' == 'True' Or ('$(TreatWarningsAsErrors)' == 'True' And '$(TreatTSqlWarningsAsErrors)' == '')">--warnaserror</TreatTSqlWarningsAsErrorsArgument>
       <GenerateCreateScriptArgument Condition="'$(GenerateCreateScript)' == 'True'">--generatecreatescript</GenerateCreateScriptArgument>
-      <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
+      <TargetDatabaseNameArgument Condition="'$(TargetDatabaseName)' != '' And '$(TargetDatabaseName)' != '$(MSBuildProjectName)'">-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
       <SuppressTSqlWarningsArgument Condition="'$(SuppressTSqlWarnings)'!=''">-spw &quot;$(SuppressTSqlWarnings)&quot;</SuppressTSqlWarningsArgument>
       <WarningsSuppressionListArgument Condition="'@(WarningsSuppressionFiles->'%(Identity)')'!=''">-spl &quot;$(IntermediateOutputPath)$(MSBuildProjectName).WarningsSuppression.txt&quot;</WarningsSuppressionListArgument>
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
@@ -289,43 +298,16 @@
           Condition="'$(IsPublishable)' == 'true'"
           DependsOnTargets="$(PublishDependsOn)" />
 
-  <!-- Performs a publish of the .dacpac produced by build to a configurable target server -->
-  <!-- Note: This used to contain a condition that DeployOnPublish != False. Since you now have to explicitly run the PublishDatabase target this no longer made sense. -->
-  <Target Name="PublishDatabase" DependsOnTargets="Build">
-    <ItemGroup>
-      <_DeployPropertyNames Include="$(KnownDeployProperties)" />
-      <DeployPropertyNames Include="@(_DeployPropertyNames)" Condition=" '$(%(Identity))' != '' ">
-        <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
-      </DeployPropertyNames>
-      <!-- Resolve default values for SQLCMD variables -->
-      <_ResolvedSqlCmdVariable Include="@(SqlCmdVariable)">
-        <Value Condition="'%(SqlCmdVariable.Value)' != ''">%(SqlCmdVariable.Value)</Value>
-        <Value Condition="'%(SqlCmdVariable.Value)' == ''">%(SqlCmdVariable.DefaultValue)</Value>
-      </_ResolvedSqlCmdVariable>
-    </ItemGroup>
-    <PropertyGroup>
-      <InputArgument>-i &quot;$(TargetPath)&quot;</InputArgument>
-      <TargetServerNameArgument>-tsn &quot;$(TargetServerName)&quot;</TargetServerNameArgument>
-      <TargetPortArgument Condition="'$(TargetPort)'!=''">-tprt &quot;$(TargetPort)&quot;</TargetPortArgument>
-      <TargetDatabaseNameArgument>-tdn &quot;$(TargetDatabaseName)&quot;</TargetDatabaseNameArgument>
-      <TargetUserArgument Condition="'$(TargetUser)'!=''">-tu &quot;$(TargetUser)&quot;</TargetUserArgument>
-      <TargetPasswordArgument Condition="'$(TargetPassword)'!=''">-tp &quot;$(TargetPassword)&quot;</TargetPasswordArgument>
-      <PropertyArguments>@(DeployPropertyNames->'-p %(Identity)=%(PropertyValue)', ' ')</PropertyArguments>
-      <SqlCmdVariableArguments>@(_ResolvedSqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
-      <RunScriptsFromReferencesArgument Condition="'$(RunScriptsFromReferences)' == 'True'">-sff</RunScriptsFromReferencesArgument>
-      <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
-    </PropertyGroup>
-    <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
-    <Exec Command="$(DacpacToolCommand)" />
-  </Target>
-
   <!-- Lists all dacpac files of interest to the current project, so that a referencing class library can copy these to its output directory -->
   <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <_SqlProjCopyDatabase>$(TargetDatabaseName)</_SqlProjCopyDatabase>
+      <_SqlProjCopyDatabase Condition="'$(_SqlProjCopyDatabase)' == ''">$(_SqlProjDefaultDatabase)</_SqlProjCopyDatabase>
+    </PropertyGroup>
     <ItemGroup>
       <CopyDacpacFiles Include="$(TargetPath)"/>
       <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
-      <CopySqlArtifactFiles Include="$(TargetDir)$(TargetDatabaseName)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
+      <CopySqlArtifactFiles Include="$(TargetDir)$(_SqlProjCopyDatabase)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
     </ItemGroup>
     <ItemGroup>
       <AllItemsFullPathWithTargetPath Include="@(CopyDacpacFiles);@(CopySqlArtifactFiles)">
@@ -361,4 +343,5 @@
     <Unzip SourceFiles="$(SqlPackageStagingFilename)" DestinationFolder="$(PublishDir)" Condition="!Exists('$(SqlPackageExtractPath)')" />
     <Copy SourceFiles="@(CopyDacpacFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
+  <Import Project="$(MSBuildThisFileDirectory)PublishProfiles.targets" />
 </Project>
