@@ -10,7 +10,7 @@ using MSBuild.Sdk.SqlProj.DacpacTool.Diagram;
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     [CliCommand(Description = "Command line tool for generating a SQL Server Data-Tier Application Framework package (dacpac)", 
-                Children = new[] { typeof(BuildOptions), typeof(InspectOptions), typeof(DeployOptions) })]
+                Children = new[] { typeof(BuildOptions), typeof(InspectOptions), typeof(DeployOptions), typeof(CreatePublishProfileOptions) })]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated by DotMake.CommandLine via Cli.RunAsync<RootCommand>.")]    
     internal sealed class RootCommand
     {
@@ -228,53 +228,21 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var deployer = new PackageDeployer(new ActualConsole());
 
-                if (options.Property != null)
-                {
-                    deployer.SetDeployProperties(options.Property);
-                }
-
-                deployer.UseEncrypt(options.Encrypt);
-
-                if (options.SqlCmdVar != null)
-                {
-                    foreach (var sqlCmdVar in options.SqlCmdVar)
-                    {
-                        string[] keyValuePair = sqlCmdVar.Split('=', 2);
-                        deployer.SetSqlCmdVariable(keyValuePair[0], keyValuePair[1]);
-                    }
-                }
-
-                if (options.TargetPort.HasValue)
-                {
-                    deployer.UseTargetServerAndPort(options.TargetServerName, options.TargetPort.Value);
-                }
-                else
-                {
-                    deployer.UseTargetServer(options.TargetServerName);
-                }
-
-                if (!string.IsNullOrWhiteSpace(options.TargetUser))
-                {
-                    deployer.UseSqlAuthentication(options.TargetUser, options.TargetPassword);
-                }
-                else
-                {
-                    deployer.UseWindowsAuthentication();
-                }
+                var targetDatabaseName = ConfigureDeployer(deployer, options);
 
                 if (options.RunScriptsFromReferences)
                 {
-                    deployer.RunPreDeploymentScriptFromReferences(options.Input, options.TargetDatabaseName);
+                    deployer.RunPreDeploymentScriptFromReferences(options.Input, targetDatabaseName);
                 }
 
-                if (!deployer.Deploy(options.Input, options.TargetDatabaseName))
+                if (!deployer.Deploy(options.Input, targetDatabaseName))
                 {
                     return 1;
                 }
 
                 if (options.RunScriptsFromReferences)
                 {
-                    deployer.RunPostDeploymentScriptFromReferences(options.Input, options.TargetDatabaseName);
+                    deployer.RunPostDeploymentScriptFromReferences(options.Input, targetDatabaseName);
                 }
 
                 return 0;
@@ -291,6 +259,92 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 return 1;
             }
 #pragma warning restore CA1031 // Do not catch general exception types
+        }
+
+        internal static string ConfigureDeployer(PackageDeployer deployer, DeployOptions options)
+        {
+            var databaseName = options.TargetDatabaseName;
+            PublishProfileReader profile = null;
+            if (options.Profile != null)
+            {
+                profile = PublishProfileReader.Load(options.Profile.FullName);
+                deployer.UseProfile(profile);
+                databaseName ??= string.IsNullOrWhiteSpace(profile.TargetDatabaseName)
+                    ? (string.IsNullOrWhiteSpace(deployer.ConnectionStringBuilder.InitialCatalog) ? null : deployer.ConnectionStringBuilder.InitialCatalog)
+                    : profile.TargetDatabaseName;
+            }
+
+            databaseName ??= options.DefaultTargetDatabaseName;
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+            var server = options.TargetServerName ?? (string.IsNullOrWhiteSpace(deployer.ConnectionStringBuilder.DataSource)
+                ? options.DefaultTargetServerName : deployer.ConnectionStringBuilder.DataSource);
+            ArgumentException.ThrowIfNullOrWhiteSpace(server);
+            if (options.TargetPort.HasValue)
+            {
+                if (options.TargetPort < 1 || options.TargetPort > 65535)
+                {
+                    throw new ArgumentException("Target port must be between 1 and 65535.", nameof(options));
+                }
+                // Profiles commonly store the port as part of Data Source.
+                var separator = server.LastIndexOf(',');
+                if (separator >= 0)
+                {
+                    server = server[..separator];
+                }
+                deployer.UseTargetServerAndPort(server, options.TargetPort.Value);
+            }
+            else
+            {
+                deployer.UseTargetServer(server);
+            }
+
+            foreach (var defaultProperty in options.DefaultProperty ?? Array.Empty<string>())
+            {
+                var property = DatabaseProperty.Create(defaultProperty);
+                if (profile == null || !profile.HasProperty(property.Name))
+                {
+                    deployer.SetDeployProperty(defaultProperty);
+                }
+            }
+            if (options.Property != null)
+            {
+                deployer.SetDeployProperties(options.Property);
+            }
+            if (options.Encrypt.HasValue || options.Profile == null)
+            {
+                deployer.UseEncrypt(options.Encrypt ?? false);
+            }
+            foreach (var defaultVariable in options.DefaultSqlCmdVar ?? Array.Empty<string>())
+            {
+                var variable = defaultVariable.Split('=', 2);
+                if (!deployer.DeployOptions.SqlCommandVariableValues.ContainsKey(variable[0]))
+                {
+                    deployer.SetSqlCmdVariable(variable[0], variable[1]);
+                }
+            }
+            if (options.SqlCmdVar != null)
+            {
+                foreach (var sqlCmdVar in options.SqlCmdVar)
+                {
+                    string[] keyValuePair = sqlCmdVar.Split('=', 2);
+                    deployer.DeployOptions.SqlCommandVariableValues.Remove(keyValuePair[0]);
+                    deployer.SetSqlCmdVariable(keyValuePair[0], keyValuePair[1]);
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(options.TargetUser))
+            {
+                deployer.UseSqlAuthentication(options.TargetUser, options.TargetPassword);
+            }
+            else if (options.Profile == null)
+            {
+                deployer.UseWindowsAuthentication();
+            }
+            else if (options.TargetPassword != null)
+            {
+                deployer.ConnectionStringBuilder.Password = options.TargetPassword;
+            }
+            deployer.ValidateAuthentication();
+            return databaseName;
         }
 
         [Conditional("DEBUG")]

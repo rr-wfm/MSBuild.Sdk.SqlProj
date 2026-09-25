@@ -56,6 +56,96 @@ Most of those properties are simple values (like booleans, strings and integers)
 | ExcludeObjectTypes | Contracts,Endpoints | A comma separated list of [Object Types](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.objecttype) that should not be part of the deployment |
 | SqlCommandVariableValues | | These should not be set as a Property, but instead as an ItemGroup as described [in this section](project-configuration.md#sqlcmd-variables) |
 
+## Publish profiles
+
+Publish profiles store deployment settings in a reusable `.publish.xml` file. You can keep separate profiles for different environments (e.g. development, test, production).
+
+### Create a profile
+
+Run this command from your SQL project directory:
+
+```sh
+dotnet msbuild -t:CreatePublishProfile \
+  -p:PublishProfile=Development.publish.xml \
+  -p:TargetServerName=localhost \
+  -p:TargetDatabaseName=MyDatabase
+```
+
+This creates a starter profile without building the SQL project or contacting a database. `PublishProfile` specifies the output path. Relative paths are resolved from the project directory, for example:
+
+```sh
+dotnet msbuild -t:CreatePublishProfile \
+  -p:PublishProfile=Properties/PublishProfiles/Development.publish.xml
+```
+
+You can also use an absolute path:
+
+```sh
+dotnet msbuild -t:CreatePublishProfile \
+  -p:PublishProfile=/home/me/publish-profiles/Development.publish.xml
+```
+
+The output directory must already exist. To replace an existing file, add `-p:OverwritePublishProfile=true`.
+
+The profile uses `TargetServerName` and `TargetDatabaseName`, supplied in the project file or overridden on the command line with `-p:`. If these properties are already set in the project file, you can omit them from the creation command. If `TargetPort` is set, it is included in the generated connection string and overrides any port in `TargetServerName`. It enables integrated authentication, encryption and certificate validation, blocks possible data loss, and disables dropping objects absent from the source. It does not export credentials, SQLCMD values, or other deployment settings from the project; edit the profile to add those settings.
+
+### Publish with a profile
+
+```sh
+dotnet publish /t:PublishDatabase \
+  /p:PublishProfile=Development.publish.xml
+```
+
+This builds the project and deploys it using the profile.
+
+Explicit project properties and command-line properties override corresponding profile settings. Profile settings take precedence over SDK defaults. For SQLCMD variables, an explicit project `Value` overrides the profile; `DefaultValue` is used only when the profile does not supply the variable.
+
+For example, use a profile's deployment options with a different target database:
+
+```sh
+dotnet publish /t:PublishDatabase \
+  /p:PublishProfile=Development.publish.xml \
+  /p:TargetDatabaseName=MyDatabase_Test
+```
+
+`TargetServerName`, `TargetPort`, `TargetDatabaseName`, `TargetUser`, `TargetPassword`, `TargetEncrypt`, and deployment properties can be set through MSBuild. For SQL authentication, you can keep the username in the profile and supply `TargetPassword` separately. If you explicitly supply `TargetUser` without `TargetPassword`, publishing prompts for the password. Overrides do not modify the profile file.
+
+If no database override is supplied, publishing uses the profile's `TargetDatabaseName`, then its connection-string `Initial Catalog`, then the SDK's default database name. The server similarly falls back to the SDK default when absent from the profile. `TargetEncrypt=false` explicitly disables connection encryption; otherwise the profile's setting is retained.
+
+### Supported profile settings
+
+See Microsoft's [publish profile file format](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/concepts/publish-profiles#publish-profile-file-format) for the XML structure and [SqlPackage Publish properties](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage-publish#properties-specific-to-the-publish-action) for deployment options and their defaults. The settings and restrictions supported by this SDK are described below.
+
+Profiles can contain `TargetConnectionString`, `TargetDatabaseName`, `ProfileVersionNumber` (version `1`), writable `DacDeployOptions` properties, and SQLCMD values:
+
+```xml
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProfileVersionNumber>1</ProfileVersionNumber>
+    <TargetDatabaseName>MyDatabase</TargetDatabaseName>
+    <TargetConnectionString>Data Source=localhost;Integrated Security=True;Encrypt=True</TargetConnectionString>
+    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+  </PropertyGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="EnvironmentName">
+      <Value>development</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+</Project>
+```
+
+When using a profile with `dotnet publish /t:PublishDatabase`:
+
+- Write values directly in the XML. For example, use `<TargetDatabaseName>MyDatabase</TargetDatabaseName>`; `$(TargetDatabaseName)` will not be replaced with a project property value.
+- MSBuild `Condition` attributes and `Import` elements are not supported. Each property and SQLCMD variable must be defined only once.
+- Unrecognized settings cause an error.
+- Separate list entries with commas. For example, `<ExcludeObjectTypes>Contracts,Endpoints</ExcludeObjectTypes>` excludes contracts and endpoints from deployment.
+- Authentication supports integrated security or a SQL username and password. For Microsoft Entra authentication, use SqlPackage.
+
+By default, publishing does not run pre- and post-deployment scripts from referenced packages or projects. To enable them, set the MSBuild property `RunScriptsFromReferences` to `true` in your project file or pass `-p:RunScriptsFromReferences=true`. See [Run scripts from referenced packages](project-configuration.md#run-scripts-from-referenced-packages). This setting also works when publishing without a profile.
+
+Referenced pre-deployment scripts use the database specified in the connection string, or the login's default database if none is specified. Referenced post-deployment scripts use the target database. Both receive the target database name through the SQLCMD variable `DatabaseName`. This variable does not change the database connection.
+
 ## Publishing as a container image
 
 From version 4.0.0 of MSBuild.Sdk.SqlProj we now support publishing your database project as a runnable container image. The image will contain both SqlPackage and the .dacpac file. This allows you to run the image anywhere a container can be executed, making it ideal for CI/CD pipelines and other automated deployment scenarios.
