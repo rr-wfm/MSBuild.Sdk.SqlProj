@@ -113,11 +113,24 @@
     <Message Importance="High" Text="Using target framework $(DacpacToolTfm) to run DacpacTool" />
   </Target>
 
-  <!--
-    Resolves package references to .dacpac packages by enumerating all package references, resolving their associated Pkg<package-id> property to get the physical
-    location of the package and then checking if a that package contains a .dacpac file inside of the tools folder.
-  -->
-  <Target Name="ResolveDatabaseReferences">
+  <!-- Translate public artifact items once for compilation and fresh copy-only graphs.
+       Do not resolve package/project references here: their paths may be supplied later.
+       Existing internal DacpacReference items and their metadata remain untouched. -->
+  <Target Name="NormalizeArtifactReferences">
+    <ItemGroup>
+      <_ResolvedArtifactReference Include="@(ArtifactReference)">
+        <DacpacFile>%(ArtifactReference.FullPath)</DacpacFile>
+        <DacpacFile Condition="'%(ArtifactReference.HintPath)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '%(ArtifactReference.HintPath)'))</DacpacFile>
+        <ExternalParts>dbl=%(ArtifactReference.DatabaseVariableLiteralValue)|dbv=%(ArtifactReference.DatabaseSqlCmdVariable)|srv=%(ArtifactReference.ServerSqlCmdVariable)</ExternalParts>
+      </_ResolvedArtifactReference>
+      <DacpacReference Include="@(_ResolvedArtifactReference)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Validate artifacts outside incremental compilation; never fall back from a bad HintPath. -->
+  <Target Name="ResolveDatabaseReferences" DependsOnTargets="NormalizeArtifactReferences">
+    <Error Condition="'@(_ResolvedArtifactReference)' != '' AND !Exists('%(_ResolvedArtifactReference.DacpacFile)')"
+           Text="ArtifactReference file does not exist: %(_ResolvedArtifactReference.DacpacFile) (reference '%(_ResolvedArtifactReference.Identity)')." />
     <ItemGroup>
       <!-- Resolve all package references to their physical location first -->
       <_ResolvedPackageReference Include="%(PackageReference.Identity)">
@@ -193,7 +206,7 @@
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
   -->
   <Target Name="CoreCompile" DependsOnTargets="ValidateEnvironment;ResolveDatabaseReferences;GetIncludedFiles"
-          Inputs="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
+          Inputs="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(DacpacReference->'%(DacpacFile)');@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
       <!-- Get the values for known model properties specified in the project file -->
       <_BuildPropertyNames Include="$(KnownModelProperties)" />
@@ -207,8 +220,8 @@
        <PropertyValue>$(%(_DeployPropertyNames.Identity))</PropertyValue>
      </DeployPropertyNames>
 
-      <!-- Compile the list of references -->
-      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" />
+      <!-- Only filter output copies; all references remain available to compilation. -->
+      <IncludedDacpacReferenceFiles Include="@(DacpacReference->'%(DacpacFile)')" Condition="'%(DacpacReference.Private)' != 'false'" />
     </ItemGroup>
     <!-- Write the list of input files to a file to be consumed by the dacpac tool -->
     <Message Importance="Low" Text="Writing input files to $(IntermediateOutputPath)$(MSBuildProjectName).InputFiles.txt" />
@@ -321,10 +334,10 @@
   </Target>
 
   <!-- Lists all dacpac files of interest to the current project, so that a referencing class library can copy these to its output directory -->
-  <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems">
+  <Target Name="CopyDacpacs" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="NormalizeArtifactReferences">
     <ItemGroup>
       <CopyDacpacFiles Include="$(TargetPath)"/>
-      <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')"/>
+      <CopyDacpacFiles Include="@(DacpacReference->'%(DacpacFile)')" Condition="'%(DacpacReference.Private)' != 'false'"/>
       <CopySqlArtifactFiles Include="$(TargetDir)$(TargetDatabaseName)_Create.sql" Condition="'$(GenerateCreateScript)' == 'True'" />
     </ItemGroup>
     <ItemGroup>
