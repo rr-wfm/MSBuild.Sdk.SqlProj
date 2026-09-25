@@ -127,7 +127,7 @@ When publishing directly to a database with `dotnet publish /t:PublishDatabase`,
 
 The referenced pre-deployment scripts run before the main `.dacpac` is deployed. The referenced post-deployment scripts run after the deployment succeeds; they are skipped if it fails. The main project's own pre-deployment and post-deployment scripts are part of its `.dacpac` and do not require this setting.
 
-`RunScriptsFromReferences` applies to direct database publishing with `dotnet publish /t:PublishDatabase`. SqlPackage does not run scripts from referenced packages, whether you run it directly or through a container image published by this SDK.
+SqlPackage does not run scripts from referenced packages.
 
 ## SQLCMD variables
 
