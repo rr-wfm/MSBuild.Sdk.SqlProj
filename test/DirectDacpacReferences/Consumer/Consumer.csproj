@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="../../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.props" />
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+    <!-- Database model settings required by the template analyzer defaults. -->
+    <PageVerifyMode>Checksum</PageVerifyMode>
+    <QueryStoreDesiredState>ReadWrite</QueryStoreDesiredState>
+    <QueryStoreCaptureMode>Auto</QueryStoreCaptureMode>
+    <TargetRecoveryTimePeriod>60</TargetRecoveryTimePeriod>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Match the SQL project template's analyzer package and asset settings. -->
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The OmitProducerA/OmitProducerB conditions are test-only switches used by
+         the MSTest ScratchProjects_BothDirectReferencesResolveAndEachIsRequired
+         test to remove each reference independently and assert SQL71561 failures.
+         Normal builds include both references; ordinary projects do not need these conditions. -->
+    <ArtifactReference Include="ProducerA" Condition="'$(OmitProducerA)' != 'true'">
+      <HintPath>../ProducerA/bin/$(Configuration)/$(TargetFramework)/ProducerA.dacpac</HintPath>
+      <DatabaseVariableLiteralValue>ProducerA</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+    <ArtifactReference Include="ProducerB" Condition="'$(OmitProducerB)' != 'true'">
+      <HintPath>../ProducerB/bin/$(Configuration)/$(TargetFramework)/ProducerB.dacpac</HintPath>
+      <DatabaseVariableLiteralValue>ProducerB</DatabaseVariableLiteralValue>
+    </ArtifactReference>
+  </ItemGroup>
+  <Import Project="../../../src/MSBuild.Sdk.SqlProj/Sdk/Sdk.targets" />
+</Project>
