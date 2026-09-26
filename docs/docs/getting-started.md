@@ -46,7 +46,7 @@ You should now have a project file with the following contents:
   <ItemGroup>
     <!-- This package adds additional code analysis rules -->
     <!-- We recommend using it, but it can be removed if desired -->
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.2">
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
