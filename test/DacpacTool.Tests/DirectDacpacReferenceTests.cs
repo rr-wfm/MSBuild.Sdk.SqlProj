@@ -119,6 +119,49 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public async Task Build_RestoresCopiedReferenceWithoutRecompiling()
+        {
+            WriteProject(new XElement("ArtifactReference", new XAttribute("Include", reference),
+                new XElement("Private", "true")));
+            var first = await Build();
+            first.ExitCode.ShouldBe(0, first.Output);
+            first.Output.ShouldContain("Adding reference to");
+
+            var output = Path.Combine(directory, "bin", "Release", "netstandard2.0");
+            var copiedReference = Path.Combine(output, "Library.dacpac");
+            var compiledPackage = Path.Combine(output, "Consumer.dacpac");
+            var compiledTime = File.GetLastWriteTimeUtc(compiledPackage);
+            File.Exists(copiedReference).ShouldBeTrue();
+            File.Delete(copiedReference);
+
+            var second = await Build();
+            second.ExitCode.ShouldBe(0, second.Output);
+            second.Output.ShouldNotContain("Adding reference to");
+            File.GetLastWriteTimeUtc(compiledPackage).ShouldBe(compiledTime);
+            File.Exists(copiedReference).ShouldBeTrue();
+        }
+
+        [TestMethod]
+        [DataRow("CopyDacpacs", "true")]
+        [DataRow("CopyDacpacs", "false")]
+        [DataRow("GetCopyToOutputDirectoryItems", "true")]
+        [DataRow("GetCopyToOutputDirectoryItems", "false")]
+        public async Task CopyTargets_MissingReferenceFailsInFreshProcess(string target, string privateValue)
+        {
+            WriteProject(new XElement("ArtifactReference", new XAttribute("Include", "LogicalLibrary"),
+                new XElement("HintPath", reference), new XElement("Private", privateValue)));
+            var initial = await Build();
+            initial.ExitCode.ShouldBe(0, initial.Output);
+            File.Delete(reference);
+
+            var result = await Run("msbuild", project, $"-t:{target}", "-p:Configuration=Release", "-nologo");
+            result.ExitCode.ShouldNotBe(0, result.Output);
+            result.Output.ShouldContain("ArtifactReference file does not exist:");
+            result.Output.ShouldContain("LogicalLibrary");
+            result.Output.ShouldContain(reference);
+        }
+
+        [TestMethod]
         public async Task Build_MixedPrivateReferencesOnlyCopiesSelectedFiles()
         {
             var copiedReference = Path.Combine(directory, "Copied.dacpac");
