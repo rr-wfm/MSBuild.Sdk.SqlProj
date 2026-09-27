@@ -113,7 +113,7 @@ It is important to note that scripts in the `Pre-Deployment` and `Post-Deploymen
 
 ### Why these scripts are excluded from build
 
-By default the pre- and/or post-deployment script of referenced packages (both [Package References](references.md#package-references) and [Project References](references.md#project-references)) are not run when using `dotnet publish`. This can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
+By default the pre- and/or post-deployment script of referenced packages (both [Package References](references.md#package-references) and [Project References](references.md#project-references)) are not run when using `dotnet publish /t:PublishDatabase`. This can be optionally enabled by adding a property `RunScriptsFromReferences` to the project file as in the below example:
 
 ### Run scripts from referenced packages
 
@@ -127,6 +127,21 @@ By default the pre- and/or post-deployment script of referenced packages (both [
     <PackageReference Include="MyDatabasePackage" Version="1.0.0" />
   </ItemGroup>
 ```
+
+#### Database context for referenced scripts
+
+When using `dotnet publish /t:PublishDatabase` with `RunScriptsFromReferences=true`:
+
+| Referenced script | Starts in |
+| --- | --- |
+| Pre-deployment | The SQL login's default database, such as `master` |
+| Post-deployment | The target database (`TargetDatabaseName`), after a successful deployment |
+
+This applies whether the target already exists or is being created. `$(DatabaseName)` expands to the target's name but does not switch the current database.
+
+Place work that requires a newly created target in a post-deployment script. Pre-deployment work on an existing target should check that it exists and explicitly select it with `USE` or qualify object names with the database name.
+
+This setting applies to the SDK's publisher, not SqlPackage or container publishing.
 
 ## SQLCMD variables
 
