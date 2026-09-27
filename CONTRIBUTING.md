@@ -67,3 +67,13 @@ Feel free to provide feature suggestions or enhancements to this project through
 
 # Code review process
 Before any change is merged it will be reviewed by someone from the team.
+
+# Publishing integration tests
+
+When changing publishing behavior, run the [integration tests](test/Publishing.IntegrationTests/README.md). They use Testcontainers to start a disposable SQL Server and verify the built-in publisher and both SqlPackage profile workflows. You need a current .NET 10 SDK, Docker with Linux containers on an x64 host, and SqlPackage on `PATH` (or set `SQLPACKAGE_PATH`).
+
+```bash
+dotnet test test/Publishing.IntegrationTests/Publishing.IntegrationTests.csproj -c Release
+```
+
+The tests also run in CI and clean up their test resources automatically.
