@@ -30,6 +30,7 @@ To further customize the deployment process, you can use the following propertie
 | TargetUser |  | Username used to connect to the server. If empty, Windows authentication is used |
 | TargetPassword | | Password used to connect to the server. If empty, but TargetUser is set you will be prompted for the password |
 | IncludeCompositeObjects | True | Controls whether objects from referenced packages are deployed to the same database |
+| RunScriptsFromReferences | False | Runs pre-deployment and post-deployment scripts from referenced packages and projects during direct database publishing. See [deployment scripts from references](project-configuration.md#run-scripts-from-referenced-packages). |
 | TargetName | Project name | Controls the name of the `.dacpac` created by `dotnet build`. The default name for the `.dacpac` file is the name of the project file, e.g. `MyProject.csproj` produces `MyProject.dacpac`. |
 | DeployOnPublish | True | Controls whether a deploy occurs when the project is published. |
 
