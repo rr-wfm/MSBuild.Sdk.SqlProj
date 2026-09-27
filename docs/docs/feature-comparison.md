@@ -27,7 +27,7 @@ Microsoft has published [this comparison table](https://learn.microsoft.com/en-u
 | DACPAC references | Yes | Yes | Yes | No |
 | Package references | Yes | Yes | No | Yes |
 | Analyzer package references | Yes | Yes | No | Yes |
-| Publish profile creation | Yes | Yes | Yes | No |
+| Publish profile creation | Yes | Yes | Yes | Yes |
 | SQL files can be added by placing in project folder | Yes | Yes | No | Yes |
 | SQL files can be excluded from build | Yes | Yes | Yes | Yes |
 | Pre-deployment and post-deployment scripts | Yes | Yes | Yes | Yes |

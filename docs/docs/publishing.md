@@ -1,9 +1,18 @@
 # Publishing
 
-Starting with MSBuild.Sdk.SqlProj version 4.0.0 there are two modes of publishing supported: publishing the database directly from the project to a SQL Server instance, or publishing a container image that includes both SqlPackage and the .dacpac ready to be run anywhere a container can be executed.
+You can deploy a database using the SDK's built-in publisher, SqlPackage locally, or SqlPackage in a container. The SDK also supports generating a script that creates the database from scratch.
+
+| Workflow | Commands | Publish profile support |
+| --- | --- | --- |
+| [SDK built-in publisher](#publishing-directly-to-sql-server) | `dotnet publish /t:PublishDatabase` | No; use project properties or command-line properties |
+| [SqlPackage locally](#using-sqlpackage-locally) | `dotnet build`, then `sqlpackage /Action:Publish /SourceFile:… /Profile:…` | Yes; SqlPackage reads the profile |
+| [SqlPackage in a container](#publishing-as-a-container-image) | `dotnet publish /t:PublishContainer`, then `docker run … /Profile:…` | Yes; mount the profile into the container for SqlPackage to read |
+| [Create script](#script-generation) | Set `GenerateCreateScript=true`, then run `dotnet build` | No; generates a create script using project settings |
+
+`PublishDatabase` deploys immediately. `PublishContainer` builds an image; running that image performs the deployment. See [Publishing with a profile](#publishing-with-a-profile) for profile creation and examples of both SqlPackage workflows.
 
 > [!NOTE]
-> For 4.0.0, to support both modes we unfortunately had to make a breaking change to the SDK. If you've previously used `dotnet publish` to deploy your database directly to SQL Server you'll now need to add `/t:PublishDatabase` to your command line to retain the previous behavior.
+> Starting with version 4.0.0, the SDK supports publishing a container image. If you previously used `dotnet publish` to deploy directly to SQL Server, use `dotnet publish /t:PublishDatabase` to retain that behavior. This built-in publisher uses project and command-line properties rather than publish profiles.
 
 We generally recommend using the container image approach for most scenarios, as it provides a consistent deployment experience across different environments. However, for local development and quick deployments the direct publishing approach might be more convenient.
 
@@ -92,9 +101,8 @@ You can also set these properties in your project file if you prefer:
 Once the container image is published, you can run it using the following command:
 
 ```bash
-docker run \
+docker run --rm \
   my-database-image:v1.0.0 \
-  --rm \
   /TargetConnectionString=<your-connection-string>
 ```
 
@@ -124,3 +132,53 @@ The database name for the create script gets resolved in the following manner:
 >
 > - the generated script also uses the resolved database name via a setvar command.
 > - if `IncludeCompositeObjects` is true, the composite objects (tables, etc.) from external references are also included in the generated script. This property defaults to `true`
+
+## Publishing with a profile
+
+Use the `publishprofile` item template to create a reusable `.publish.xml` file for [SqlPackage](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-publish). After installing the templates with `dotnet new install MSBuild.Sdk.SqlProj.Templates`, run this command in your project directory:
+
+```bash
+dotnet new publishprofile -n Development
+```
+
+This creates `Development.publish.xml` without building or deploying the project. Edit its `TargetDatabaseName` and `TargetConnectionString` to match your database. The starter profile uses integrated authentication, enables encryption and certificate validation, blocks possible data loss, and disables dropping objects absent from the source. Choose a connection string and authentication method appropriate for your server; keep passwords out of committed profiles.
+
+### Using SqlPackage locally
+
+With [SqlPackage installed](https://learn.microsoft.com/sql/tools/sqlpackage/sqlpackage-download), build the project and publish its `.dacpac` using the profile:
+
+```bash
+dotnet build
+sqlpackage \
+  /Action:Publish \
+  /SourceFile:"bin/Debug/net10.0/MyDatabase.dacpac" \
+  /Profile:"Development.publish.xml"
+```
+
+Replace the source path with your build output.
+
+### Using the container image
+
+Build the image as described in [Publishing as a container image](#publishing-as-a-container-image):
+
+```bash
+dotnet publish \
+  /t:PublishContainer \
+  /p:ContainerRepository=my-database-image \
+  /p:ContainerImageTag=v1.0.0
+```
+
+Mount the profile into the container as a read-only file and pass its container path to SqlPackage. Run this Bash example from the directory containing `Development.publish.xml`:
+
+```bash
+docker run --rm \
+  --mount "type=bind,source=$(pwd)/Development.publish.xml,target=/profiles/Development.publish.xml,readonly" \
+  my-database-image:v1.0.0 \
+  /Profile:/profiles/Development.publish.xml
+```
+
+The image already supplies `/Action:Publish` and the source `.dacpac` path. Set the profile's connection string to a server address reachable from the container and use an authentication method suitable for the Linux container. Inside the container, `localhost` refers to the container itself.
+
+For either workflow, you can create separate profiles with other names, such as `dotnet new publishprofile -n Production`, and select them with `/Profile`. Override individual settings by appending SqlPackage arguments, for example `/TargetDatabaseName:MyDatabase_Test`. Mounting the profile at runtime lets you reuse the same image across environments.
+
+These profiles are consumed by SqlPackage; the template does not add profile support to `dotnet publish /t:PublishDatabase`. See Microsoft's [publish profile documentation](https://learn.microsoft.com/sql/tools/sql-database-projects/concepts/publish-profiles) for additional deployment options and SQLCMD variables.

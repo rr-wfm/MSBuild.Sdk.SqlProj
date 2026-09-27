@@ -169,6 +169,8 @@ publish/
 
 # Publish Web Output
 *.[Pp]ublish.xml
+# Include the starter profile shipped in the template package.
+!/src/MSBuild.Sdk.SqlProj.Templates/templates/publishprofile/Template.publish.xml
 *.azurePubxml
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
