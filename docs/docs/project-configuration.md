@@ -129,6 +129,19 @@ The referenced pre-deployment scripts run before the main `.dacpac` is deployed.
 
 SqlPackage does not run scripts from referenced packages.
 
+#### Database context for referenced scripts
+
+When using `dotnet publish /t:PublishDatabase` with `RunScriptsFromReferences=true`:
+
+| Referenced script | Starts in |
+| --- | --- |
+| Pre-deployment | The SQL login's default database, such as `master` |
+| Post-deployment | The target database (`TargetDatabaseName`), after a successful deployment |
+
+This applies whether the target already exists or is being created. `$(DatabaseName)` expands to the target's name but does not switch the current database.
+
+Place work that requires a newly created target in a post-deployment script. Pre-deployment work on an existing target should check that it exists and explicitly select it with `USE` or qualify object names with the database name.
+
 ## SQLCMD variables
 
 Especially when using pre-deployment and post-deployment scripts, but also in other scenarios, it might be useful to define variables that can be controlled at deployment time. This is supported using SQLCMD variables. These variables can be defined in your project file using the following syntax:

@@ -17,9 +17,13 @@ The profile cases exercise SqlPackage's existing `.publish.xml` support. The tes
 
 Every publishing case queries the resulting database to verify `dbo.MyTable` has exactly the expected columns: `Column1` (`nvarchar`) and `Column2` (`int`).
 
-The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Both test classes use [SqlServerFixture](SqlServerFixture.cs), each with its own container. It defaults to `mcr.microsoft.com/mssql/server:2022-latest`, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
+The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Each test class uses [SqlServerFixture](SqlServerFixture.cs) with its own container. It defaults to `mcr.microsoft.com/mssql/server:2022-latest`, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
 
 `ReferencedDeploymentScriptTests.cs` preserves the four cases from #987: deployment succeeds or fails, with referenced scripts enabled or disabled. It verifies that referenced post-deployment scripts run only after successful deployment with `RunScriptsFromReferences` enabled, checks the resulting database objects and marker rows, and asserts the deployment return code and failure output. These tests build their own small DACPACs and require only Docker and the .NET SDK.
+
+`ReferencedScriptContextTests.cs` adds ten regression tests for the behavior described in [issue #996](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/issues/996). They verify which database referenced pre/post-deployment scripts run in for new and existing targets, including login defaults, explicit database selection, and disabling referenced scripts. These tests preserve the current behavior and use the selected SQL Server target platform.
+
+This suite covers creating a database from a simple DACPAC and database context for referenced scripts. It does not currently cover profile-template generation, schema upgrades, data-loss protection, user-defined SQLCMD variables, the main package's pre/post-deployment scripts, context changes between multiple references, or other authentication methods.
 
 ## Run locally
 
@@ -69,4 +73,4 @@ For the full suite, SqlPackage must be on `PATH`; set `SQLPACKAGE_PATH` to use a
 
 The fixture removes its containers, network, temporary files, and generated deployment image after the run. Downloaded dependency images remain cached. The container test intentionally uses a bind mount to exercise supplying a profile at container runtime, so it requires a local Docker daemon.
 
-The `integration-tests` CI matrix runs both test classes on SQL Server 2022 and 2025. Each matrix entry uploads separately named TRX artifacts, and both must pass before release publishing. The workflow’s existing end-to-end `deploy-*` jobs remain separate and continue to use their own SQL Server containers.
+The `integration-tests` CI matrix runs the full suite on SQL Server 2022 and 2025. Each matrix entry uploads separately named TRX artifacts, and both must pass before release publishing. The workflow’s existing end-to-end `deploy-*` jobs remain separate and continue to use their own SQL Server containers.
