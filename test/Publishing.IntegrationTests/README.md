@@ -17,7 +17,9 @@ Every case queries the resulting database to verify `dbo.MyTable` has exactly th
 
 The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. It does not depend on a profile-generation template. It runs SQL Server 2022 CU27 to match the project's `Sql160` target, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
 
-This suite covers creating a database from a simple DACPAC. It does not currently cover profile-template generation, schema upgrades, data-loss protection, SQLCMD variables, pre/post-deployment scripts, other authentication methods, or other SQL Server versions. The separate [DacpacTool tests](../DacpacTool.Tests/DeploymentIntegrationTests.cs) cover referenced post-deployment script behavior.
+`ReferencedScriptContextTests.cs` adds ten regression tests for the behavior described in [issue #996](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/issues/996). They verify which database referenced pre/post-deployment scripts run in for new and existing targets, including login defaults, explicit database selection, and disabling referenced scripts. These tests preserve the current behavior.
+
+This suite covers creating a database from a simple DACPAC and database context for referenced scripts. It does not currently cover profile-template generation, schema upgrades, data-loss protection, user-defined SQLCMD variables, the main package's pre/post-deployment scripts, context changes between multiple references, other authentication methods, or other SQL Server versions. The separate [DacpacTool tests](../DacpacTool.Tests/DeploymentIntegrationTests.cs) cover referenced post-deployment script behavior.
 
 ## Run locally
 

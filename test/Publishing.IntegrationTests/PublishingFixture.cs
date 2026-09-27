@@ -27,6 +27,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
             .Build();
     }
 
+    public string WorkspaceDirectory => _directory.FullName;
     public MsSqlContainer SqlServer { get; }
     public INetwork Network => _network;
     public string Password => _password;
