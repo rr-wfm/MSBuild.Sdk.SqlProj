@@ -57,7 +57,7 @@ We know of the following public rules NuGet package that you can add to your pro
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.2">
+  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.4">
     <PrivateAssets>all</PrivateAssets>
     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
   </PackageReference>
