@@ -196,7 +196,6 @@
           Inputs="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog);$(IncludedFiles);$(ProjectPath);@(_DistinctEntityRelationshipDiagramConfigFile)" Outputs="$(TargetPath)">
     <ItemGroup>
       <Content Remove="$(OutputPath)**/*.sql;$(IntermediateOutputPath)**/*.sql" />
-      <None Remove="$(OutputPath)**" />
 
       <!-- Get the values for known model properties specified in the project file -->
       <_BuildPropertyNames Include="$(KnownModelProperties)" />
