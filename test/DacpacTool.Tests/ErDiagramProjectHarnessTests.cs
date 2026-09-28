@@ -29,13 +29,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         };
 
         [TestMethod]
-        public void BuildProject_GeneratesExpectedDiagrams()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void BuildProject_GeneratesExpectedDiagrams(bool useArtifactsOutput)
         {
             CleanupGeneratedFiles();
 
             try
             {
-                var build = BuildHarnessProject();
+                var build = BuildHarnessProject(useArtifactsOutput);
                 build.ExitCode.ShouldBe(0, build.Output);
 
                 foreach (var diagramFile in GeneratedDiagramFiles)
@@ -59,13 +61,15 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        public void BuildProject_GeneratedDiagramsParseWithMermaidCli_WhenAvailable()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void BuildProject_GeneratedDiagramsParseWithMermaidCli_WhenAvailable(bool useArtifactsOutput)
         {
             CleanupGeneratedFiles();
 
             try
             {
-                var build = BuildHarnessProject();
+                var build = BuildHarnessProject(useArtifactsOutput);
                 build.ExitCode.ShouldBe(0, build.Output);
 
                 if (!CanRunProcess("mmdc", "-h"))
@@ -151,12 +155,20 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return (process.ExitCode, NormalizeLineEndings(standardOutput + standardError));
         }
 
-        private static (int ExitCode, string Output) BuildHarnessProject()
+        private static (int ExitCode, string Output) BuildHarnessProject(bool useArtifactsOutput)
         {
             var dacpacToolExe = GetDacpacToolExe();
 
             File.Exists(dacpacToolExe).ShouldBeTrue($"Expected test-built DacpacTool at {dacpacToolExe}");
-            return RunProcess("dotnet", $"build \"{ProjectFile}\" -nologo -t:Rebuild -p:DacpacToolExe=\"{dacpacToolExe}\"");
+            var artifactsArguments = useArtifactsOutput
+                ? $" -p:UseArtifactsOutput=true -p:ArtifactsPath=\"{GetArtifactsPath()}\""
+                : string.Empty;
+            return RunProcess("dotnet", $"build \"{ProjectFile}\" -nologo -t:Rebuild -p:DacpacToolExe=\"{dacpacToolExe}\"{artifactsArguments}");
+        }
+
+        private static string GetArtifactsPath()
+        {
+            return Path.Combine(ProjectDirectory, "artifacts-test");
         }
 
         private static bool CanRunProcess(string fileName, string arguments)
