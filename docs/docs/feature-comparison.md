@@ -24,7 +24,7 @@ Microsoft has published [this comparison table](https://learn.microsoft.com/en-u
 | Target platform can be updated | Yes | Yes | Yes | Yes |
 | SQLCMD variables | Yes | Yes | Yes | Yes |
 | Project references | Yes | Yes | Yes | Yes |
-| DACPAC references | Yes | Yes | Yes | No |
+| DACPAC references | Yes | Yes | Yes | Yes |
 | Package references | Yes | Yes | No | Yes |
 | Analyzer package references | Yes | Yes | No | Yes |
 | Publish profile creation | Yes | Yes | Yes | No |

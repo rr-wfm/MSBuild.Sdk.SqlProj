@@ -1,0 +1,4 @@
+CREATE TABLE dbo.[Order] (
+    OrderId   INT NOT NULL CONSTRAINT PK_Order PRIMARY KEY,
+    AccountId INT NOT NULL
+);

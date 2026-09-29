@@ -1,0 +1,3 @@
+CREATE TABLE dbo.Account (
+    AccountId INT NOT NULL CONSTRAINT PK_Account PRIMARY KEY
+);
