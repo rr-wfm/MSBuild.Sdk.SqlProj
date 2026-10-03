@@ -1,0 +1,199 @@
+﻿using System.Diagnostics;
+using System.Reflection;
+using System.Xml.Linq;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Networks;
+using Microsoft.Data.SqlClient;
+using Testcontainers.MsSql;
+
+namespace MSBuild.Sdk.SqlProj.Publishing.IntegrationTests;
+
+internal sealed class PublishingFixture : IAsyncDisposable
+{
+    private readonly TestContext _context;
+    private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("SqlProjPublishing_");
+    private readonly string _password = $"SqlProj!{Guid.NewGuid():N}";
+    private readonly INetwork _network = new NetworkBuilder().Build();
+    private bool _imageBuildAttempted;
+    private bool _disposed;
+
+    public PublishingFixture(TestContext context)
+    {
+        _context = context;
+        SqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04")
+            .WithPassword(_password)
+            .WithNetwork(_network)
+            .WithNetworkAliases("sqlserver")
+            .Build();
+    }
+
+    public MsSqlContainer SqlServer { get; }
+    public INetwork Network => _network;
+    public string Password => _password;
+    public string ImageName { get; } = $"sqlproj-publishing-test:{Guid.NewGuid():N}";
+    public string ProjectPath => Path.Combine(_directory.FullName, "TestProject.csproj");
+    public string DacpacPath => Path.Combine(_directory.FullName, "bin", "Release", "net10.0", "TestProject.dacpac");
+    public string ToolProperty { get; private set; } = "";
+    public string SqlPackage { get; } = Environment.GetEnvironmentVariable("SQLPACKAGE_PATH") ?? "sqlpackage";
+
+    public async Task InitializeAsync()
+    {
+        // Fail with a useful prerequisite error before starting SQL Server.
+        await RunAsync(SqlPackage, "/Version");
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root != null && !File.Exists(Path.Combine(root.FullName, "MSBuild.Sdk.SqlProj.slnx")))
+        {
+            root = root.Parent;
+        }
+        Assert.IsNotNull(root, "Run these tests from a repository checkout.");
+        var configuration = typeof(PublishingFixture).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
+        ToolProperty = $"-p:DacpacToolExe={Path.Combine(root.FullName, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
+
+        // Reuse the repository's stub project and SQL without changing its tracked files.
+        var sourceProject = Path.Combine(root.FullName, "test", "TestProject");
+        var project = XDocument.Load(Path.Combine(sourceProject, "TestProject.csproj"));
+        foreach (var import in project.Root!.Elements("Import"))
+        {
+            var name = import.Attribute("Project")!.Value.EndsWith("Sdk.props", StringComparison.Ordinal) ? "Sdk.props" : "Sdk.targets";
+            import.SetAttributeValue("Project", Path.Combine(root.FullName, "src", "MSBuild.Sdk.SqlProj", "Sdk", name));
+        }
+        project.Root.Element("PropertyGroup")!.Element("GenerateEntityRelationshipDiagram")!.Value = "false";
+        project.Save(ProjectPath);
+        Directory.CreateDirectory(Path.Combine(_directory.FullName, "Tables"));
+        File.Copy(Path.Combine(sourceProject, "Tables", "MyTable.sql"), Path.Combine(_directory.FullName, "Tables", "MyTable.sql"));
+
+        await RunAsync("dotnet", "build", ProjectPath, "-c", "Release", ToolProperty);
+
+        await _network.CreateAsync(_context.CancellationToken);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromMinutes(5));
+        await SqlServer.StartAsync(timeout.Token);
+    }
+
+    public string CreateProfile(string database, bool insideContainer = false)
+    {
+        XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+        var properties = new XElement(ns + "PropertyGroup",
+            new XElement(ns + "ProfileVersionNumber", "1"),
+            new XElement(ns + "TargetDatabaseName", database),
+            new XElement(ns + "TargetConnectionString"),
+            new XElement(ns + "BlockOnPossibleDataLoss", "True"),
+            new XElement(ns + "DropObjectsNotInSource", "False"));
+        var profile = new XDocument(new XElement(ns + "Project", properties));
+        var connection = new SqlConnectionStringBuilder(SqlServer.GetConnectionString())
+        {
+            Password = "",
+            InitialCatalog = "",
+            TrustServerCertificate = true,
+        };
+        if (insideContainer)
+        {
+            connection.DataSource = "sqlserver,1433";
+        }
+        properties.Element(ns + "TargetConnectionString")!.Value = connection.ConnectionString;
+        var path = Path.Combine(_directory.FullName, database + ".publish.xml");
+        profile.Save(path);
+        return path;
+    }
+
+    public async Task BuildImageAsync()
+    {
+        _imageBuildAttempted = true;
+        await RunAsync("dotnet", "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
+            "/p:ContainerRepository=sqlproj-publishing-test", $"/p:ContainerImageTag={ImageName.Split(':')[1]}");
+    }
+
+    public async Task AssertTableAsync(string database)
+    {
+        var connectionString = new SqlConnectionStringBuilder(SqlServer.GetConnectionString()) { InitialCatalog = database };
+        await using var connection = new SqlConnection(connectionString.ConnectionString);
+        await connection.OpenAsync(_context.CancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MyTable' ORDER BY ORDINAL_POSITION";
+        await using var reader = await command.ExecuteReaderAsync(_context.CancellationToken);
+        Assert.IsTrue(await reader.ReadAsync(_context.CancellationToken));
+        Assert.AreEqual("Column1", reader.GetString(0));
+        Assert.AreEqual("nvarchar", reader.GetString(1));
+        Assert.IsTrue(await reader.ReadAsync(_context.CancellationToken));
+        Assert.AreEqual("Column2", reader.GetString(0));
+        Assert.AreEqual("int", reader.GetString(1));
+        Assert.IsFalse(await reader.ReadAsync(_context.CancellationToken));
+    }
+
+    public Task RunAsync(string executable, params string[] arguments)
+    {
+        return RunProcessAsync(executable, arguments, _context.CancellationToken);
+    }
+
+    private async Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
+    {
+        var start = new ProcessStartInfo(executable)
+        {
+            WorkingDirectory = _directory.FullName,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+        };
+        foreach (var argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+        using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {executable}.");
+        var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
+        var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromMinutes(10));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync(CancellationToken.None);
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new TimeoutException($"{executable} exceeded the ten-minute test timeout.");
+        }
+        finally
+        {
+            _context.WriteLine(((await stdout) + (await stderr)).Replace(_password, "[REDACTED]", StringComparison.Ordinal));
+        }
+        Assert.AreEqual(0, process.ExitCode, $"{executable} failed. See test output.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+        _disposed = true;
+        try
+        {
+            await SqlServer.DisposeAsync();
+        }
+        finally
+        {
+            try
+            {
+                await _network.DisposeAsync();
+                if (_imageBuildAttempted)
+                {
+                    // A failed image build might not have created a tag to remove.
+                    try
+                    {
+                        await RunProcessAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
+                    }
+                    catch (AssertFailedException exception)
+                    {
+                        _context.WriteLine(exception.Message);
+                    }
+                }
+            }
+            finally
+            {
+                _directory.Delete(true);
+            }
+        }
+    }
+}
