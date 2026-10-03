@@ -104,7 +104,7 @@ You can read more about the `sqlpackage /a:Extract` command syntax [on Microsoft
 
 ## Item templates
 
-To create database objects you can use the following item templates:
+To create database objects and publish profiles you can use the following item templates:
 
 | Template | Command | Description |
 | --- | --- | --- |
@@ -116,6 +116,7 @@ To create database objects you can use the following item templates:
 | scalarfunc | `dotnet new scalarfunc -n <name> [-s <schema-name>]` | Creates a new scalar function with the provided name |
 | uddt | `dotnet new uddt -n <name> [-s <schema-name>]` | Creates a new user-defined data type with the provided name |
 | udtt | `dotnet new udtt -n <name> [-s <schema-name>]` | Creates a new user-defined table type with the provided name |
+| publishprofile | `dotnet new publishprofile -n <name>` | Creates a `.publish.xml` file for [publishing with SqlPackage](publishing.md#publishing-with-a-profile) |
 
 > [!NOTE]
 > You can use both the project template and the item templates directly from Visual Studio, via the `File - New Project` and `Add New Item` dialogs.
