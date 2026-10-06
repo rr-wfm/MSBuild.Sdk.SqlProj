@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
-using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
 using Testcontainers.MsSql;
@@ -12,24 +11,18 @@ internal sealed class PublishingFixture : IAsyncDisposable
 {
     private readonly TestContext _context;
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("SqlProjPublishing_");
-    private readonly string _password = $"SqlProj!{Guid.NewGuid():N}";
-    private readonly INetwork _network = new NetworkBuilder().Build();
+    private readonly SqlServerFixture _server = new();
     private bool _imageBuildAttempted;
     private bool _disposed;
 
     public PublishingFixture(TestContext context)
     {
         _context = context;
-        SqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04")
-            .WithPassword(_password)
-            .WithNetwork(_network)
-            .WithNetworkAliases("sqlserver")
-            .Build();
     }
 
-    public MsSqlContainer SqlServer { get; }
-    public INetwork Network => _network;
-    public string Password => _password;
+    public MsSqlContainer SqlServer => _server.SqlServer;
+    public INetwork Network => _server.Network;
+    public string Password => _server.Password;
     public string ImageName { get; } = $"sqlproj-publishing-test:{Guid.NewGuid():N}";
     public string ProjectPath => Path.Combine(_directory.FullName, "TestProject.csproj");
     public string DacpacPath => Path.Combine(_directory.FullName, "bin", "Release", "net10.0", "TestProject.dacpac");
@@ -64,10 +57,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
 
         await RunAsync("dotnet", "build", ProjectPath, "-c", "Release", ToolProperty);
 
-        await _network.CreateAsync(_context.CancellationToken);
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_context.CancellationToken);
-        timeout.CancelAfter(TimeSpan.FromMinutes(5));
-        await SqlServer.StartAsync(timeout.Token);
+        await _server.InitializeAsync(_context.CancellationToken);
     }
 
     public string CreateProfile(string database, bool insideContainer = false)
@@ -156,7 +146,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
         }
         finally
         {
-            _context.WriteLine(((await stdout) + (await stderr)).Replace(_password, "[REDACTED]", StringComparison.Ordinal));
+            _context.WriteLine(((await stdout) + (await stderr)).Replace(Password, "[REDACTED]", StringComparison.Ordinal));
         }
         Assert.AreEqual(0, process.ExitCode, $"{executable} failed. See test output.");
     }
@@ -170,13 +160,12 @@ internal sealed class PublishingFixture : IAsyncDisposable
         _disposed = true;
         try
         {
-            await SqlServer.DisposeAsync();
+            await _server.DisposeAsync();
         }
         finally
         {
             try
             {
-                await _network.DisposeAsync();
                 if (_imageBuildAttempted)
                 {
                     // A failed image build might not have created a tag to remove.

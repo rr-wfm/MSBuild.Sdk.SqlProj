@@ -1,17 +1,37 @@
-﻿using System;
-using System.IO;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Shouldly;
+using MSBuild.Sdk.SqlProj.DacpacTool;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.Publishing.IntegrationTests
 {
     [TestClass]
     [DoNotParallelize]
     [TestCategory("SqlServer")]
-    public class DeploymentIntegrationTests
+    public class ReferencedDeploymentScriptTests
     {
+        private static SqlServerFixture _fixture = null!;
+
+        [ClassInitialize]
+        public static async Task InitializeAsync(TestContext context)
+        {
+            _fixture = new SqlServerFixture();
+            try
+            {
+                await _fixture.InitializeAsync(context.CancellationToken);
+            }
+            catch
+            {
+                await _fixture.DisposeAsync();
+                throw;
+            }
+        }
+
+        [ClassCleanup]
+        public static async Task CleanupAsync()
+        {
+            await _fixture.DisposeAsync();
+        }
+
         [TestMethod]
         [DataRow(true, true)]
         [DataRow(true, false)]
@@ -19,13 +39,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow(false, false)]
         public void DeployDacpac_OnlyRunsReferencePostDeploymentAfterSuccess(bool failDeployment, bool runScriptsFromReferences)
         {
-            var connectionString = Environment.GetEnvironmentVariable("SQLPROJ_TEST_CONNECTION_STRING");
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                Assert.Inconclusive("Set SQLPROJ_TEST_CONNECTION_STRING to a SQL Server connection with permission to create test databases.");
-            }
-
-            var connection = new SqlConnectionStringBuilder(connectionString)
+            var connection = new SqlConnectionStringBuilder(_fixture.SqlServer.GetConnectionString())
             {
                 InitialCatalog = "master",
             };
@@ -49,7 +63,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 File.WriteAllText(postDeploy.FullName, "INSERT INTO dbo.DeploymentMarker (Id) VALUES (42);\nPRINT N'REFERENCE_POSTDEPLOY_RAN';\nGO\n");
                 var reference = BuildPackage(directory, "Reference", "CREATE TABLE dbo.DeploymentMarker (Id int NOT NULL);", postDeploy: postDeploy);
 
-                FileInfo preDeploy = null;
+                FileInfo? preDeploy = null;
                 if (failDeployment)
                 {
                     preDeploy = new FileInfo(Path.Combine(directory.FullName, "PreDeploy.sql"));
@@ -76,16 +90,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
                 if (failDeployment)
                 {
-                    output.ShouldContain("INTENTIONAL_DEPLOYMENT_FAILURE");
-                    output.ShouldNotContain("Running post-deployment script for referenced package");
+                    Assert.Contains("INTENTIONAL_DEPLOYMENT_FAILURE", output);
+                    Assert.IsFalse(output.Contains("Running post-deployment script for referenced package", StringComparison.Ordinal), output);
                 }
 
                 var expectedMarkerCount = !failDeployment && runScriptsFromReferences ? 1 : 0;
-                ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM dbo.DeploymentMarker;")
-                    .ShouldBe(expectedMarkerCount, output);
-                ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM sys.tables WHERE name = N'MainChange' AND schema_id = SCHEMA_ID(N'dbo');")
-                    .ShouldBe(failDeployment ? 0 : 1, output);
-                result.ShouldBe(failDeployment ? 1 : 0, output);
+                Assert.AreEqual(expectedMarkerCount,
+                    ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM dbo.DeploymentMarker;"), output);
+                Assert.AreEqual(failDeployment ? 0 : 1,
+                    ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM sys.tables WHERE name = N'MainChange' AND schema_id = SCHEMA_ID(N'dbo');"), output);
+                Assert.AreEqual(failDeployment ? 1 : 0, result, output);
             }
             finally
             {
@@ -105,9 +119,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
         }
 
-        private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo reference = null, FileInfo preDeploy = null, FileInfo postDeploy = null)
+        private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo? reference = null, FileInfo? preDeploy = null, FileInfo? postDeploy = null)
         {
-            using var builder = new PackageBuilder(new TestConsole());
+            using var builder = new PackageBuilder(new ActualConsole());
             builder.UsingVersion(SqlServerVersion.Sql160);
             builder.SetMetadata(name, "1.0.0");
             if (reference != null)
@@ -116,7 +130,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
 
             builder.Model.AddObjects(sql);
-            builder.ValidateModel().ShouldBeTrue();
+            Assert.IsTrue(builder.ValidateModel());
             var package = new FileInfo(Path.Combine(directory.FullName, $"{name}.dacpac"));
             builder.SaveToDisk(package);
             builder.AddOutputArtifacts(null, preDeploy, postDeploy, null, package);
@@ -124,7 +138,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return package;
         }
 
-        private static object ExecuteScalar(string connectionString, string sql)
+        private static object? ExecuteScalar(string connectionString, string sql)
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
