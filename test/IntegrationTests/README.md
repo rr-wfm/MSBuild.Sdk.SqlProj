@@ -9,13 +9,15 @@ This suite tests referenced deployment scripts through DacpacTool and publishing
 | Case | What it verifies |
 | --- | --- |
 | Built-in publisher | `dotnet publish /t:PublishDatabase` deploys using MSBuild connection and database properties. |
-| Local SqlPackage profile | SqlPackage deploys using the generated profile's target settings and leaves the profile unchanged. |
-| Database override | `/TargetDatabaseName` overrides the profile's database name and leaves the profile unchanged. |
-| Container profile | `PublishContainer` builds a deployment image that successfully publishes using a read-only mounted profile. |
+| Local SqlPackage profile | A direct SqlPackage invocation uses `/Profile` to deploy with a fixture-created profile's target settings and leaves the profile unchanged. |
+| SqlPackage database override | SqlPackage's `/TargetDatabaseName` overrides the profile's database name and leaves the profile unchanged. |
+| Container profile | `PublishContainer` builds a deployment image whose SqlPackage entry point publishes using a read-only mounted profile supplied through `/Profile`. |
+
+The profile cases exercise SqlPackage's existing `.publish.xml` support. The test fixture writes these files directly; it does not use or test the proposed publish-profile item template in [issue 995](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/issues/995). The SDK's built-in publisher (`dotnet publish /t:PublishDatabase`) uses MSBuild properties and does not consume these profiles. These cases do not introduce profile support to that publisher.
 
 Every publishing case queries the resulting database to verify `dbo.MyTable` has exactly the expected columns: `Column1` (`nvarchar`) and `Column2` (`int`).
 
-The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. It does not depend on a profile-generation template. Both test classes use [SqlServerFixture](SqlServerFixture.cs), each with its own container. It runs SQL Server 2022 CU27 to match the project's `Sql160` target, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
+The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Both test classes use [SqlServerFixture](SqlServerFixture.cs), each with its own container. It runs SQL Server 2022 CU27 to match the project's `Sql160` target, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
 
 `ReferencedDeploymentScriptTests.cs` preserves the four cases from #987: deployment succeeds or fails, with referenced scripts enabled or disabled. It verifies that referenced post-deployment scripts run only after successful deployment with `RunScriptsFromReferences` enabled, checks the resulting database objects and marker rows, and asserts the deployment return code and failure output. These tests build their own small DACPACs and require only Docker and the .NET SDK.
 
