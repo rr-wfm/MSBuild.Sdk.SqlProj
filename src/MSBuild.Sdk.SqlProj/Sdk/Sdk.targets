@@ -22,9 +22,15 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
-  <ItemGroup>
-    <Content Remove="$(BaseOutputPath)**/*.sql;$(BaseIntermediateOutputPath)**/*.sql" />
-  </ItemGroup>
+<ItemGroup>
+  <!-- Cover complete output trees, including inactive configurations and target frameworks. -->
+  <Content Remove="$(BaseOutputPath)**/*.sql" />
+  <Content Remove="$(BaseIntermediateOutputPath)**/*.sql" />
+
+  <!-- Cover effective paths that can be overridden independently of their bases. -->
+  <Content Remove="$(OutputPath)**/*.sql" />
+  <Content Remove="$(IntermediateOutputPath)**/*.sql" />
+</ItemGroup>
 
   <ItemGroup>
     <!-- Enable detection of this project SDK - see https://github.com/microsoft/VSProjectSystem/blob/master/doc/overview/about_project_capabilities.md -->
