@@ -606,8 +606,15 @@ jobs:
         path: ./msbuild.binlog
 
   integration-tests:
+    name: Integration tests (SQL Server ${{ matrix.sqlserver }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        sqlserver: ['2022', '2025']
+    env:
+      SQLPROJ_TEST_SQLSERVER_IMAGE: mcr.microsoft.com/mssql/server:${{ matrix.sqlserver }}-latest
     steps:
     - uses: actions/checkout@v7
       with:
@@ -623,7 +630,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: integration-test-results
+        name: integration-test-results-sqlserver-${{ matrix.sqlserver }}
         path: artifacts/integration-tests
 
   # Publish the NuGet package to NuGet.org when building master branch

@@ -12,7 +12,13 @@ internal sealed class SqlServerFixture : IAsyncDisposable
 
     public SqlServerFixture()
     {
-        SqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04")
+        var image = Environment.GetEnvironmentVariable("SQLPROJ_TEST_SQLSERVER_IMAGE");
+        if (string.IsNullOrWhiteSpace(image))
+        {
+            image = "mcr.microsoft.com/mssql/server:2022-latest";
+        }
+
+        SqlServer = new MsSqlBuilder(image)
             .WithPassword(Password)
             .WithNetwork(Network)
             .WithNetworkAliases("sqlserver")
