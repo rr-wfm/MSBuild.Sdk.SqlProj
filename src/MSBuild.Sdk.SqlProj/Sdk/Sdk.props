@@ -54,7 +54,6 @@
     <Content Remove="Post-Deployment/**/*.sql" />
     <!-- GenerateScript adds a .sql file here, and it should not be Content in the .dacpac -->
     <None Remove="bin/**" />
-    <None Include="$(OutputPath)\*.dacpac" Pack="true" PackagePath="tools/" Visible="false" />
   </ItemGroup>
 
   <PropertyGroup>

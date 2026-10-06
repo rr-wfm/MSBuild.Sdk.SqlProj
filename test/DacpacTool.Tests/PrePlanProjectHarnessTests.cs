@@ -69,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void EvaluatedOutputItemsAreNotVisible(bool useArtifactsOutput)
+        public void EvaluatedItemsExcludeOutputDirectories(bool useArtifactsOutput)
         {
             var outputPath = useArtifactsOutput
                 ? Path.Combine(GetArtifactsPath(), "bin", "TestProjectWithPrePost", "release")
@@ -81,7 +81,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             Directory.CreateDirectory(outputPath);
             Directory.CreateDirectory(intermediateOutputPath);
             File.WriteAllText(Path.Combine(outputPath, "TestProjectWithPrePost.dacpac"), string.Empty);
+            File.WriteAllText(Path.Combine(outputPath, "Generated.sql"), string.Empty);
             File.WriteAllText(Path.Combine(intermediateOutputPath, "Generated.txt"), string.Empty);
+            File.WriteAllText(Path.Combine(intermediateOutputPath, "Generated.sql"), string.Empty);
 
             try
             {
@@ -96,7 +98,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
                 startInfo.ArgumentList.Add("msbuild");
                 startInfo.ArgumentList.Add(ProjectFile);
-                startInfo.ArgumentList.Add("-getItem:None;Content");
+                startInfo.ArgumentList.Add("-getItem:None;Content;Folder");
                 startInfo.ArgumentList.Add("-getProperty:OutputPath,IntermediateOutputPath");
                 startInfo.ArgumentList.Add("-p:Configuration=Release");
                 startInfo.ArgumentList.Add("-nologo");
@@ -113,7 +115,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 process.WaitForExit();
 
                 process.ExitCode.ShouldBe(0, error + output);
-                AssertOutputItemsAreNotVisible(output, outputPath, intermediateOutputPath);
+                AssertItemsExcludeDirectories(output, outputPath, intermediateOutputPath);
             }
             finally
             {
@@ -123,12 +125,12 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
         }
 
-        private static void AssertOutputItemsAreNotVisible(string msbuildOutput, params string[] outputDirectories)
+        private static void AssertItemsExcludeDirectories(string msbuildOutput, params string[] outputDirectories)
         {
             using var document = JsonDocument.Parse(msbuildOutput);
             var items = document.RootElement.GetProperty("Items");
 
-            foreach (var itemType in new[] { "None", "Content" })
+            foreach (var itemType in new[] { "None", "Content", "Folder" })
             {
                 if (!items.TryGetProperty(itemType, out var itemGroup))
                 {
@@ -141,11 +143,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     var isUnderOutputDirectory = outputDirectories.Any(directory =>
                         fullPath.StartsWith(Path.GetFullPath(directory) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
 
-                    if (isUnderOutputDirectory)
-                    {
-                        item.TryGetProperty("Visible", out var visible).ShouldBeTrue();
-                        visible.GetString().ShouldBe("false");
-                    }
+                    isUnderOutputDirectory.ShouldBeFalse($"Item '{fullPath}' should be excluded from evaluated project items.");
                 }
             }
         }
