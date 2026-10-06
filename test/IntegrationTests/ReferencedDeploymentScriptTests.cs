@@ -2,7 +2,7 @@
 using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool;
 
-namespace MSBuild.Sdk.SqlProj.Publishing.IntegrationTests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     [TestClass]
     [DoNotParallelize]

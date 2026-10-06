@@ -17,7 +17,7 @@
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/DacpacTool.Tests/DacpacTool.Tests.csproj" />
-    <Project Path="test/Publishing.IntegrationTests/Publishing.IntegrationTests.csproj" />
+    <Project Path="test/IntegrationTests/IntegrationTests.csproj" />
     <Project Path="test/TestProject/TestProject.csproj" />
   </Folder>
 </Solution>

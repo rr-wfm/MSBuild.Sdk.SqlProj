@@ -5,7 +5,7 @@ using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
 using Testcontainers.MsSql;
 
-namespace MSBuild.Sdk.SqlProj.Publishing.IntegrationTests;
+namespace MSBuild.Sdk.SqlProj.IntegrationTests;
 
 internal sealed class PublishingFixture : IAsyncDisposable
 {

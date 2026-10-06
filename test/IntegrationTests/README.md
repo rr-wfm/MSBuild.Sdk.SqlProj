@@ -1,4 +1,4 @@
-# Publishing integration tests
+# Integration tests
 
 This suite tests referenced deployment scripts through DacpacTool and publishing through the SDK's MSBuild targets and SqlPackage against disposable SQL Server containers. Run it when changing deployment behavior or container publishing.
 
@@ -29,13 +29,13 @@ From the repository root:
 
 ```bash
 dotnet tool install --global Microsoft.SqlPackage --version 170.5.96
-dotnet test test/Publishing.IntegrationTests/Publishing.IntegrationTests.csproj -c Release
+dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release
 ```
 
 To run only the referenced deployment script tests (no SqlPackage installation required):
 
 ```bash
-dotnet test test/Publishing.IntegrationTests/Publishing.IntegrationTests.csproj -c Release --filter TestCategory=SqlServer
+dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=SqlServer
 ```
 
 SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers; `SQLPROJ_TEST_CONNECTION_STRING` is no longer needed.
@@ -44,4 +44,4 @@ For the full suite, SqlPackage must be on `PATH`; set `SQLPACKAGE_PATH` to use a
 
 The fixture removes its containers, network, temporary files, and generated deployment image after the run. Downloaded dependency images remain cached. The container test intentionally uses a bind mount to exercise supplying a profile at container runtime, so it requires a local Docker daemon.
 
-The `publishing-integration` CI job runs both test classes, uploads TRX results, and must pass before release publishing. The workflow’s existing end-to-end `deploy-*` jobs remain separate and continue to use their own SQL Server containers.
+The `integration-tests` CI job runs both test classes, uploads TRX results, and must pass before release publishing. The workflow’s existing end-to-end `deploy-*` jobs remain separate and continue to use their own SQL Server containers.

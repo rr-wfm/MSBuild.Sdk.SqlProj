@@ -3,7 +3,7 @@ using DotNet.Testcontainers.Configurations;
 
 [assembly: DoNotParallelize]
 
-namespace MSBuild.Sdk.SqlProj.Publishing.IntegrationTests;
+namespace MSBuild.Sdk.SqlProj.IntegrationTests;
 
 [TestClass]
 [TestCategory("Publishing")]

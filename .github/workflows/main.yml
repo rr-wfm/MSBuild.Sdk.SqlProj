@@ -605,7 +605,7 @@ jobs:
         name: binary-log-publish
         path: ./msbuild.binlog
 
-  publishing-integration:
+  integration-tests:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -617,14 +617,14 @@ jobs:
         dotnet-version: '10.0.x'
     - name: Install SqlPackage
       run: dotnet tool install --global Microsoft.SqlPackage --version 170.5.96
-    - name: Test publishing with Testcontainers
-      run: dotnet test test/Publishing.IntegrationTests/Publishing.IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/publishing-tests
-    - name: Upload publishing test results
+    - name: Run integration tests with Testcontainers
+      run: dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
+    - name: Upload integration test results
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: publishing-test-results
-        path: artifacts/publishing-tests
+        name: integration-test-results
+        path: artifacts/integration-tests
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
@@ -635,7 +635,7 @@ jobs:
     needs:
     - deploy-sqlpackage
     - deploy-publish
-    - publishing-integration
+    - integration-tests
     steps:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v6
