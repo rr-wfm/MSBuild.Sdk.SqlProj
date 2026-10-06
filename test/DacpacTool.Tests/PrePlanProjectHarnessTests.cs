@@ -71,58 +71,85 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow(true)]
         public void EvaluatedItemsExcludeOutputDirectories(bool useArtifactsOutput)
         {
-            var outputPath = useArtifactsOutput
-                ? Path.Combine(GetArtifactsPath(), "bin", "TestProjectWithPrePost", "release")
-                : Path.Combine(ProjectDirectory, "bin", "Release", "netstandard2.0");
-            var intermediateOutputPath = useArtifactsOutput
-                ? Path.Combine(GetArtifactsPath(), "obj", "TestProjectWithPrePost", "release")
-                : Path.Combine(ProjectDirectory, "obj", "Release", "netstandard2.0");
-
-            Directory.CreateDirectory(outputPath);
-            Directory.CreateDirectory(intermediateOutputPath);
-            File.WriteAllText(Path.Combine(outputPath, "TestProjectWithPrePost.dacpac"), string.Empty);
-            File.WriteAllText(Path.Combine(outputPath, "Generated.sql"), string.Empty);
-            File.WriteAllText(Path.Combine(intermediateOutputPath, "Generated.txt"), string.Empty);
-            File.WriteAllText(Path.Combine(intermediateOutputPath, "Generated.sql"), string.Empty);
+            var propertiesOutput = EvaluateProject(useArtifactsOutput, "-getProperty:OutputPath,IntermediateOutputPath");
+            var (outputPath, intermediateOutputPath) = GetOutputDirectories(propertiesOutput);
+            var fixtureFiles = new[]
+            {
+                Path.Combine(outputPath, "TestProjectWithPrePost.dacpac"),
+                Path.Combine(outputPath, "Generated.sql"),
+                Path.Combine(intermediateOutputPath, "Generated.txt"),
+                Path.Combine(intermediateOutputPath, "Generated.sql"),
+            };
 
             try
             {
-                var startInfo = new ProcessStartInfo
+                Directory.CreateDirectory(outputPath);
+                Directory.CreateDirectory(intermediateOutputPath);
+                foreach (var fixtureFile in fixtureFiles)
                 {
-                    FileName = "dotnet",
-                    WorkingDirectory = ProjectDirectory,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                };
-
-                startInfo.ArgumentList.Add("msbuild");
-                startInfo.ArgumentList.Add(ProjectFile);
-                startInfo.ArgumentList.Add("-getItem:None;Content;Folder");
-                startInfo.ArgumentList.Add("-getProperty:OutputPath,IntermediateOutputPath");
-                startInfo.ArgumentList.Add("-p:Configuration=Release");
-                startInfo.ArgumentList.Add("-nologo");
-                if (useArtifactsOutput)
-                {
-                    startInfo.ArgumentList.Add("-p:UseArtifactsOutput=true");
-                    startInfo.ArgumentList.Add($"-p:ArtifactsPath={GetArtifactsPath()}");
+                    File.WriteAllText(fixtureFile, string.Empty);
                 }
 
-                using var process = Process.Start(startInfo);
-                process.ShouldNotBeNull();
-                var output = process.StandardOutput.ReadToEnd();
-                var error = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-
-                process.ExitCode.ShouldBe(0, error + output);
-                AssertItemsExcludeDirectories(output, outputPath, intermediateOutputPath);
+                var itemsOutput = EvaluateProject(useArtifactsOutput, "-getItem:None;Content;Folder");
+                AssertItemsExcludeDirectories(itemsOutput, outputPath, intermediateOutputPath);
             }
             finally
             {
-                DeleteDirectory(GetArtifactsPath());
-                DeleteDirectory(Path.Combine(ProjectDirectory, "bin"));
-                DeleteDirectory(Path.Combine(ProjectDirectory, "obj"));
+                foreach (var fixtureFile in fixtureFiles)
+                {
+                    File.Delete(fixtureFile);
+                }
             }
+        }
+
+        private static string EvaluateProject(bool useArtifactsOutput, string query)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                WorkingDirectory = ProjectDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+
+            startInfo.ArgumentList.Add("msbuild");
+            startInfo.ArgumentList.Add(ProjectFile);
+            startInfo.ArgumentList.Add(query);
+            startInfo.ArgumentList.Add("-p:Configuration=Release");
+            startInfo.ArgumentList.Add("-nologo");
+            if (useArtifactsOutput)
+            {
+                startInfo.ArgumentList.Add("-p:UseArtifactsOutput=true");
+                startInfo.ArgumentList.Add($"-p:ArtifactsPath={GetArtifactsPath()}");
+            }
+
+            using var process = Process.Start(startInfo);
+            process.ShouldNotBeNull();
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            process.ExitCode.ShouldBe(0, error + output);
+            return output;
+        }
+
+        private static (string OutputPath, string IntermediateOutputPath) GetOutputDirectories(string msbuildOutput)
+        {
+            using var document = JsonDocument.Parse(msbuildOutput);
+            var properties = document.RootElement.GetProperty("Properties");
+
+            return (
+                GetFullProjectPath(properties, "OutputPath"),
+                GetFullProjectPath(properties, "IntermediateOutputPath"));
+        }
+
+        private static string GetFullProjectPath(JsonElement properties, string propertyName)
+        {
+            var path = properties.GetProperty(propertyName).GetString()
+                ?? throw new InvalidDataException($"MSBuild property '{propertyName}' did not contain a path.");
+
+            return Path.GetFullPath(path, ProjectDirectory);
         }
 
         private static void AssertItemsExcludeDirectories(string msbuildOutput, params string[] outputDirectories)
@@ -145,14 +172,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
                     isUnderOutputDirectory.ShouldBeFalse($"Item '{fullPath}' should be excluded from evaluated project items.");
                 }
-            }
-        }
-
-        private static void DeleteDirectory(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                Directory.Delete(path, recursive: true);
             }
         }
 
