@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
+using Shouldly;
 using Testcontainers.MsSql;
 
 namespace MSBuild.Sdk.SqlProj.IntegrationTests;
@@ -38,7 +39,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
         {
             root = root.Parent;
         }
-        Assert.IsNotNull(root, "Run these tests from a repository checkout.");
+        root.ShouldNotBeNull("Run these tests from a repository checkout.");
         var configuration = typeof(PublishingFixture).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         ToolProperty = $"-p:DacpacToolExe={Path.Combine(root.FullName, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
 
@@ -101,13 +102,13 @@ internal sealed class PublishingFixture : IAsyncDisposable
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MyTable' ORDER BY ORDINAL_POSITION";
         await using var reader = await command.ExecuteReaderAsync(_context.CancellationToken);
-        Assert.IsTrue(await reader.ReadAsync(_context.CancellationToken));
-        Assert.AreEqual("Column1", reader.GetString(0));
-        Assert.AreEqual("nvarchar", reader.GetString(1));
-        Assert.IsTrue(await reader.ReadAsync(_context.CancellationToken));
-        Assert.AreEqual("Column2", reader.GetString(0));
-        Assert.AreEqual("int", reader.GetString(1));
-        Assert.IsFalse(await reader.ReadAsync(_context.CancellationToken));
+        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeTrue();
+        reader.GetString(0).ShouldBe("Column1");
+        reader.GetString(1).ShouldBe("nvarchar");
+        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeTrue();
+        reader.GetString(0).ShouldBe("Column2");
+        reader.GetString(1).ShouldBe("int");
+        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeFalse();
     }
 
     public Task RunAsync(string executable, params string[] arguments)
@@ -148,7 +149,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
         {
             _context.WriteLine(((await stdout) + (await stderr)).Replace(Password, "[REDACTED]", StringComparison.Ordinal));
         }
-        Assert.AreEqual(0, process.ExitCode, $"{executable} failed. See test output.");
+        process.ExitCode.ShouldBe(0, $"{executable} failed. See test output.");
     }
 
     public async ValueTask DisposeAsync()
@@ -173,7 +174,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
                     {
                         await RunProcessAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
                     }
-                    catch (AssertFailedException exception)
+                    catch (ShouldAssertException exception)
                     {
                         _context.WriteLine(exception.Message);
                     }

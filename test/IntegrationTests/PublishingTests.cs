@@ -1,5 +1,6 @@
 ﻿using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
+using Shouldly;
 
 [assembly: DoNotParallelize]
 
@@ -60,7 +61,7 @@ public sealed class PublishingTests
         }
         await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
         await _fixture.AssertTableAsync(database);
-        Assert.AreEqual(original, await File.ReadAllTextAsync(profile, TestContext.CancellationToken), "Publishing must not modify the profile.");
+        (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
 
     [TestMethod]
@@ -80,7 +81,7 @@ public sealed class PublishingTests
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
         timeout.CancelAfter(TimeSpan.FromMinutes(3));
         await container.StartAsync(timeout.Token);
-        Assert.AreEqual(0L, await container.GetExitCodeAsync(timeout.Token));
+        (await container.GetExitCodeAsync(timeout.Token)).ShouldBe(0L);
         await _fixture.AssertTableAsync(database);
     }
 }

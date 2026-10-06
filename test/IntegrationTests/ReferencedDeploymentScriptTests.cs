@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool;
+using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
@@ -90,16 +91,16 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
 
                 if (failDeployment)
                 {
-                    Assert.Contains("INTENTIONAL_DEPLOYMENT_FAILURE", output);
-                    Assert.IsFalse(output.Contains("Running post-deployment script for referenced package", StringComparison.Ordinal), output);
+                    output.ShouldContain("INTENTIONAL_DEPLOYMENT_FAILURE");
+                    output.ShouldNotContain("Running post-deployment script for referenced package");
                 }
 
                 var expectedMarkerCount = !failDeployment && runScriptsFromReferences ? 1 : 0;
-                Assert.AreEqual(expectedMarkerCount,
-                    ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM dbo.DeploymentMarker;"), output);
-                Assert.AreEqual(failDeployment ? 0 : 1,
-                    ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM sys.tables WHERE name = N'MainChange' AND schema_id = SCHEMA_ID(N'dbo');"), output);
-                Assert.AreEqual(failDeployment ? 1 : 0, result, output);
+                ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM dbo.DeploymentMarker;")
+                    .ShouldBe(expectedMarkerCount, output);
+                ExecuteScalar(databaseConnection.ConnectionString, "SELECT COUNT(*) FROM sys.tables WHERE name = N'MainChange' AND schema_id = SCHEMA_ID(N'dbo');")
+                    .ShouldBe(failDeployment ? 0 : 1, output);
+                result.ShouldBe(failDeployment ? 1 : 0, output);
             }
             finally
             {
@@ -121,7 +122,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
 
         private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo? reference = null, FileInfo? preDeploy = null, FileInfo? postDeploy = null)
         {
-            using var builder = new PackageBuilder(new ActualConsole());
+            using var builder = new PackageBuilder(new TestConsole());
             builder.UsingVersion(SqlServerVersion.Sql160);
             builder.SetMetadata(name, "1.0.0");
             if (reference != null)
@@ -130,7 +131,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             }
 
             builder.Model.AddObjects(sql);
-            Assert.IsTrue(builder.ValidateModel());
+            builder.ValidateModel().ShouldBeTrue();
             var package = new FileInfo(Path.Combine(directory.FullName, $"{name}.dacpac"));
             builder.SaveToDisk(package);
             builder.AddOutputArtifacts(null, preDeploy, postDeploy, null, package);

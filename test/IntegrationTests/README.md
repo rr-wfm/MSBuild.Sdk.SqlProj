@@ -19,8 +19,6 @@ The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject]
 
 `ReferencedDeploymentScriptTests.cs` preserves the four cases from #987: deployment succeeds or fails, with referenced scripts enabled or disabled. It verifies that referenced post-deployment scripts run only after successful deployment with `RunScriptsFromReferences` enabled, checks the resulting database objects and marker rows, and asserts the deployment return code and failure output. These tests build their own small DACPACs and require only Docker and the .NET SDK.
 
-The suite does not currently cover profile-template generation, schema upgrades, data-loss protection, SQLCMD variables, other authentication methods, or other SQL Server versions.
-
 ## Run locally
 
 Use a current .NET 10 SDK, an x64 host with a local Docker daemon running Linux containers, and SqlPackage. CI uses SqlPackage 170.5.96, which requires .NET runtime 10.0.11 or later.
@@ -38,7 +36,7 @@ To run only the referenced deployment script tests (no SqlPackage installation r
 dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=SqlServer
 ```
 
-SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers; `SQLPROJ_TEST_CONNECTION_STRING` is no longer needed.
+SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers.
 
 For the full suite, SqlPackage must be on `PATH`; set `SQLPACKAGE_PATH` to use a different executable location. Initial runs need network access to restore packages and download container images and SqlPackage for the deployment image. Missing prerequisites cause failures rather than skipped tests.
 
