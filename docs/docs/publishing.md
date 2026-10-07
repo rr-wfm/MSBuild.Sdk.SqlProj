@@ -142,7 +142,7 @@ Use the `publishprofile` item template to create a reusable `.publish.xml` file 
 dotnet new publishprofile -n Development
 ```
 
-This creates `Development.publish.xml` without building or deploying the project. Edit its `TargetDatabaseName` and `TargetConnectionString` to match your database. The starter profile uses integrated authentication, enables encryption and certificate validation, blocks possible data loss, and disables dropping objects absent from the source. Choose a connection string and authentication method appropriate for your server; keep passwords out of committed profiles.
+This creates `Development.publish.xml` without building or deploying the project. Edit its `TargetDatabaseName` and `TargetConnectionString` to match your database, and set `DeployScriptFileName` to the desired deployment script filename. The starter profile follows the classic Visual Studio publish-profile structure. It uses integrated authentication, enables encryption and certificate validation, blocks possible data loss, and disables dropping objects absent from the source. Choose a connection string and authentication method appropriate for your server; keep passwords out of committed profiles.
 
 ### Using SqlPackage locally
 
