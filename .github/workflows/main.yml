@@ -614,7 +614,7 @@ jobs:
       matrix:
         sqlserver: ['2022', '2025']
     env:
-      SQLPROJ_TEST_SQLSERVER_IMAGE: mcr.microsoft.com/mssql/server:${{ matrix.sqlserver }}-latest
+      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
     steps:
     - uses: actions/checkout@v7
       with:

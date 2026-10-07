@@ -52,6 +52,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
             import.SetAttributeValue("Project", Path.Combine(root.FullName, "src", "MSBuild.Sdk.SqlProj", "Sdk", name));
         }
         project.Root.Element("PropertyGroup")!.Element("GenerateEntityRelationshipDiagram")!.Value = "false";
+        project.Root.Element("PropertyGroup")!.SetElementValue("SqlServerVersion", _server.TargetPlatform.ToString());
         project.Save(ProjectPath);
         Directory.CreateDirectory(Path.Combine(_directory.FullName, "Tables"));
         File.Copy(Path.Combine(sourceProject, "Tables", "MyTable.sql"), Path.Combine(_directory.FullName, "Tables", "MyTable.sql"));

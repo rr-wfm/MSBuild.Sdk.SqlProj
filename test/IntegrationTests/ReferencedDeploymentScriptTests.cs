@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool;
 using Shouldly;
 
@@ -123,7 +122,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
         private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo? reference = null, FileInfo? preDeploy = null, FileInfo? postDeploy = null)
         {
             using var builder = new PackageBuilder(new TestConsole());
-            builder.UsingVersion(SqlServerVersion.Sql160);
+            builder.UsingVersion(_fixture.TargetPlatform);
             builder.SetMetadata(name, "1.0.0");
             if (reference != null)
             {

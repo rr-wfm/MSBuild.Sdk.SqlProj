@@ -40,10 +40,10 @@ dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter Te
 
 SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers.
 
-Set `SQLPROJ_TEST_SQLSERVER_IMAGE` to run the same tests against a different SQL Server image. For example, in Bash:
+Set `SQLPROJ_TEST_SQLSERVER_VERSION` to select both the SQL Server image and the DACPAC target platform (`2022` → `Sql160`, `2025` → `Sql170`). For example, in Bash:
 
 ```bash
-SQLPROJ_TEST_SQLSERVER_IMAGE=mcr.microsoft.com/mssql/server:2025-latest \
+SQLPROJ_TEST_SQLSERVER_VERSION=2025 \
   dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release
 ```
 
@@ -51,13 +51,17 @@ Each local test run uses one image. To reproduce both CI matrix entries locally,
 
 ```bash
 for sqlserver_version in 2022 2025; do
-  SQLPROJ_TEST_SQLSERVER_IMAGE="mcr.microsoft.com/mssql/server:${sqlserver_version}-latest" \
+  SQLPROJ_TEST_SQLSERVER_VERSION="$sqlserver_version" \
     dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release \
       --logger trx --results-directory "artifacts/integration-tests-${sqlserver_version}" || exit 1
 done
 ```
 
-The default is `2022-latest`; CI runs the suite against both `2022-latest` and `2025-latest`. These tags track updates within each major version. An explicit image tag can also be supplied to reproduce a particular run. The test DACPACs still target `Sql160`, so the 2025 run checks deployment compatibility with that server, not SQL Server 2025-specific target-platform features.
+The default version is `2022`; CI runs the suite with both `2022` and `2025`. Each version uses its corresponding `-latest` container image and target platform.
+
+Before building, `PublishingFixture` replaces `<SqlServerVersion>` in its temporary copy of `test/TestProject/TestProject.csproj` with `Sql160` for 2022 or `Sql170` for 2025. The checked-in project remains unchanged at `Sql160`; building it directly still uses that target. The referenced-script tests use the same selected platform when building their DACPACs programmatically. This override applies only to the Testcontainers suite, not the separate end-to-end deployment jobs.
+
+To pin a particular image, also set `SQLPROJ_TEST_SQLSERVER_IMAGE`. This overrides only the image; set `SQLPROJ_TEST_SQLSERVER_VERSION` to its matching major version so the DACPAC target stays consistent.
 
 Azure SQL Database container coverage is a separate follow-up. Its [private preview](https://microsoft.github.io/azure-sql-database-container/getting-started.html) requires registry credentials and compatibility checks for DACPAC targets and database setup/cleanup. Selecting an Azure SQL image alone does not establish support for these tests.
 
