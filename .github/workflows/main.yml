@@ -456,12 +456,6 @@ jobs:
           exit 1
         fi
 
-    # Exercise deployment failure handling against the running SQL Server
-    - name: test deployment failure handling
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f net10.0 --filter TestCategory=SqlServer
-      env:
-        SQLPROJ_TEST_CONNECTION_STRING: "Server=localhost;User ID=sa;Password=${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }};Encrypt=False"
-
     # Upload binary log
     - name: upload
       uses: actions/upload-artifact@v7
@@ -611,6 +605,34 @@ jobs:
         name: binary-log-publish
         path: ./msbuild.binlog
 
+  integration-tests:
+    name: Integration tests (SQL Server ${{ matrix.sqlserver }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        sqlserver: ['2022', '2025']
+    env:
+      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: '10.0.x'
+    - name: Install SqlPackage
+      run: dotnet tool install --global Microsoft.SqlPackage
+    - name: Run integration tests with Testcontainers
+      run: dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
+    - name: Upload integration test results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: integration-test-results-sqlserver-${{ matrix.sqlserver }}
+        path: artifacts/integration-tests
+
   # Publish the NuGet package to NuGet.org when building master branch
   publish:
     permissions:
@@ -620,6 +642,7 @@ jobs:
     needs:
     - deploy-sqlpackage
     - deploy-publish
+    - integration-tests
     steps:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v6

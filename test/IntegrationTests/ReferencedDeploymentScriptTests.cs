@@ -1,17 +1,37 @@
-﻿using System;
-using System.IO;
-using Microsoft.Data.SqlClient;
-using Microsoft.SqlServer.Dac.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Data.SqlClient;
+using MSBuild.Sdk.SqlProj.DacpacTool;
 using Shouldly;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     [TestClass]
     [DoNotParallelize]
     [TestCategory("SqlServer")]
-    public class DeploymentIntegrationTests
+    public class ReferencedDeploymentScriptTests
     {
+        private static SqlServerFixture _fixture = null!;
+
+        [ClassInitialize]
+        public static async Task InitializeAsync(TestContext context)
+        {
+            _fixture = new SqlServerFixture();
+            try
+            {
+                await _fixture.InitializeAsync(context.CancellationToken);
+            }
+            catch
+            {
+                await _fixture.DisposeAsync();
+                throw;
+            }
+        }
+
+        [ClassCleanup]
+        public static async Task CleanupAsync()
+        {
+            await _fixture.DisposeAsync();
+        }
+
         [TestMethod]
         [DataRow(true, true)]
         [DataRow(true, false)]
@@ -19,13 +39,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow(false, false)]
         public void DeployDacpac_OnlyRunsReferencePostDeploymentAfterSuccess(bool failDeployment, bool runScriptsFromReferences)
         {
-            var connectionString = Environment.GetEnvironmentVariable("SQLPROJ_TEST_CONNECTION_STRING");
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                Assert.Inconclusive("Set SQLPROJ_TEST_CONNECTION_STRING to a SQL Server connection with permission to create test databases.");
-            }
-
-            var connection = new SqlConnectionStringBuilder(connectionString)
+            var connection = new SqlConnectionStringBuilder(_fixture.SqlServer.GetConnectionString())
             {
                 InitialCatalog = "master",
             };
@@ -49,7 +63,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 File.WriteAllText(postDeploy.FullName, "INSERT INTO dbo.DeploymentMarker (Id) VALUES (42);\nPRINT N'REFERENCE_POSTDEPLOY_RAN';\nGO\n");
                 var reference = BuildPackage(directory, "Reference", "CREATE TABLE dbo.DeploymentMarker (Id int NOT NULL);", postDeploy: postDeploy);
 
-                FileInfo preDeploy = null;
+                FileInfo? preDeploy = null;
                 if (failDeployment)
                 {
                     preDeploy = new FileInfo(Path.Combine(directory.FullName, "PreDeploy.sql"));
@@ -105,10 +119,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             }
         }
 
-        private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo reference = null, FileInfo preDeploy = null, FileInfo postDeploy = null)
+        private static FileInfo BuildPackage(DirectoryInfo directory, string name, string sql, FileInfo? reference = null, FileInfo? preDeploy = null, FileInfo? postDeploy = null)
         {
             using var builder = new PackageBuilder(new TestConsole());
-            builder.UsingVersion(SqlServerVersion.Sql160);
+            builder.UsingVersion(_fixture.TargetPlatform);
             builder.SetMetadata(name, "1.0.0");
             if (reference != null)
             {
@@ -124,7 +138,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return package;
         }
 
-        private static object ExecuteScalar(string connectionString, string sql)
+        private static object? ExecuteScalar(string connectionString, string sql)
         {
             using var connection = new SqlConnection(connectionString);
             connection.Open();
