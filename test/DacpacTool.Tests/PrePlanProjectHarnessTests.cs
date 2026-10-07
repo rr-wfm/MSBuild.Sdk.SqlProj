@@ -149,7 +149,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var path = properties.GetProperty(propertyName).GetString()
                 ?? throw new InvalidDataException($"MSBuild property '{propertyName}' did not contain a path.");
 
-            return Path.GetFullPath(path, ProjectDirectory);
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path, ProjectDirectory));
         }
 
         private static void AssertItemsExcludeDirectories(string msbuildOutput, params string[] outputDirectories)
@@ -166,9 +166,10 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
                 foreach (var item in itemGroup.EnumerateArray())
                 {
-                    var fullPath = item.GetProperty("FullPath").GetString();
+                    var fullPath = item.GetProperty("FullPath").GetString()
+                        ?? throw new InvalidDataException($"MSBuild item '{itemType}' did not contain a full path.");
                     var isUnderOutputDirectory = outputDirectories.Any(directory =>
-                        fullPath.StartsWith(Path.GetFullPath(directory) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                        fullPath.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
 
                     isUnderOutputDirectory.ShouldBeFalse($"Item '{fullPath}' should be excluded from evaluated project items.");
                 }
