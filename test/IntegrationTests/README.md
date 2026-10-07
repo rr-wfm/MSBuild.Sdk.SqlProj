@@ -23,12 +23,12 @@ The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject]
 
 ## Run locally
 
-Use a current .NET 10 SDK, an x64 host with a local Docker daemon running Linux containers, and SqlPackage. CI uses SqlPackage 170.5.96, which requires .NET runtime 10.0.11 or later.
+Use a current .NET 10 SDK, an x64 host with a local Docker daemon running Linux containers, and SqlPackage. CI installs the latest stable SqlPackage version without pinning a specific version.
 
 From the repository root:
 
 ```bash
-dotnet tool install --global Microsoft.SqlPackage --version 170.5.96
+dotnet tool install --global Microsoft.SqlPackage
 dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release
 ```
 

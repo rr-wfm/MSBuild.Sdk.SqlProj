@@ -623,7 +623,7 @@ jobs:
       with:
         dotnet-version: '10.0.x'
     - name: Install SqlPackage
-      run: dotnet tool install --global Microsoft.SqlPackage --version 170.5.96
+      run: dotnet tool install --global Microsoft.SqlPackage
     - name: Run integration tests with Testcontainers
       run: dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
     - name: Upload integration test results
