@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "MSBuild.Sdk.SqlProj",
+    "classifications": [
+        "Database",
+        "SqlServer",
+        "Publish Profile"
+    ],
+    "identity": "MSBuild.Sdk.SqlProj.PublishProfile",
+    "name": "Database publish profile",
+    "description": "A publish profile for deploying a .dacpac with SqlPackage",
+    "shortName": "publishprofile",
+    "tags": {
+        "language": "C#",
+        "type": "item"
+    },
+    "defaultName": "Development",
+    "sourceName": "Template"
+}

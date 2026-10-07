@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProfileVersionNumber>1</ProfileVersionNumber>
+    <TargetDatabaseName>MyDatabase</TargetDatabaseName>
+    <DeployScriptFileName>MyDatabase.sql</DeployScriptFileName>
+    <TargetConnectionString>Data Source=localhost;Integrated Security=True;Encrypt=True;TrustServerCertificate=False</TargetConnectionString>
+    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <DropObjectsNotInSource>False</DropObjectsNotInSource>
+  </PropertyGroup>
+</Project>
