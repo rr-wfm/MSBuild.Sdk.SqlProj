@@ -8,7 +8,7 @@ Microsoft provides two other project types, that have features similar to this S
 - Microsoft.Build.Sql based projects - SDK-style projects, that work on all platforms, and are supported by tooling in
   - Visual Studio Code (VS Code)
   - SQL Server Management Studio (SSMS)
-  - Visual Studio 2022 as a opt-in preview only (no support in Visual Studio 2026)
+  - Visual Studio 2022 with SQL Server Data Tools, SDK-style (preview) - no support in Visual Studio 2026.
 
 Microsoft has published [this comparison table](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/sql-projects-tools?view=sql-server-ver17#feature-set-comparison), and based on that, we have added this SDK used in combination with the SQL Database Projects Power Tools extension for Visual Studio.
 
