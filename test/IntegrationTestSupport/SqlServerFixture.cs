@@ -3,8 +3,11 @@ using DotNet.Testcontainers.Networks;
 using Microsoft.SqlServer.Dac.Model;
 using Testcontainers.MsSql;
 
-namespace MSBuild.Sdk.SqlProj.IntegrationTests;
+namespace MSBuild.Sdk.SqlProj.TestSupport;
 
+/// <summary>
+/// Owns a SQL Server container and its private network for use by any integration test project.
+/// </summary>
 internal sealed class SqlServerFixture : IAsyncDisposable
 {
     public string Password { get; } = $"SqlProj!{Guid.NewGuid():N}";
@@ -12,12 +15,16 @@ internal sealed class SqlServerFixture : IAsyncDisposable
     public MsSqlContainer SqlServer { get; }
     public SqlServerVersion TargetPlatform { get; }
 
-    public SqlServerFixture()
+    /// <summary>
+    /// Uses the caller's default version unless SQLPROJ_TEST_SQLSERVER_VERSION selects 2022 or 2025;
+    /// SQLPROJ_TEST_SQLSERVER_IMAGE optionally overrides the container image.
+    /// </summary>
+    public SqlServerFixture(string defaultVersion = "2022")
     {
         var version = Environment.GetEnvironmentVariable("SQLPROJ_TEST_SQLSERVER_VERSION");
         if (string.IsNullOrWhiteSpace(version))
         {
-            version = "2022";
+            version = defaultVersion;
         }
 
         TargetPlatform = version switch
@@ -40,6 +47,9 @@ internal sealed class SqlServerFixture : IAsyncDisposable
             .Build();
     }
 
+    /// <summary>
+    /// Creates the private network and starts SQL Server with a five-minute startup timeout.
+    /// </summary>
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await Network.CreateAsync(cancellationToken);
@@ -48,6 +58,9 @@ internal sealed class SqlServerFixture : IAsyncDisposable
         await SqlServer.StartAsync(timeout.Token);
     }
 
+    /// <summary>
+    /// Disposes the SQL Server container and attempts network cleanup even if container cleanup fails.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         try

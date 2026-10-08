@@ -17,7 +17,7 @@ The profile cases exercise SqlPackage's existing `.publish.xml` support. The tes
 
 Every publishing case queries the resulting database to verify `dbo.MyTable` has exactly the expected columns: `Column1` (`nvarchar`) and `Column2` (`int`).
 
-The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Each test class uses [SqlServerFixture](SqlServerFixture.cs) with its own container. It defaults to `mcr.microsoft.com/mssql/server:2022-latest`, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
+The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Each test class uses [SqlServerFixture](../IntegrationTestSupport/SqlServerFixture.cs) with its own container. It defaults to `mcr.microsoft.com/mssql/server:2022-latest`, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
 
 `ReferencedDeploymentScriptTests.cs` preserves the four cases from #987: deployment succeeds or fails, with referenced scripts enabled or disabled. It verifies that referenced post-deployment scripts run only after successful deployment with `RunScriptsFromReferences` enabled, checks the resulting database objects and marker rows, and asserts the deployment return code and failure output. These tests build their own small DACPACs and require only Docker and the .NET SDK.
 
@@ -63,7 +63,7 @@ done
 
 The default version is `2022`; CI runs the suite with both `2022` and `2025`. Each version uses its corresponding `-latest` container image and target platform.
 
-Before building, `PublishingFixture` replaces `<SqlServerVersion>` in its temporary copy of `test/TestProject/TestProject.csproj` with `Sql160` for 2022 or `Sql170` for 2025. The checked-in project remains unchanged at `Sql160`; building it directly still uses that target. The referenced-script tests use the same selected platform when building their DACPACs programmatically. This override applies only to the Testcontainers suite, not the separate end-to-end deployment jobs.
+Before building, `PublishingFixture` replaces `<SqlServerVersion>` in its temporary copy of `test/TestProject/TestProject.csproj` with `Sql160` for 2022 or `Sql170` for 2025. The checked-in project remains unchanged at `Sql160`; building it directly still uses that target. The referenced-script tests use the same selected platform when building their DACPACs programmatically. This override applies only to this suite, not the separate end-to-end deployment jobs.
 
 To pin a particular image, also set `SQLPROJ_TEST_SQLSERVER_IMAGE`. This overrides only the image; set `SQLPROJ_TEST_SQLSERVER_VERSION` to its matching major version so the DACPAC target stays consistent.
 
@@ -73,4 +73,4 @@ For the full suite, SqlPackage must be on `PATH`; set `SQLPACKAGE_PATH` to use a
 
 The fixture removes its containers, network, temporary files, and generated deployment image after the run. Downloaded dependency images remain cached. The container test intentionally uses a bind mount to exercise supplying a profile at container runtime, so it requires a local Docker daemon.
 
-The `integration-tests` CI matrix runs the full suite on SQL Server 2022 and 2025. Each matrix entry uploads separately named TRX artifacts, and both must pass before release publishing. The workflow’s existing end-to-end `deploy-*` jobs remain separate and continue to use their own SQL Server containers.
+The `integration-tests` CI matrix runs the full suite on SQL Server 2022 and 2025. Each matrix entry uploads separately named TRX artifacts, and both must pass before release publishing. The separate `deploy-*` jobs run the [packaged deployment tests](../PackagedDeploymentIntegrationTests/README.md) using their own SQL Server containers.

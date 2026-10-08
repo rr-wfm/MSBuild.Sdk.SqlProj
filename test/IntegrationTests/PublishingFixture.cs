@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml.Linq;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
+using MSBuild.Sdk.SqlProj.TestSupport;
 using Shouldly;
 using Testcontainers.MsSql;
 
@@ -13,12 +13,14 @@ internal sealed class PublishingFixture : IAsyncDisposable
     private readonly TestContext _context;
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("SqlProjPublishing_");
     private readonly SqlServerFixture _server = new();
+    private readonly IntegrationTestProcess _process;
     private bool _imageBuildAttempted;
     private bool _disposed;
 
     public PublishingFixture(TestContext context)
     {
         _context = context;
+        _process = new IntegrationTestProcess(context, _directory.FullName, Password);
     }
 
     public string WorkspaceDirectory => _directory.FullName;
@@ -115,43 +117,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
 
     public Task RunAsync(string executable, params string[] arguments)
     {
-        return RunProcessAsync(executable, arguments, _context.CancellationToken);
-    }
-
-    private async Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
-    {
-        var start = new ProcessStartInfo(executable)
-        {
-            WorkingDirectory = _directory.FullName,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        foreach (var argument in arguments)
-        {
-            start.ArgumentList.Add(argument);
-        }
-        using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {executable}.");
-        var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
-        var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromMinutes(10));
-        try
-        {
-            await process.WaitForExitAsync(timeout.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync(CancellationToken.None);
-            cancellationToken.ThrowIfCancellationRequested();
-            throw new TimeoutException($"{executable} exceeded the ten-minute test timeout.");
-        }
-        finally
-        {
-            _context.WriteLine(((await stdout) + (await stderr)).Replace(Password, "[REDACTED]", StringComparison.Ordinal));
-        }
-        process.ExitCode.ShouldBe(0, $"{executable} failed. See test output.");
+        return _process.RunAsync(executable, arguments, _context.CancellationToken);
     }
 
     public async ValueTask DisposeAsync()
@@ -174,7 +140,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
                     // A failed image build might not have created a tag to remove.
                     try
                     {
-                        await RunProcessAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
+                        await _process.RunAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
                     }
                     catch (ShouldAssertException exception)
                     {
