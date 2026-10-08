@@ -117,6 +117,32 @@ This will ensure that `MyOtherProject` is built first and the resulting `.dacpac
 > [!NOTE]
 > We do not support adding a `ProjectReference` to an existing `.sqlproj` file.
 
+## Direct DACPAC file references
+
+Reference an existing `.dacpac` file without a NuGet package or another project:
+
+```xml
+<ItemGroup>
+  <ArtifactReference Include="../Database artifacts/Shared.dacpac" />
+</ItemGroup>
+```
+
+`Include` is the DACPAC path, absolute or relative to the consuming project directory. Paths may contain spaces. The file must already exist when references are resolved; a missing file fails the build even if compilation would otherwise be skipped. Use a [project reference](#project-references) when the dependency should be built automatically.
+
+`HintPath` is optional and supports migrating the [reference syntax used by original `.sqlproj` projects](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/concepts/database-references). New references only need `Include`. If a nonempty `HintPath` is present, it supplies the file path instead of `Include`; an absent or empty value uses `Include`.
+
+Database mapping and dependency suppression use the same metadata as package and project references. See [referencing another database](#reference-another-database), [SQLCMD variables](#use-sqlcmd-variables), and [SuppressMissingDependenciesErrors](#circular-references-and-suppressmissingdependencieserrors); use `ArtifactReference` in place of `PackageReference` in those examples. Missing-dependency suppression does not suppress missing-file errors. For deployment to the same database, see [deploying composite objects](#deploy-composite-objects).
+
+Referenced files are copied alongside the consuming DACPAC and to the output of projects that reference it. To disable copying for a reference:
+
+```xml
+<ArtifactReference Include="references/Shared.dacpac" Private="false" />
+```
+
+Omitting `Private` or setting it to `true` enables copying. Changing it to `false` does not remove copies left by previous builds. A newer referenced file triggers recompilation regardless of `Private`. Use `-t:Rebuild` when changing reference settings through command-line properties, because incremental compilation may not detect those changes.
+
+Declare each dependency once, including across package, project, and direct references; duplicates are not automatically removed. Use distinct filenames because copied references share an output directory. Add direct references by editing the project file; Visual Studio reference-picker integration and automatic lookup of installed system DACPACs are not supported.
+
 ## Referencing system databases
 
 Microsoft has released NuGet packages containing the definitions of the `master` and `msdb` databases. This is useful if you want to reference objects from those databases within your own projects without getting warnings. To reference these, you'll need to use the `DacpacName` feature for package references described above. For example:
