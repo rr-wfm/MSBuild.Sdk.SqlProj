@@ -135,7 +135,7 @@ When using `dotnet publish /t:PublishDatabase` with `RunScriptsFromReferences=tr
 
 | Referenced script | Starts in |
 | --- | --- |
-| Pre-deployment | The SQL login's default database, such as `master` |
+| Pre-deployment | The authenticated login's default database, such as `master` |
 | Post-deployment | The target database (`TargetDatabaseName`), after a successful deployment |
 
 This applies whether the target already exists or is being created. `$(DatabaseName)` expands to the target's name but does not switch the current database.
