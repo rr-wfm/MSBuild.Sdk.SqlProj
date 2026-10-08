@@ -123,91 +123,25 @@ Reference an existing `.dacpac` file without a NuGet package or another project:
 
 ```xml
 <ItemGroup>
-  <ArtifactReference Include="../Database artifacts/Shared.dacpac">
-    <HintPath>../Database artifacts/Shared.dacpac</HintPath>
-  </ArtifactReference>
+  <ArtifactReference Include="../Database artifacts/Shared.dacpac" />
 </ItemGroup>
 ```
 
-`ArtifactReference` is the direct-file authoring item. Use the DACPAC path for both `Include` and `HintPath`, as shown above. When the `HintPath` element is omitted or its value is empty, the SDK uses the path in `Include`. Otherwise, it uses the path in `HintPath`. If the file at that path does not exist, the build fails; the SDK does not fall back to `Include`. The selected path may be absolute or relative to the consuming project directory, including spaces. With a nonempty `HintPath`, `Include` is the item identity and may differ from the file path.
+`Include` is the DACPAC path, absolute or relative to the consuming project directory. Paths may contain spaces. The file must already exist when references are resolved; a missing file fails the build even if compilation would otherwise be skipped. Use a [project reference](#project-references) when the dependency should be built automatically.
 
-The file must already exist when references are resolved; this item does not build or restore it. A missing file fails the build with a diagnostic naming the reference and selected path, even if compilation would otherwise be skipped. Use `ProjectReference` when the dependency should be built automatically.
+`HintPath` is optional and supports migrating the [reference syntax used by original `.sqlproj` projects](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/concepts/database-references). New references only need `Include`. If a nonempty `HintPath` is present, it supplies the file path instead of `Include`; an absent or empty value uses `Include`. A missing file at the selected path fails the build without falling back to another path.
 
-By default, objects are referenced in the same database. The following metadata works just as it does for package and project references:
+Database mapping and dependency suppression use the same metadata as package and project references. See [referencing another database](#reference-another-database), [SQLCMD variables](#use-sqlcmd-variables), and [SuppressMissingDependenciesErrors](#circular-references-and-suppressmissingdependencieserrors); use `ArtifactReference` in place of `PackageReference` in those examples. Missing-dependency suppression does not suppress missing-file errors. For deployment to the same database, see [deploying composite objects](#deploy-composite-objects).
 
-| Metadata | Purpose |
-| --- | --- |
-| `DatabaseVariableLiteralValue` | Reference a different database by its literal name. |
-| `DatabaseSqlCmdVariable` | Reference a different database through a declared SQLCMD variable. |
-| `ServerSqlCmdVariable` | Reference a different server through a declared SQLCMD variable; combine with a database literal or variable. |
-| `SuppressMissingDependenciesErrors` | Suppress missing dependencies in the referenced model (`True`/`False`, defaults to `False`). This does not suppress missing-file errors. |
-
-### Reference another database by name
-
-For a fixed database name, set `DatabaseVariableLiteralValue`:
+Referenced files are copied alongside the consuming DACPAC and to the output of projects that reference it. To disable copying for a reference:
 
 ```xml
-<ItemGroup>
-  <ArtifactReference Include="references/Shared.dacpac">
-    <HintPath>references/Shared.dacpac</HintPath>
-    <DatabaseVariableLiteralValue>Shared</DatabaseVariableLiteralValue>
-    <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-  </ArtifactReference>
-</ItemGroup>
+<ArtifactReference Include="references/Shared.dacpac" Private="false" />
 ```
 
-SQL can then reference `[Shared].[dbo].[MyTable]`. To join objects from two referenced databases, add one `ArtifactReference` per DACPAC with its own database mapping.
+Omitting `Private` or setting it to `true` enables copying. Changing it to `false` does not remove copies left by previous builds. A newer referenced file triggers recompilation regardless of `Private`. Use `-t:Rebuild` when changing reference settings through command-line properties, because incremental compilation may not detect those changes.
 
-You can also supply the referenced database name through an MSBuild property:
-
-```xml
-<ItemGroup>
-  <ArtifactReference Include="references/Shared.dacpac">
-    <DatabaseVariableLiteralValue>$(SharedDatabase)</DatabaseVariableLiteralValue>
-  </ArtifactReference>
-</ItemGroup>
-```
-
-```sh
-dotnet build -t:Rebuild -p:SharedDatabase=Reporting
-```
-
-Here, `SharedDatabase` is a property defined by your project usage, not a built-in SDK setting. MSBuild substitutes `Reporting` into the reference metadata, allowing SQL to reference `[Reporting].[dbo].[MyTable]`. This sets the referenced database name used during compilation; it does not rename or deploy a database, or replace names in your SQL files. Your SQL must use the matching database name.
-
-Use `-t:Rebuild` when changing reference settings through command-line properties because incremental compilation may not detect those changes. For database names that vary between deployment environments, use SQLCMD variables as shown below so you can supply the name at deployment without rebuilding the DACPAC.
-
-### Use SQLCMD variables
-
-```xml
-<ItemGroup>
-  <ArtifactReference Include="references/Shared.dacpac">
-    <HintPath>references/Shared.dacpac</HintPath>
-    <DatabaseSqlCmdVariable>SharedDatabase</DatabaseSqlCmdVariable>
-    <ServerSqlCmdVariable>SharedServer</ServerSqlCmdVariable>
-    <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-  </ArtifactReference>
-  <SqlCmdVariable Include="SharedDatabase" DefaultValue="Shared" />
-  <SqlCmdVariable Include="SharedServer" DefaultValue="localhost" />
-</ItemGroup>
-```
-
-SQL can then reference `[$(SharedServer)].[$(SharedDatabase)].[dbo].[MyTable]`. Declare the SQLCMD variables separately; reference metadata does not create them. For a fixed database name, use `DatabaseVariableLiteralValue="Shared"` instead of `DatabaseSqlCmdVariable`.
-
-Referenced files are copied to the build output alongside the consuming DACPAC. They are also copied to the output of projects that reference the consuming project. To prevent a referenced file from being copied, set `Private` to `false`:
-
-```xml
-<ArtifactReference Include="references/Shared.dacpac">
-  <Private>false</Private>
-</ArtifactReference>
-```
-
-Omitting `Private` or setting it to `true` enables copying. Changing `Private` to `false` does not remove copies left by previous builds.
-
-A newer referenced file triggers recompilation, including when `Private` is `false`. All copied references use the same output directory, so use distinct filenames to avoid collisions.
-
-Declare each dependency once. For example, do not add an `ArtifactReference` for a DACPAC already referenced through a package or project; duplicate references are not automatically removed.
-
-The syntax follows Microsoft's documented `ArtifactReference`/`HintPath` shape, with the path selection rules described above. Microsoft recommends project/package references for new development. Add direct references by editing the project file; Visual Studio reference-picker integration and automatic lookup of installed system DACPACs are not supported.
+Declare each dependency once, including across package, project, and direct references; duplicates are not automatically removed. Use distinct filenames because copied references share an output directory. Add direct references by editing the project file; Visual Studio reference-picker integration and automatic lookup of installed system DACPACs are not supported.
 
 ## Referencing system databases
 
