@@ -4,8 +4,11 @@
 
 Microsoft provides two other project types, that have features similar to this SDK.
 
-- "Classic" SSDT projects in Visual Studio - only builds and works on Windows, and supports multiple designers.
-- Microsoft.Build.Sql based projects - SDK-style projects, that work on all platforms, and are supported by tooling in Visual Studio Code (VS Code) and SQL Server Management Studio (SSMS) - no Visual Studio support at the moment.
+- "Classic" SSDT projects in Visual Studio (VS) - only builds and works on Windows, and supports multiple designers.
+- Microsoft.Build.Sql based projects - SDK-style projects, that work on all platforms, and are supported by tooling in
+  - Visual Studio Code (VS Code)
+  - SQL Server Management Studio (SSMS)
+  - Visual Studio 2022 with SQL Server Data Tools, SDK-style (preview) - no support in Visual Studio 2026.
 
 Microsoft has published [this comparison table](https://learn.microsoft.com/en-us/sql/tools/sql-database-projects/sql-projects-tools?view=sql-server-ver17#feature-set-comparison), and based on that, we have added this SDK used in combination with the SQL Database Projects Power Tools extension for Visual Studio.
 
@@ -31,7 +34,7 @@ Microsoft has published [this comparison table](https://learn.microsoft.com/en-u
 | SQL files can be added by placing in project folder | Yes | Yes | No | Yes |
 | SQL files can be excluded from build | Yes | Yes | Yes | Yes |
 | Pre-deployment and post-deployment scripts | Yes | Yes | Yes | Yes |
-| New object templates | Yes | Yes | Yes | Yes<sup>4</sup> |
+| New object templates | Yes<sup>4</sup> | Yes | Yes | Yes<sup>4</sup> |
 | Project files can be organized into folders | Yes | Yes | Yes | Yes |
 | Schema comparison project to database | Yes | Yes | Yes | Yes |
 | Schema comparison database to project | Yes | Yes | Yes | Yes |
@@ -58,7 +61,7 @@ The table below shows which IDEs support each of the three project types.
 | IDE | Classic .sqlproj | Microsoft.Build.Sql .sqlproj | MSBuild.Sdk.SqlProj |
 | --- | --- | --- | --- |
 | Visual Studio | Yes | No | Yes (with [SQL Database Projects Power Tools](https://marketplace.visualstudio.com/items?itemName=ErikEJ.SqlProjectPowerTools) extension) |
-| VS Code | No | Yes (with [SQL Database Projects](https://marketplace.visualstudio.com/items?itemName=ms-mssql.sql-database-projects-vscode) extension) | Partial<sup>5</sup> |
+| VS Code | Yes | Yes (with [SQL Database Projects](https://marketplace.visualstudio.com/items?itemName=ms-mssql.sql-database-projects-vscode) extension) | Partial<sup>5</sup> |
 | SSMS | No | Yes | No |
 | Rider | No | Yes | Partial<sup>5</sup> |
 
