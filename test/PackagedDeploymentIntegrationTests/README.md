@@ -12,11 +12,11 @@ Each case checks successful deployment and seeded rows in the project's `dbo.Tes
 
 ## How CI runs it
 
-The [main workflow](../../.github/workflows/main.yml) builds one SDK package and separate dependency packages and DACPACs targeting SQL Server 2022 (`Sql160`) and 2025 (`Sql170`). Each target's DACPAC is uploaded after the exact-version build, before floating-version builds overwrite it.
+The [main workflow](../../.github/workflows/main.yml) builds one SDK package, dependency package, and DACPACs targeting SQL Server 2025 (`Sql170`). The consuming project's DACPAC is uploaded after the exact-version build, before floating-version builds overwrite it.
 
-The `deploy-sqlpackage`, `deploy-publish`, and `deploy-container` jobs call the [packaged deployment workflow](../../.github/workflows/packaged-deployment.yml). Each runs its corresponding test category against both server versions with the matching artifacts. Results are uploaded separately for each category and version, including when tests fail.
+The `deploy-sqlpackage`, `deploy-publish`, and `deploy-container` jobs call the [packaged deployment workflow](../../.github/workflows/packaged-deployment.yml). Each runs its corresponding test category against SQL Server 2025 with the matching artifacts. Results are uploaded separately for each category, including when tests fail.
 
-Release publishing requires both versions of `deploy-sqlpackage` and `deploy-publish` to pass, along with the separate [integration test suite](../IntegrationTests/README.md). `deploy-container` runs in CI but is not a release prerequisite.
+Release publishing requires `deploy-sqlpackage` and `deploy-publish` to pass, along with the separate [integration test suite](../IntegrationTests/README.md). `deploy-container` runs in CI but is not a release prerequisite.
 
 ## Run locally
 
@@ -41,20 +41,12 @@ bash "$HOME/.dotnet/dotnet-install.sh" \
 
 This assumes the installation script is already saved at that path. For a package-manager installation, update the runtime through that package manager instead.
 
-The artifact preparation script creates a fresh directory under `artifacts/`, packs the SDK and dependency, builds the consuming project, and prints the exact `dotnet test` command. Run that printed command to execute all three tests against SQL Server 2025, the default.
+The artifact preparation script creates a fresh directory under `artifacts/`, packs the SDK and dependency, builds the consuming project, and prints the exact `dotnet test` command. Run that printed command to execute all three tests against SQL Server 2025.
 
-To prepare for SQL Server 2022 instead:
-
-```bash
-SQLPROJ_TEST_SQLSERVER_VERSION=2022 \
-  bash test/PackagedDeploymentIntegrationTests/prepare-artifacts.sh
-```
-
-Run the command it prints, which selects the same server version. To use artifacts you already have:
+To use artifacts you already have:
 
 ```bash
 SQLPROJ_TEST_ARTIFACTS=/absolute/path/to/prepared-artifacts \
-SQLPROJ_TEST_SQLSERVER_VERSION=2025 \
   dotnet test test/PackagedDeploymentIntegrationTests/PackagedDeploymentIntegrationTests.csproj -c Release \
   --logger trx --results-directory artifacts/packaged-results
 ```
@@ -76,7 +68,7 @@ dacpac/
 
 Provide exactly one package for each ID. Tests read versions from the package manifests and use a private package cache and source mappings to resolve the supplied packages.
 
-The dependency package and DACPACs must target the selected server version. The fixture rejects mismatches, so set `SQLPROJ_TEST_SQLSERVER_VERSION` for both preparation and testing. To pin a container image, set `SQLPROJ_TEST_SQLSERVER_IMAGE` as well; its major version must match the selected version.
+The dependency package and DACPACs must target SQL Server 2025 (`Sql170`). The fixture rejects mismatches.
 
 ## Diagnostics and cleanup
 

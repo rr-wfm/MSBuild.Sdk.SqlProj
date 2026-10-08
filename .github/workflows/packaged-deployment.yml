@@ -14,13 +14,8 @@ jobs:
   deploy:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        sqlserver: [ '2022', '2025' ]
     env:
       TEST_CATEGORY: ${{ inputs.test-category }}
-      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
       SQLPROJ_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts/packaged-inputs
     steps:
     - uses: actions/checkout@v7
@@ -35,11 +30,11 @@ jobs:
         path: artifacts/packaged-inputs/packages
     - uses: actions/download-artifact@v8
       with:
-        name: test-package-${{ matrix.sqlserver }}
+        name: test-package
         path: artifacts/packaged-inputs/packages
     - uses: actions/download-artifact@v8
       with:
-        name: dacpac-package-${{ matrix.sqlserver }}
+        name: dacpac-package
         path: artifacts/packaged-inputs/dacpac
     - name: Install SqlPackage
       if: inputs.test-category == 'PackagedSqlPackage'
@@ -58,6 +53,6 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: packaged-deployment-${{ inputs.test-category }}-${{ matrix.sqlserver }}
+        name: packaged-deployment-${{ inputs.test-category }}
         path: artifacts/packaged-results
         if-no-files-found: warn

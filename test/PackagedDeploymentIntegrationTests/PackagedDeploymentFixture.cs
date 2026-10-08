@@ -24,7 +24,7 @@ internal sealed class PackagedDeploymentFixture : IAsyncDisposable
             _diagnostics, Path.Combine(_directory.FullName, "packages"));
     }
 
-    public SqlServerFixture Server { get; } = new(defaultVersion: "2025");
+    public SqlServerFixture Server { get; } = new();
     public string SqlPackage { get; } = Environment.GetEnvironmentVariable("SQLPACKAGE_PATH") ?? "sqlpackage";
     public string DatabaseName { get; } = $"Packaged_{Guid.NewGuid():N}";
     public string ImageName { get; } = $"sqlproj-packaged-test:{Guid.NewGuid():N}";
@@ -43,7 +43,7 @@ internal sealed class PackagedDeploymentFixture : IAsyncDisposable
         var sdkVersion = ReadPackageVersion(packages, "MSBuild.Sdk.SqlProj");
         var dependencyVersion = ReadPackageVersion(packages, "TestProject");
         DacpacPath = Path.Combine(artifacts, "dacpac", "TestProjectWithSDKRef.dacpac");
-        // Fail before starting SQL Server if a server/image selection does not match its artifacts.
+        // Fail before starting SQL Server if artifacts do not target SQL Server 2025.
         foreach (var name in new[] { "TestProjectWithSDKRef.dacpac", "TestProject.dacpac" })
         {
             using var stream = File.OpenRead(Path.Combine(artifacts, "dacpac", name));
@@ -125,7 +125,7 @@ internal sealed class PackagedDeploymentFixture : IAsyncDisposable
         using var model = archive.GetEntry("model.xml")!.Open();
         var provider = XDocument.Load(model).Root!.Attribute("DspName")!.Value;
         provider.ShouldBe($"Microsoft.Data.Tools.Schema.Sql.{Server.TargetPlatform}DatabaseSchemaProvider",
-            $"{name} must match SQLPROJ_TEST_SQLSERVER_VERSION. Rebuild all deployment artifacts for the selected server.");
+            $"{name} must target SQL Server 2025 (Sql170). Rebuild all deployment artifacts.");
     }
 
     public Task BuildProjectAsync() => RunAsync("dotnet", "build", ProjectPath, "-c", "Release",

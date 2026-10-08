@@ -138,30 +138,17 @@ jobs:
         name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
-    # Package dependencies for both deployment targets using the same built SDK.
-    - name: package TestProject for SQL Server 2022 and 2025
-      shell: bash
+    # Package the dependency for SQL Server 2025 using the built SDK.
+    - name: package TestProject for SQL Server 2025
       run: |
-        for version in 2022 2025; do
-          case "$version" in
-            2022) target=Sql160 ;;
-            2025) target=Sql170 ;;
-          esac
-          dotnet build ./test/TestProject/TestProject.csproj -c Release -t:Rebuild -p:SqlServerVersion="$target"
-          dotnet pack ./test/TestProject/TestProject.csproj -c Release --no-build -p:SqlServerVersion="$target" -o "artifacts/test-package-$version"
-        done
+        dotnet build ./test/TestProject/TestProject.csproj -c Release -t:Rebuild -p:SqlServerVersion=Sql170
+        dotnet pack ./test/TestProject/TestProject.csproj -c Release --no-build -p:SqlServerVersion=Sql170 -o artifacts/test-package
 
-    - name: upload SQL Server 2022 dependency
+    - name: upload TestProject dependency
       uses: actions/upload-artifact@v7
       with:
-        name: test-package-2022
-        path: artifacts/test-package-2022/
-
-    - name: upload SQL Server 2025 dependency
-      uses: actions/upload-artifact@v7
-      with:
-        name: test-package-2025
-        path: artifacts/test-package-2025/
+        name: test-package
+        path: artifacts/test-package/
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -192,16 +179,10 @@ jobs:
       matrix:
         os: [ "ubuntu-24.04", "macos-14", "windows-2025" ]
         dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
-        sqlserver: [ '2022' ]
-        # Build SQL Server 2025 deployment artifacts without doubling the OS/SDK matrix.
-        include:
-          - os: ubuntu-24.04
-            dotnet: '10.0.x'
-            sqlserver: '2025'
       fail-fast: false
 
     env:
-      SQLPROJ_TARGET_PLATFORM: ${{ matrix.sqlserver == '2025' && 'Sql170' || 'Sql160' }}
+      SQLPROJ_TARGET_PLATFORM: Sql170
 
     steps:
     # Fetch sources
@@ -240,7 +221,7 @@ jobs:
     - name: download-artifact
       uses: actions/download-artifact@v8
       with:
-        name: test-package-${{ matrix.sqlserver }}
+        name: test-package
         path: test/TestProjectWithSDKRef/nuget-packages
 
     # Build the project using exact version number
@@ -257,7 +238,7 @@ jobs:
     - name: upload
       uses: actions/upload-artifact@v7
       with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.sqlserver }}-exact-version
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
         path: ./msbuild.binlog
 
     # Preserve the exact-version DACPAC and dependencies before floating-version builds
@@ -265,7 +246,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '10.0.x' }}
       uses: actions/upload-artifact@v7
       with:
-        name: dacpac-package-${{ matrix.sqlserver }}
+        name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/net10.0/
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
@@ -282,7 +263,7 @@ jobs:
     - name: upload
       uses: actions/upload-artifact@v7
       with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.sqlserver }}-floating-version
+        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
 
   deploy-sqlpackage:
@@ -304,15 +285,9 @@ jobs:
       test-category: PackagedContainer
 
   integration-tests:
-    name: Integration tests (SQL Server ${{ matrix.sqlserver }})
+    name: Integration tests (SQL Server 2025)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        sqlserver: ['2022', '2025']
-    env:
-      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
     steps:
     - uses: actions/checkout@v7
       with:
@@ -328,7 +303,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: integration-test-results-sqlserver-${{ matrix.sqlserver }}
+        name: integration-test-results-sqlserver
         path: artifacts/integration-tests
 
   # Publish the NuGet package to NuGet.org when building master branch

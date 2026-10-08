@@ -3,11 +3,7 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 cd "$repo_root"
-case "${SQLPROJ_TEST_SQLSERVER_VERSION:-2025}" in
-  2022) target=Sql160 ;;
-  2025) target=Sql170 ;;
-  *) echo 'SQLPROJ_TEST_SQLSERVER_VERSION must be 2022 or 2025.' >&2; exit 1 ;;
-esac
+target=Sql170
 
 # Always use a fresh artifact directory; stale packages must not satisfy the tests.
 mkdir -p "$repo_root/artifacts"
@@ -47,5 +43,5 @@ NUGET_PACKAGES="$work_dir/packages" dotnet build "$work_dir/project/TestProjectW
   -p:DependencyVersion="$dependency_version" -p:SqlServerVersion="$target" /warnaserror:SQL71502 \
   "-bl:$artifact_dir/prepare.binlog;ProjectImports=None"
 cp "$work_dir/project/bin/Release/net10.0/"*.dacpac "$artifact_dir/dacpac/"
-printf '\nArtifacts ready. Run:\nSQLPROJ_TEST_ARTIFACTS=%q SQLPROJ_TEST_SQLSERVER_VERSION=%q dotnet test test/PackagedDeploymentIntegrationTests/PackagedDeploymentIntegrationTests.csproj -c Release --logger trx --results-directory artifacts/packaged-results\n' \
-  "$artifact_dir" "${SQLPROJ_TEST_SQLSERVER_VERSION:-2025}"
+printf '\nArtifacts ready. Run:\nSQLPROJ_TEST_ARTIFACTS=%q dotnet test test/PackagedDeploymentIntegrationTests/PackagedDeploymentIntegrationTests.csproj -c Release --logger trx --results-directory artifacts/packaged-results\n' \
+  "$artifact_dir"
