@@ -46,7 +46,7 @@ All three projects enable semantic validation and the same analyzer package/defa
   <TargetRecoveryTimePeriod>60</TargetRecoveryTimePeriod>
 </PropertyGroup>
 <ItemGroup>
-  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.2">
+  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.4">
     <PrivateAssets>all</PrivateAssets>
     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
   </PackageReference>
