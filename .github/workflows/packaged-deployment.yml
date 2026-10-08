@@ -1,0 +1,58 @@
+name: Packaged deployment test
+
+on:
+  workflow_call:
+    inputs:
+      test-category:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      TEST_CATEGORY: ${{ inputs.test-category }}
+      SQLPROJ_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts/packaged-inputs
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: '10.0.x'
+    - uses: actions/download-artifact@v8
+      with:
+        name: sdk-package
+        path: artifacts/packaged-inputs/packages
+    - uses: actions/download-artifact@v8
+      with:
+        name: test-package
+        path: artifacts/packaged-inputs/packages
+    - uses: actions/download-artifact@v8
+      with:
+        name: dacpac-package
+        path: artifacts/packaged-inputs/dacpac
+    - name: Install SqlPackage
+      if: inputs.test-category == 'PackagedSqlPackage'
+      run: dotnet tool install --global Microsoft.SqlPackage
+    - name: Run packaged deployment test
+      shell: bash
+      run: |
+        case "$TEST_CATEGORY" in
+          PackagedSqlPackage|PackagedPublish|PackagedContainer) ;;
+          *) echo "Unknown packaged deployment category: $TEST_CATEGORY" >&2; exit 1 ;;
+        esac
+        dotnet test test/PackagedDeploymentIntegrationTests/PackagedDeploymentIntegrationTests.csproj -c Release \
+          --filter "TestCategory=$TEST_CATEGORY" --logger trx \
+          --results-directory artifacts/packaged-results
+    - name: Upload test results and deployment diagnostics
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: packaged-deployment-${{ inputs.test-category }}
+        path: artifacts/packaged-results
+        if-no-files-found: warn

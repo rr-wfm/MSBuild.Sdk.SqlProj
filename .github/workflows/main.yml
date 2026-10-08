@@ -12,6 +12,7 @@ on:
   workflow_dispatch:      
 
 permissions:
+  contents: read
   id-token: write   # required for GitHub OIDC
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -137,16 +138,17 @@ jobs:
         name: sdk-package
         path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
-    # Package TestProject
-    - name: dotnet pack TestProject
-      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj
+    # Package the dependency for SQL Server 2025 using the built SDK.
+    - name: package TestProject for SQL Server 2025
+      run: |
+        dotnet build ./test/TestProject/TestProject.csproj -c Release -t:Rebuild -p:SqlServerVersion=Sql170
+        dotnet pack ./test/TestProject/TestProject.csproj -c Release --no-build -p:SqlServerVersion=Sql170 -o artifacts/test-package
 
-    # Upload TestProject package
-    - name: upload TestProject
+    - name: upload TestProject dependency
       uses: actions/upload-artifact@v7
       with:
         name: test-package
-        path: ./test/TestProject/bin/Release/
+        path: artifacts/test-package/
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -178,6 +180,9 @@ jobs:
         os: [ "ubuntu-24.04", "macos-14", "windows-2025" ]
         dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
       fail-fast: false
+
+    env:
+      SQLPROJ_TARGET_PLATFORM: Sql170
 
     steps:
     # Fetch sources
@@ -221,12 +226,12 @@ jobs:
 
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:SqlServerVersion="$Env:SQLPROJ_TARGET_PLATFORM" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using fallback method of resolving version via path
     - name: build project (exact version / path resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:SqlServerVersion="$Env:SQLPROJ_TARGET_PLATFORM" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload binary log
@@ -236,23 +241,23 @@ jobs:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
         path: ./msbuild.binlog
 
-    # Build the project using single wildcard (i.e. 1.x.x-*)
-    - name: build project (single floating version)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
-      shell: pwsh
-
-    # Build the project using double wildcard (i.e. 1.*-*)
-    - name: build project (double floating version / dotnet 3)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
-      shell: pwsh
-
-    # Upload dacpac
+    # Preserve the exact-version DACPAC and dependencies before floating-version builds
     - name: upload
       if: ${{ matrix.os == 'ubuntu-24.04' && matrix.dotnet == '10.0.x' }}
       uses: actions/upload-artifact@v7
       with:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/net10.0/
+
+    # Build the project using single wildcard (i.e. 1.x.x-*)
+    - name: build project (single floating version)
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:SqlServerVersion="$Env:SQLPROJ_TARGET_PLATFORM" /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
+      shell: pwsh
+
+    # Build the project using double wildcard (i.e. 1.*-*)
+    - name: build project (double floating version / dotnet 3)
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:SqlServerVersion="$Env:SQLPROJ_TARGET_PLATFORM" /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      shell: pwsh
 
     # Upload binary log
     - name: upload
@@ -261,360 +266,28 @@ jobs:
         name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
         path: ./msbuild.binlog
 
-  # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
   deploy-sqlpackage:
-    runs-on: ubuntu-24.04
     needs: test
-    steps:
-    # Generate SQL Server secret
-    - name: Generate SQL Server secret
-      id: generate_sqlserver_secret
-      run: |
-        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
-        echo "::add-mask::$SECRET"
-        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
+    uses: ./.github/workflows/packaged-deployment.yml
+    with:
+      test-category: PackagedSqlPackage
 
-    # Start SQL Server container
-    - name: Start SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
-          -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
-  
-    # Wait for SQL Server to be ready
-    - name: Wait for SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Waiting for SQL Server to start..."
-        sql_ready=false
-        for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
-            echo "SQL Server is ready!"
-            sql_ready=true
-            break
-          fi
-          echo "Attempt $i: SQL Server not ready, waiting..."
-          sleep 10
-        done
-        if [ "$sql_ready" != true ]; then
-          echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
-          exit 1
-        fi
-  
-    # Download artifacts
-    - name: download-artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: dacpac-package
-        path: ~/dacpac-package
-
-    # Setup .NET SDK
-    - uses: actions/setup-dotnet@v6
-      with:
-        dotnet-version: '10.0.x'
-
-    # Install Microsoft.SqlPackage
-    - name: install microsoft.sqlpackage
-      run: dotnet tool install --tool-path . microsoft.sqlpackage
-
-    # Run sqlpackage
-    - name: sqlpackage publish
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: >
-        ./sqlpackage
-        /Action:Publish
-        /SourceFile:$HOME/dacpac-package/TestProjectWithSDKRef.dacpac
-        /Properties:IncludeCompositeObjects=True
-        /TargetServerName:localhost
-        /TargetUser:sa
-        /TargetPassword:"$SQL_SA_PASSWORD"
-        /TargetDatabaseName:TestProjectWithSDKRef
-        /TargetEncryptConnection:False
-
-    # Verify deployment
-    - name: verify-deployment
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
-          echo "Deployment succeeded!"
-        else
-          echo "Deployment failed!" >&2
-          exit 1
-        fi
-
-    # Dump logs of the container if something failed
-    - name: Dump docker logs on failure
-      if: failure()
-      uses: jwalton/gh-docker-logs@v2
-
-  # Attempt to deploy a project to a SQL Server instance running in a container using dotnet publish
   deploy-publish:
-    runs-on: ubuntu-24.04
     needs: test
-    steps:
-    # Generate SQL Server secret
-    - name: Generate SQL Server secret
-      id: generate_sqlserver_secret
-      run: |
-        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
-        echo "::add-mask::$SECRET"
-        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
+    uses: ./.github/workflows/packaged-deployment.yml
+    with:
+      test-category: PackagedPublish
 
-    # Start SQL Server container
-    - name: Start SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
-          -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
-  
-    # Wait for SQL Server to be ready
-    - name: Wait for SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Waiting for SQL Server to start..."
-        sql_ready=false
-        for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
-            echo "SQL Server is ready!"
-            sql_ready=true
-            break
-          fi
-          echo "Attempt $i: SQL Server not ready, waiting..."
-          sleep 10
-        done
-        if [ "$sql_ready" != "true" ]; then
-          echo "SQL Server did not become ready after 30 attempts." >&2
-          exit 1
-        fi
-
-    # Fetch sources
-    - uses: actions/checkout@v7
-      with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
-
-    # Download SDK
-    - name: download-artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: sdk-package
-        path: test/TestProjectWithSDKRef/nuget-packages
-
-    # Download test package
-    - name: download-artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: test-package
-        path: test/TestProjectWithSDKRef/nuget-packages
- 
-    # Setup .NET SDK
-    - uses: actions/setup-dotnet@v6
-      with:
-        dotnet-version: '10.0.x'
-
-    # Install Nerdbank.GitVersioning
-    - name: install nbgv
-      run: dotnet tool install --tool-path . nbgv
-
-    # Set version
-    - name: set version
-      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
-      id: nbgv
-
-    # Replace tokens 
-    - uses: cschleiden/replace-tokens@v1
-      name: replace tokens
-      with:
-        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
-      env:
-        DependencyVersion: '2.*-*'
-
-    # Publish the project
-    - name: publish project
-      run: dotnet publish ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /t:PublishDatabase /p:TargetUser=sa /p:TargetPassword="$SQL_SA_PASSWORD" /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-
-    # Verify deployment
-    - name: verify-deployment
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
-          echo "Deployment succeeded!"
-        else
-          echo "Deployment failed!" >&2
-          exit 1
-        fi
-
-    # Upload binary log
-    - name: upload
-      uses: actions/upload-artifact@v7
-      if: failure()
-      with:
-        name: binary-log-publish
-        path: ./msbuild.binlog
-
-    # Dump logs of the container if something failed
-    - name: Dump docker logs on failure
-      if: failure()
-      uses: jwalton/gh-docker-logs@v2
-
-  # Attempt to publish the project as a container image and use that to  deploy the resulting dacpac's to a SQL Server instance running in a container
   deploy-container:
-    runs-on: ubuntu-24.04
     needs: test
-    steps:
-    # Generate SQL Server secret
-    - name: Generate SQL Server secret
-      id: generate_sqlserver_secret
-      run: |
-        SECRET="$(LC_ALL=C tr -dc 'A-Za-z0-9!#^&*_=+-' </dev/urandom | head -c 32)"
-        echo "::add-mask::$SECRET"
-        echo "SQL_SA_PASSWORD=$SECRET" >> "$GITHUB_OUTPUT"
-
-    # Start SQL Server container
-    - name: Start SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
-          -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
-  
-    # Wait for SQL Server to be ready
-    - name: Wait for SQL Server
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Waiting for SQL Server to start..."
-        sql_ready=false
-        for i in {1..30}; do
-          if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; then
-            echo "SQL Server is ready!"
-            sql_ready=true
-            break
-          fi
-          echo "Attempt $i: SQL Server not ready, waiting..."
-          sleep 10
-        done
-        if [ "$sql_ready" != true ]; then
-          echo "SQL Server did not become ready after 30 attempts. Failing job." >&2
-          exit 1
-        fi
-
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v7
-      with:
-        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
-
-    # Download SDK
-    - name: download-artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: sdk-package
-        path: test/TestProjectWithSDKRef/nuget-packages
-
-    # Download test package
-    - name: download-artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: test-package
-        path: test/TestProjectWithSDKRef/nuget-packages
- 
-    # Setup .NET SDK
-    - uses: actions/setup-dotnet@v6
-      with:
-        dotnet-version: '10.0.x'
-
-    # Install Nerdbank.GitVersioning
-    - name: install nbgv
-      run: dotnet tool install --tool-path . nbgv
-
-    # Set version
-    - name: set version
-      run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
-      id: nbgv
-
-    # Replace tokens 
-    - uses: cschleiden/replace-tokens@v1
-      name: replace tokens
-      with:
-        files: 'test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj'
-      env:
-        DependencyVersion: '2.*-*'
-
-    # Publish the project as a container image
-    - name: publish-container
-      run: >
-        dotnet
-        publish
-        ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj
-        /t:PublishContainer
-        /bl
-        /p:DependencyVersion="2.*-*"
-
-    # Run the container to publish the dacpac
-    - name: container publish
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: >
-        docker
-        run
-        --network host
-        testprojectwithsdkref:latest
-        /Properties:IncludeCompositeObjects=True
-        /TargetServerName:localhost
-        /TargetUser:sa
-        /TargetPassword:"$SQL_SA_PASSWORD"
-        /TargetDatabaseName:TestProjectWithSDKRef
-        /TargetEncryptConnection:False
-
-    # Verify deployment
-    - name: verify-deployment
-      env:
-        SQL_SA_PASSWORD: ${{ steps.generate_sqlserver_secret.outputs.SQL_SA_PASSWORD }}
-      run: |
-        echo "Verifying deployment..."
-        if docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SQL_SA_PASSWORD" -b -d TestProjectWithSDKRef -Q "SELECT 1 FROM dbo.TestTable;"; then
-          echo "Deployment succeeded!"
-        else
-          echo "Deployment failed!" >&2
-          exit 1
-        fi        
-
-    # Dump logs of the container if something failed
-    - name: Dump docker logs on failure
-      if: failure()
-      uses: jwalton/gh-docker-logs@v2
-
-    # Upload binary log
-    - name: upload
-      uses: actions/upload-artifact@v7
-      if: failure()
-      with:
-        name: binary-log-publish
-        path: ./msbuild.binlog
+    uses: ./.github/workflows/packaged-deployment.yml
+    with:
+      test-category: PackagedContainer
 
   integration-tests:
-    name: Integration tests (SQL Server ${{ matrix.sqlserver }})
+    name: Integration tests (SQL Server 2025)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        sqlserver: ['2022', '2025']
-    env:
-      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
     steps:
     - uses: actions/checkout@v7
       with:
@@ -630,7 +303,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: integration-test-results-sqlserver-${{ matrix.sqlserver }}
+        name: integration-test-results-sqlserver
         path: artifacts/integration-tests
 
   # Publish the NuGet package to NuGet.org when building master branch
