@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         {
             var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../.."));
             sdkDirectory = Path.Combine(root, "src/MSBuild.Sdk.SqlProj/Sdk");
-            directory = Path.Combine(root, "test/DacpacTool.Tests/obj/DirectReferences", Guid.NewGuid().ToString("N"));
+            directory = Path.GetFullPath(Path.Combine(root, "test/DacpacTool.Tests/obj/DirectReferences", Guid.NewGuid().ToString("N")));
             Directory.CreateDirectory(Path.Combine(directory, "references with spaces"));
             reference = Path.Combine(directory, "references with spaces", "Library.dacpac");
             project = Path.Combine(directory, "Consumer.csproj");

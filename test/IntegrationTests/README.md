@@ -23,6 +23,8 @@ The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject]
 
 `ReferencedScriptContextTests.cs` adds ten regression tests for the behavior described in [issue #996](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/issues/996). They verify which database referenced pre/post-deployment scripts run in for new and existing targets, including login defaults, explicit database selection, and disabling referenced scripts. These tests preserve the current behavior and use the selected SQL Server target platform.
 
+`PackLayoutTests.cs` builds and packs a copy of [TestProject](../TestProject/TestProject.csproj) with the SDK and DacpacTool from the checkout, then inspects the produced `.nupkg` to verify the package layout: the generated `.dacpac` is packed as `tools/TestProject.dacpac`, and every `.dacpac` entry lives under `tools/`. This test only needs the .NET SDK; it requires neither Docker nor SqlPackage.
+
 This suite covers creating a database from a simple DACPAC and database context for referenced scripts. It does not currently cover profile-template generation, schema upgrades, data-loss protection, user-defined SQLCMD variables, the main package's pre/post-deployment scripts, context changes between multiple references, or other authentication methods.
 
 ## Run locally
@@ -40,6 +42,12 @@ To run only the referenced deployment script tests (no SqlPackage installation r
 
 ```bash
 dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=SqlServer
+```
+
+To run only the pack layout test (no Docker or SqlPackage required):
+
+```bash
+dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=Pack
 ```
 
 SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers.
