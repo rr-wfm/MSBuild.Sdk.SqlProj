@@ -61,7 +61,7 @@ public sealed class PublishingTests
             database += "_Override";
             arguments.Add($"/TargetDatabaseName:{database}");
         }
-        await _fixture.RunAsync(TestContext.CancellationToken, _fixture.SqlPackage, arguments.ToArray());
+        await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
         await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
         (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
@@ -70,7 +70,7 @@ public sealed class PublishingTests
     [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishContainer_MountedProfileCreatesTable()
     {
-        await _fixture.BuildImageAsync(TestContext.CancellationToken);
+        await _fixture.BuildImageAsync();
         var database = $"Container_{Guid.NewGuid():N}";
         var profile = _fixture.CreateProfile(database, insideContainer: true);
         await using var container = new ContainerBuilder(_fixture.ImageName)
