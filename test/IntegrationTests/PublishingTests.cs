@@ -63,7 +63,7 @@ $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_f
             database += "_Override";
             arguments.Add($"/TargetDatabaseName:{database}");
         }
-        await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
+        await _fixture.RunAsync(TestContext.CancellationToken, _fixture.SqlPackage, arguments.ToArray());
         await _fixture.AssertTableAsync(database);
         (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
