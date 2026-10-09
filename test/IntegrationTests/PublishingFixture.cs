@@ -96,6 +96,9 @@ internal sealed class PublishingFixture : IAsyncDisposable
     public Task RunAsync(string executable, params string[] arguments)
     {
         return RunProcessAsync(executable, arguments, _context.CancellationToken);
+    public Task RunAsync(CancellationToken cancellationToken, string executable, params string[] arguments)
+    {
+        return RunProcessAsync(executable, arguments, cancellationToken);
     }
 
     private Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
