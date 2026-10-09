@@ -63,7 +63,7 @@ public sealed class PublishingTests
         }
         await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
         await _fixture.AssertTableAsync(database);
-        (await File.ReadAllTextAsync(profile)).ShouldBe(original, "Publishing must not modify the profile.");
+        (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
 
     [TestMethod]
