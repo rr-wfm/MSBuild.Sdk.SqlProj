@@ -72,7 +72,7 @@ $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_f
     [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishContainer_MountedProfileCreatesTable()
     {
-        await _fixture.BuildImageAsync();
+        await _fixture.BuildImageAsync(TestContext.CancellationToken);
         var database = $"Container_{Guid.NewGuid():N}";
         var profile = _fixture.CreateProfile(database, insideContainer: true);
         await using var container = new ContainerBuilder(_fixture.ImageName)
