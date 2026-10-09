@@ -22,6 +22,16 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
+<ItemGroup>
+  <!-- Cover complete output trees, including inactive configurations and target frameworks. -->
+  <Content Remove="$(BaseOutputPath)**/*.sql" />
+  <Content Remove="$(BaseIntermediateOutputPath)**/*.sql" />
+
+  <!-- Cover effective paths that can be overridden independently of their bases. -->
+  <Content Remove="$(OutputPath)**/*.sql" />
+  <Content Remove="$(IntermediateOutputPath)**/*.sql" />
+</ItemGroup>
+
   <ItemGroup>
     <!-- Enable detection of this project SDK - see https://github.com/microsoft/VSProjectSystem/blob/master/doc/overview/about_project_capabilities.md -->
     <ProjectCapability Include="MSBuild.Sdk.SqlProj.BuildTSqlScript" />
@@ -50,6 +60,7 @@
       PostBuildEvent
     </CoreBuildDependsOn>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddDacpacToPackage</TargetsForTfmSpecificContentInPackage>
     <PublishDependsOn>_PublishBuildAlternative;_PublishNoBuildAlternative</PublishDependsOn>
     <PublishDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'true'">$(PublishDependsOn);PublishDatabase</PublishDependsOn>
     <PublishContainerDependsOn>$(PublishContainerDependsOn);PrepareContainer</PublishContainerDependsOn>
@@ -77,6 +88,12 @@
         tfm=$(TargetFramework);
       </NuspecProperties>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="AddDacpacToPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="tools/" />
+    </ItemGroup>
   </Target>
 
   <!--
