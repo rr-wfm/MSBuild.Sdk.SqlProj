@@ -74,6 +74,11 @@ internal sealed class PublishingFixture : IAsyncDisposable
         _imageBuildAttempted = true;
         await RunAsync("dotnet", "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
             "/p:ContainerRepository=sqlproj-publishing-test", $"/p:ContainerImageTag={ImageName.Split(':')[1]}");
+    public async Task BuildImageAsync(CancellationToken cancellationToken)
+    {
+        _imageBuildAttempted = true;
+        await RunAsync(cancellationToken, "dotnet", "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
+            "/p:ContainerRepository=sqlproj-publishing-test", $"/p:ContainerImageTag={ImageName.Split(':')[1]}");
     }
 
     public async Task AssertTableAsync(string database)
