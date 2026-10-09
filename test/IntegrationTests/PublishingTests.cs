@@ -87,6 +87,6 @@ $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_f
         timeout.CancelAfter(TimeSpan.FromMinutes(3));
         await container.StartAsync(timeout.Token);
         (await container.GetExitCodeAsync(timeout.Token)).ShouldBe(0L);
-        await _fixture.AssertTableAsync(database);
+        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
     }
 }
