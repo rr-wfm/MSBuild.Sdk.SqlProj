@@ -43,7 +43,7 @@ public sealed class PublishingTests
         await _fixture.RunAsync("dotnet", "publish", _fixture.ProjectPath, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
             $"/p:TargetServerName={_fixture.SqlServer.Hostname}", $"/p:TargetPort={_fixture.SqlServer.GetMappedPublicPort(1433)}",
             $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_fixture.Password}");
-        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
+        await _fixture.AssertTableAsync(database);
     }
 
     [TestMethod]
@@ -62,8 +62,8 @@ public sealed class PublishingTests
             arguments.Add($"/TargetDatabaseName:{database}");
         }
         await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
-        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
-        (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
+        await _fixture.AssertTableAsync(database);
+        (await File.ReadAllTextAsync(profile)).ShouldBe(original, "Publishing must not modify the profile.");
     }
 
     [TestMethod]
@@ -85,6 +85,6 @@ public sealed class PublishingTests
         timeout.CancelAfter(TimeSpan.FromMinutes(3));
         await container.StartAsync(timeout.Token);
         (await container.GetExitCodeAsync(timeout.Token)).ShouldBe(0L);
-        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
+        await _fixture.AssertTableAsync(database);
     }
 }
