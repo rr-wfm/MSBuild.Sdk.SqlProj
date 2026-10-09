@@ -36,7 +36,7 @@ public sealed class PublishingTests
     }
 
     [TestMethod]
-    [Timeout(300_000)]
+    [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishDatabase_CreatesTable()
     {
         var database = $"BuiltIn_{Guid.NewGuid():N}";
@@ -47,7 +47,7 @@ public sealed class PublishingTests
     }
 
     [TestMethod]
-    [Timeout(300_000)]
+    [Timeout(300_000, CooperativeCancellation = true)]
     [DataRow(false)]
     [DataRow(true)]
     public async Task SqlPackage_ProfileCreatesTable(bool overrideDatabase)
@@ -67,7 +67,7 @@ public sealed class PublishingTests
     }
 
     [TestMethod]
-    [Timeout(300_000)]
+    [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishContainer_MountedProfileCreatesTable()
     {
         await _fixture.BuildImageAsync();
