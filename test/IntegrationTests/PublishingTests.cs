@@ -42,9 +42,7 @@ public sealed class PublishingTests
         var database = $"BuiltIn_{Guid.NewGuid():N}";
         await _fixture.RunAsync("dotnet", "publish", _fixture.ProjectPath, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
             $"/p:TargetServerName={_fixture.SqlServer.Hostname}", $"/p:TargetPort={_fixture.SqlServer.GetMappedPublicPort(1433)}",
-await _fixture.RunAsync(TestContext.CancellationToken, "dotnet", "publish", _fixture.ProjectPath, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
-$"/p:TargetServerName={_fixture.SqlServer.Hostname}", $"/p:TargetPort={_fixture.SqlServer.GetMappedPublicPort(1433)}",
-$"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_fixture.Password}");
+            $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_fixture.Password}");
         await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
     }
 

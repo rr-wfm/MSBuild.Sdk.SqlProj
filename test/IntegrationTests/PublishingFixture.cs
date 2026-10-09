@@ -74,6 +74,8 @@ internal sealed class PublishingFixture : IAsyncDisposable
         _imageBuildAttempted = true;
         await RunAsync("dotnet", "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
             "/p:ContainerRepository=sqlproj-publishing-test", $"/p:ContainerImageTag={ImageName.Split(':')[1]}");
+    }
+
     public async Task BuildImageAsync(CancellationToken cancellationToken)
     {
         _imageBuildAttempted = true;
@@ -96,6 +98,8 @@ internal sealed class PublishingFixture : IAsyncDisposable
         reader.GetString(0).ShouldBe("Column2");
         reader.GetString(1).ShouldBe("int");
         (await reader.ReadAsync(_context.CancellationToken)).ShouldBeFalse();
+    }
+
     public async Task AssertTableAsync(string database, CancellationToken cancellationToken)
     {
         var connectionString = new SqlConnectionStringBuilder(SqlServer.GetConnectionString()) { InitialCatalog = database };
@@ -116,6 +120,8 @@ internal sealed class PublishingFixture : IAsyncDisposable
     public Task RunAsync(string executable, params string[] arguments)
     {
         return RunProcessAsync(executable, arguments, _context.CancellationToken);
+    }
+
     public Task RunAsync(CancellationToken cancellationToken, string executable, params string[] arguments)
     {
         return RunProcessAsync(executable, arguments, cancellationToken);
