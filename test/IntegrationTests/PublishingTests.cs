@@ -64,7 +64,7 @@ $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_f
             arguments.Add($"/TargetDatabaseName:{database}");
         }
         await _fixture.RunAsync(TestContext.CancellationToken, _fixture.SqlPackage, arguments.ToArray());
-        await _fixture.AssertTableAsync(database);
+        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
         (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
 
