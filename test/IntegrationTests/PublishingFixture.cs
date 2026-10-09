@@ -96,6 +96,21 @@ internal sealed class PublishingFixture : IAsyncDisposable
         reader.GetString(0).ShouldBe("Column2");
         reader.GetString(1).ShouldBe("int");
         (await reader.ReadAsync(_context.CancellationToken)).ShouldBeFalse();
+    public async Task AssertTableAsync(string database, CancellationToken cancellationToken)
+    {
+        var connectionString = new SqlConnectionStringBuilder(SqlServer.GetConnectionString()) { InitialCatalog = database };
+        await using var connection = new SqlConnection(connectionString.ConnectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MyTable' ORDER BY ORDINAL_POSITION";
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        (await reader.ReadAsync(cancellationToken)).ShouldBeTrue();
+        reader.GetString(0).ShouldBe("Column1");
+        reader.GetString(1).ShouldBe("nvarchar");
+        (await reader.ReadAsync(cancellationToken)).ShouldBeTrue();
+        reader.GetString(0).ShouldBe("Column2");
+        reader.GetString(1).ShouldBe("int");
+        (await reader.ReadAsync(cancellationToken)).ShouldBeFalse();
     }
 
     public Task RunAsync(string executable, params string[] arguments)
