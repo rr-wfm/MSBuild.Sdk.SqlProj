@@ -11,11 +11,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         
         public TestModelBuilder()
         {
-            sqlModel = new TSqlModel(SqlServerVersion.Sql110, new TSqlModelOptions
+            sqlModel = new TSqlModel(SqlServerVersion.Sql170, new TSqlModelOptions
             {
                 AnsiNullsOn = true,
                 Collation = "SQL_Latin1_General_CP1_CI_AI",
-                CompatibilityLevel = 110,
+                CompatibilityLevel = 170,
                 QuotedIdentifierOn = true,
             });
         }
