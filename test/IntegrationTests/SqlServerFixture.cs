@@ -10,30 +10,11 @@ internal sealed class SqlServerFixture : IAsyncDisposable
     public string Password { get; } = $"SqlProj!{Guid.NewGuid():N}";
     public INetwork Network { get; } = new NetworkBuilder().Build();
     public MsSqlContainer SqlServer { get; }
-    public SqlServerVersion TargetPlatform { get; }
+    public SqlServerVersion TargetPlatform { get; } = SqlServerVersion.Sql170;
 
     public SqlServerFixture()
     {
-        var version = Environment.GetEnvironmentVariable("SQLPROJ_TEST_SQLSERVER_VERSION");
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            version = "2022";
-        }
-
-        TargetPlatform = version switch
-        {
-            "2022" => SqlServerVersion.Sql160,
-            "2025" => SqlServerVersion.Sql170,
-            _ => throw new ArgumentException("SQLPROJ_TEST_SQLSERVER_VERSION must be 2022 or 2025."),
-        };
-
-        var image = Environment.GetEnvironmentVariable("SQLPROJ_TEST_SQLSERVER_IMAGE");
-        if (string.IsNullOrWhiteSpace(image))
-        {
-            image = $"mcr.microsoft.com/mssql/server:{version}-latest";
-        }
-
-        SqlServer = new MsSqlBuilder(image)
+        SqlServer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2025-latest")
             .WithPassword(Password)
             .WithNetwork(Network)
             .WithNetworkAliases("sqlserver")
