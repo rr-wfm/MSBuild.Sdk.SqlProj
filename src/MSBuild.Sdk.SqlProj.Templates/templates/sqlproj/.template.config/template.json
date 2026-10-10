@@ -30,7 +30,7 @@
       "sqlServerVersion": {
         "type": "parameter",
         "dataType": "choice",
-        "defaultValue": "Sql160",
+        "defaultValue": "Sql170",
         "displayName": "SQL Server Engine Version",
         "replaces": "#{SqlServerVersion}",
         "choices": [

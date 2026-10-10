@@ -15,7 +15,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var tempFile = new FileInfo(Path.GetTempFileName());
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.UsingVersion(SqlServerVersion.Sql160);
+            packageBuilder.UsingVersion(SqlServerVersion.Sql170);
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(tempFile);
             return tempFile;
