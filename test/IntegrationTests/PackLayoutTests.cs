@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+﻿using NuGet.Packaging;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.IntegrationTests;
@@ -27,14 +27,13 @@ public sealed class PackLayoutTests
             var package = Directory.EnumerateFiles(directory.FullName, "*.nupkg", SearchOption.AllDirectories).SingleOrDefault();
             package.ShouldNotBeNull("Expected the pack output to produce a single NuGet package.");
 
-            using var archive = ZipFile.OpenRead(package);
-            var dacpacEntries = archive.Entries
-                .Where(entry => entry.FullName.EndsWith(".dacpac", StringComparison.OrdinalIgnoreCase))
-                .Select(entry => entry.FullName)
+            using var stream = File.OpenRead(package);
+            using var reader = new PackageArchiveReader(stream);
+            var dacpacEntries = reader.GetFiles()
+                .Where(path => path.EndsWith(".dacpac", StringComparison.OrdinalIgnoreCase))
                 .ToList();
-
             dacpacEntries.ShouldContain("tools/TestProject.dacpac");
-            dacpacEntries.ShouldAllBe(name => name.StartsWith("tools/", StringComparison.Ordinal));
+            dacpacEntries.ShouldAllBe(path => path.StartsWith("tools/", StringComparison.Ordinal));
         }
         finally
         {
