@@ -63,7 +63,7 @@ internal static class RepositoryWorkspace
     {
         var configuration = typeof(RepositoryWorkspace).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         var targetFramework = GetCurrentTargetFramework();
-        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, targetFramework, "DacpacTool.dll")}";
+        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
     }
 
     private static string GetCurrentTargetFramework()
