@@ -62,6 +62,31 @@ internal static class RepositoryWorkspace
     private static string BuildToolProperty()
     {
         var configuration = typeof(RepositoryWorkspace).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
+        var targetFramework = GetCurrentTargetFramework();
+        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, targetFramework, "DacpacTool.dll")}";
+    }
+
+    private static string GetCurrentTargetFramework()
+    {
+        var targetFrameworkName = AppContext.TargetFrameworkName;
+        if (!string.IsNullOrWhiteSpace(targetFrameworkName))
+        {
+            foreach (var segment in targetFrameworkName.Split(','))
+            {
+                var trimmed = segment.Trim();
+                if (trimmed.StartsWith("Version=", StringComparison.Ordinal))
+                {
+                    var version = trimmed["Version=".Length..];
+                    if (version.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                    {
+                        version = version[1..];
+                    }
+
+                    return $"net{version}";
+                }
+            }
+        }
+
+        return "net10.0";
     }
 }
