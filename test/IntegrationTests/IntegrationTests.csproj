@@ -13,6 +13,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="4.5.1" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="Testcontainers.MsSql" Version="4.15.0" />
+    <Compile Include="../IntegrationTestSupport/*.cs" Link="TestSupport/%(Filename)%(Extension)" />
     <ProjectReference Include="../../src/DacpacTool/DacpacTool.csproj" />
   </ItemGroup>
 </Project>
