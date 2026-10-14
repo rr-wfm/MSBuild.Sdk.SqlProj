@@ -224,6 +224,31 @@ jobs:
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
+    # TestProjectWithSDKRef intentionally omits SqlServerVersion so it inherits Sdk.props.
+    # Inspect the built artifact to verify that default reaches DacpacTool through MSBuild.
+    - name: verify SDK default SQL Server version
+      shell: pwsh
+      run: |
+        # A DACPAC is a ZIP archive; model.xml records its target SQL Server provider.
+        $dacpac = [System.IO.Compression.ZipFile]::OpenRead("$PWD/test/TestProjectWithSDKRef/bin/Debug/net10.0/TestProjectWithSDKRef.dacpac")
+        try {
+          $reader = [System.IO.StreamReader]::new($dacpac.GetEntry('model.xml').Open())
+          try {
+            [xml]$model = $reader.ReadToEnd()
+          } finally {
+            $reader.Dispose()
+          }
+          # Keep this expectation explicit so a regression in the SDK default fails CI.
+          $expected = 'Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider'
+          $actual = $model.DocumentElement.GetAttribute('DspName')
+          if ($actual -ne $expected) {
+            throw "Expected SDK default provider '$expected', but the DACPAC targets '$actual'."
+          }
+          Write-Host "Verified SDK default provider: $actual"
+        } finally {
+          $dacpac.Dispose()
+        }
+
     # Build the project using fallback method of resolving version via path
     - name: build project (exact version / path resolution)
       run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
@@ -281,7 +306,7 @@ jobs:
       run: |
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
+          mcr.microsoft.com/mssql/server:2025-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
@@ -373,7 +398,7 @@ jobs:
       run: |
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
+          mcr.microsoft.com/mssql/server:2025-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
@@ -489,7 +514,7 @@ jobs:
       run: |
         docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$SQL_SA_PASSWORD" \
           -p 1433:1433 --name sqlserver -d \
-          mcr.microsoft.com/mssql/server:2022-latest
+          mcr.microsoft.com/mssql/server:2025-latest
   
     # Wait for SQL Server to be ready
     - name: Wait for SQL Server
@@ -606,15 +631,9 @@ jobs:
         path: ./msbuild.binlog
 
   integration-tests:
-    name: Integration tests (SQL Server ${{ matrix.sqlserver }})
+    name: Integration tests (SQL Server 2025)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        sqlserver: ['2022', '2025']
-    env:
-      SQLPROJ_TEST_SQLSERVER_VERSION: ${{ matrix.sqlserver }}
     steps:
     - uses: actions/checkout@v7
       with:
@@ -630,7 +649,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: integration-test-results-sqlserver-${{ matrix.sqlserver }}
+        name: integration-test-results-sqlserver
         path: artifacts/integration-tests
 
   # Publish the NuGet package to NuGet.org when building master branch

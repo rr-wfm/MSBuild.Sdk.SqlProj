@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <SqlServerVersion>Sql160</SqlServerVersion>
+    <SqlServerVersion>Sql170</SqlServerVersion>
     <CodeAnalysisRules>-SqlServer.Rules.SRD0006;+!SqlServer.Rules.SRN0002</CodeAnalysisRules>
     <RunSqlCodeAnalysis>true</RunSqlCodeAnalysis>
   </PropertyGroup>
