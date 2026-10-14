@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
 using Shouldly;
@@ -35,28 +33,10 @@ internal sealed class PublishingFixture : IAsyncDisposable
     {
         // Fail with a useful prerequisite error before starting SQL Server.
         await RunAsync(SqlPackage, "/Version");
-        var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root != null && !File.Exists(Path.Combine(root.FullName, "MSBuild.Sdk.SqlProj.slnx")))
-        {
-            root = root.Parent;
-        }
-        root.ShouldNotBeNull("Run these tests from a repository checkout.");
-        var configuration = typeof(PublishingFixture).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        ToolProperty = $"-p:DacpacToolExe={Path.Combine(root.FullName, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
+        ToolProperty = RepositoryWorkspace.DacpacToolProperty;
 
         // Reuse the repository's stub project and SQL without changing its tracked files.
-        var sourceProject = Path.Combine(root.FullName, "test", "TestProject");
-        var project = XDocument.Load(Path.Combine(sourceProject, "TestProject.csproj"));
-        foreach (var import in project.Root!.Elements("Import"))
-        {
-            var name = import.Attribute("Project")!.Value.EndsWith("Sdk.props", StringComparison.Ordinal) ? "Sdk.props" : "Sdk.targets";
-            import.SetAttributeValue("Project", Path.Combine(root.FullName, "src", "MSBuild.Sdk.SqlProj", "Sdk", name));
-        }
-        project.Root.Element("PropertyGroup")!.Element("GenerateEntityRelationshipDiagram")!.Value = "false";
-        project.Root.Element("PropertyGroup")!.SetElementValue("SqlServerVersion", _server.TargetPlatform.ToString());
-        project.Save(ProjectPath);
-        Directory.CreateDirectory(Path.Combine(_directory.FullName, "Tables"));
-        File.Copy(Path.Combine(sourceProject, "Tables", "MyTable.sql"), Path.Combine(_directory.FullName, "Tables", "MyTable.sql"));
+        RepositoryWorkspace.PrepareTestProject(_directory, _server.TargetPlatform.ToString());
 
         await RunAsync("dotnet", "build", ProjectPath, "-c", "Release", ToolProperty);
 
@@ -118,40 +98,15 @@ internal sealed class PublishingFixture : IAsyncDisposable
         return RunProcessAsync(executable, arguments, _context.CancellationToken);
     }
 
-    private async Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
+    private Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
     {
-        var start = new ProcessStartInfo(executable)
-        {
-            WorkingDirectory = _directory.FullName,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        foreach (var argument in arguments)
-        {
-            start.ArgumentList.Add(argument);
-        }
-        using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {executable}.");
-        var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
-        var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(TimeSpan.FromMinutes(10));
-        try
-        {
-            await process.WaitForExitAsync(timeout.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync(CancellationToken.None);
-            cancellationToken.ThrowIfCancellationRequested();
-            throw new TimeoutException($"{executable} exceeded the ten-minute test timeout.");
-        }
-        finally
-        {
-            _context.WriteLine(((await stdout) + (await stderr)).Replace(Password, "[REDACTED]", StringComparison.Ordinal));
-        }
-        process.ExitCode.ShouldBe(0, $"{executable} failed. See test output.");
+        return ProcessRunner.RunAsync(
+            _directory.FullName,
+            executable,
+            arguments,
+            _context.WriteLine,
+            cancellationToken,
+            output => output.Replace(Password, "[REDACTED]", StringComparison.Ordinal));
     }
 
     public async ValueTask DisposeAsync()
