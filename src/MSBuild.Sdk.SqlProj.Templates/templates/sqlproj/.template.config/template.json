@@ -110,7 +110,7 @@
         "generator": "guid",
         "replaces": "#{ProjectGuid}",
         "parameters": {
-          "defaultFormat":"D"
+          "defaultFormat":"d"
         }
       }
     }
