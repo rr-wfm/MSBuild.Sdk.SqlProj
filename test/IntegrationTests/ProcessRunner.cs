@@ -17,6 +17,7 @@ internal static class ProcessRunner
         CancellationToken cancellationToken,
         Func<string, string>? sanitizeOutput = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var start = new ProcessStartInfo(executable)
         {
             WorkingDirectory = workingDirectory,

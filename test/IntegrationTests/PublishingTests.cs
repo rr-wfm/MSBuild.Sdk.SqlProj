@@ -36,14 +36,36 @@ public sealed class PublishingTests
     }
 
     [TestMethod]
+    [Timeout(30_000, CooperativeCancellation = true)]
+    [DataRow(nameof(PublishingFixture.RunAsync))]
+    [DataRow(nameof(PublishingFixture.BuildImageAsync))]
+    [DataRow(nameof(PublishingFixture.AssertTableAsync))]
+    public async Task PublishingFixture_CanceledCallerToken_Throws(string method)
+    {
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+        cancellation.Cancel();
+        Func<Task> operation = method switch
+        {
+            nameof(PublishingFixture.RunAsync) => () => _fixture.RunAsync("must-not-start", cancellation.Token),
+            nameof(PublishingFixture.BuildImageAsync) => () => _fixture.BuildImageAsync(cancellation.Token),
+            nameof(PublishingFixture.AssertTableAsync) => () => _fixture.AssertTableAsync("master", cancellation.Token),
+            _ => throw new ArgumentOutOfRangeException(nameof(method)),
+        };
+
+        await Should.ThrowAsync<OperationCanceledException>(operation);
+
+        TestContext.CancellationToken.IsCancellationRequested.ShouldBeFalse();
+    }
+
+    [TestMethod]
     [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishDatabase_CreatesTable()
     {
         var database = $"BuiltIn_{Guid.NewGuid():N}";
-        await _fixture.RunAsync("dotnet", "publish", _fixture.ProjectPath, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
+        await _fixture.RunAsync("dotnet", TestContext.CancellationToken, "publish", _fixture.ProjectPath, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
             $"/p:TargetServerName={_fixture.SqlServer.Hostname}", $"/p:TargetPort={_fixture.SqlServer.GetMappedPublicPort(1433)}",
             $"/p:TargetDatabaseName={database}", "/p:TargetUser=sa", $"/p:TargetPassword={_fixture.Password}");
-        await _fixture.AssertTableAsync(database);
+        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
     }
 
     [TestMethod]
@@ -61,8 +83,8 @@ public sealed class PublishingTests
             database += "_Override";
             arguments.Add($"/TargetDatabaseName:{database}");
         }
-        await _fixture.RunAsync(_fixture.SqlPackage, arguments.ToArray());
-        await _fixture.AssertTableAsync(database);
+        await _fixture.RunAsync(_fixture.SqlPackage, TestContext.CancellationToken, arguments.ToArray());
+        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
         (await File.ReadAllTextAsync(profile, TestContext.CancellationToken)).ShouldBe(original, "Publishing must not modify the profile.");
     }
 
@@ -70,7 +92,7 @@ public sealed class PublishingTests
     [Timeout(300_000, CooperativeCancellation = true)]
     public async Task PublishContainer_MountedProfileCreatesTable()
     {
-        await _fixture.BuildImageAsync();
+        await _fixture.BuildImageAsync(TestContext.CancellationToken);
         var database = $"Container_{Guid.NewGuid():N}";
         var profile = _fixture.CreateProfile(database, insideContainer: true);
         await using var container = new ContainerBuilder(_fixture.ImageName)
@@ -85,6 +107,6 @@ public sealed class PublishingTests
         timeout.CancelAfter(TimeSpan.FromMinutes(3));
         await container.StartAsync(timeout.Token);
         (await container.GetExitCodeAsync(timeout.Token)).ShouldBe(0L);
-        await _fixture.AssertTableAsync(database);
+        await _fixture.AssertTableAsync(database, TestContext.CancellationToken);
     }
 }

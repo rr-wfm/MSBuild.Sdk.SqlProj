@@ -4,7 +4,7 @@ This suite tests referenced deployment scripts through DacpacTool and publishing
 
 ## Scope
 
-`PublishingTests.cs` runs four cases:
+`PublishingTests.cs` covers these publishing scenarios:
 
 | Case | What it verifies |
 | --- | --- |
@@ -16,6 +16,8 @@ This suite tests referenced deployment scripts through DacpacTool and publishing
 The profile cases exercise SqlPackage's existing `.publish.xml` support. The test fixture writes these files directly; it does not use or test the proposed publish-profile item template in [issue 995](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/issues/995). The SDK's built-in publisher (`dotnet publish /t:PublishDatabase`) uses MSBuild properties and does not consume these profiles. These cases do not introduce profile support to that publisher.
 
 Every publishing case queries the resulting database to verify `dbo.MyTable` has exactly the expected columns: `Column1` (`nvarchar`) and `Column2` (`int`).
+
+Publishing processes, container image builds, and asynchronous database assertions use the executing test's cancellation token so they observe its cooperative timeout or test-run cancellation. Class initialization uses its own token; cleanup is not canceled with the test. Cancellation regression cases verify that each fixture helper honors a canceled caller token. `PublishingFixtureCancellationTests.cs` verifies that canceling the caller stops a running process independently of the context retained by the fixture, without starting SQL Server or building a deployment image.
 
 The shared [fixture](PublishingFixture.cs) copies the repository's [TestProject](../TestProject/TestProject.csproj) into a temporary directory, uses the SDK and DacpacTool from the checkout, and writes a minimal SqlPackage profile for each profile test. Each test class uses [SqlServerFixture](SqlServerFixture.cs) with its own container. It defaults to `mcr.microsoft.com/mssql/server:2022-latest`, with a random password and host port and a private Docker network. Profiles are adapted for SQL authentication and the disposable server's self-signed certificate; passwords are supplied separately.
 
@@ -48,6 +50,12 @@ To run only the pack layout test (no Docker or SqlPackage required):
 
 ```bash
 dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=Pack
+```
+
+To run the active-process cancellation regression without starting SQL Server or invoking SqlPackage:
+
+```bash
+dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=Cancellation
 ```
 
 SQL Server startup, readiness, credentials, and cleanup are managed by Testcontainers.

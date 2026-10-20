@@ -74,12 +74,12 @@ public sealed class ReferencedScriptContextTests
             ALTER SERVER ROLE sysadmin ADD MEMBER [{login}];
             """, TestContext.CancellationToken);
 
-        await _fixture.RunAsync("dotnet", "publish", project, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
+        await _fixture.RunAsync("dotnet", TestContext.CancellationToken, "publish", project, "-c", "Release", "/t:PublishDatabase", _fixture.ToolProperty,
             $"/p:TargetServerName={_fixture.SqlServer.Hostname}", $"/p:TargetPort={_fixture.SqlServer.GetMappedPublicPort(1433)}",
             $"/p:TargetDatabaseName={target}", $"/p:TargetUser={login}", $"/p:TargetPassword={_fixture.Password}",
             $"/p:RunScriptsFromReferences={runScripts}");
 
-        await _fixture.AssertTableAsync(target);
+        await _fixture.AssertTableAsync(target, TestContext.CancellationToken);
         var observations = await ReadObservationsAsync(caseId);
         if (!runScripts)
         {
@@ -103,7 +103,7 @@ public sealed class ReferencedScriptContextTests
         var caseId = Guid.NewGuid().ToString("N");
         var target = $"Target_{caseId}";
         var project = CreateProjects(caseId, "none");
-        await _fixture.RunAsync("dotnet", "build", project, "-c", "Release", _fixture.ToolProperty);
+        await _fixture.RunAsync("dotnet", TestContext.CancellationToken, "build", project, "-c", "Release", _fixture.ToolProperty);
         var package = new FileInfo(Path.Combine(Path.GetDirectoryName(project)!, "bin", "Release", "net10.0", "Main.dacpac"));
         var deployer = new PackageDeployer(new ActualConsole());
         deployer.ConnectionStringBuilder.ConnectionString = _fixture.SqlServer.GetConnectionString();
@@ -115,7 +115,7 @@ public sealed class ReferencedScriptContextTests
         deployer.Deploy(package, target).ShouldBeTrue();
         deployer.RunPostDeploymentScriptFromReferences(package, target);
 
-        await _fixture.AssertTableAsync(target);
+        await _fixture.AssertTableAsync(target, TestContext.CancellationToken);
         var observations = await ReadObservationsAsync(caseId);
         observations.Count.ShouldBe(2);
         observations[0].ShouldBe(new Observation("pre", _defaultDatabase, target, false));
