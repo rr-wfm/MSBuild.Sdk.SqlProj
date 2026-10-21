@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             Directory.CreateDirectory(Path.Combine(directory, "references with spaces"));
             reference = Path.Combine(directory, "references with spaces", "Library.dacpac");
             project = Path.Combine(directory, "Consumer.csproj");
-            using var model = new TSqlModel(SqlServerVersion.Sql160, new TSqlModelOptions());
+            using var model = new TSqlModel(SqlServerVersion.Sql170, new TSqlModelOptions());
             model.AddObjects("CREATE TABLE dbo.ReferencedTable (Id int NOT NULL);");
             DacPackageExtensions.BuildPackage(reference, model, new PackageMetadata { Name = "Library", Version = "1.0.0" });
         }
