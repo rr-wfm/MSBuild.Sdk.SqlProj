@@ -32,13 +32,13 @@ internal sealed class PublishingFixture : IAsyncDisposable
     public async Task InitializeAsync()
     {
         // Fail with a useful prerequisite error before starting SQL Server.
-        await RunAsync(SqlPackage, "/Version");
+        await RunAsync(SqlPackage, _context.CancellationToken, "/Version");
         ToolProperty = RepositoryWorkspace.DacpacToolProperty;
 
         // Reuse the repository's stub project and SQL without changing its tracked files.
         RepositoryWorkspace.PrepareTestProject(_directory, _server.TargetPlatform.ToString());
 
-        await RunAsync("dotnet", "build", ProjectPath, "-c", "Release", ToolProperty);
+        await RunAsync("dotnet", _context.CancellationToken, "build", ProjectPath, "-c", "Release", ToolProperty);
 
         await _server.InitializeAsync(_context.CancellationToken);
     }
@@ -69,33 +69,34 @@ internal sealed class PublishingFixture : IAsyncDisposable
         return path;
     }
 
-    public async Task BuildImageAsync()
+    public async Task BuildImageAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _imageBuildAttempted = true;
-        await RunAsync("dotnet", "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
+        await RunAsync("dotnet", cancellationToken, "publish", ProjectPath, "-c", "Release", "/t:PublishContainer", ToolProperty,
             "/p:ContainerRepository=sqlproj-publishing-test", $"/p:ContainerImageTag={ImageName.Split(':')[1]}");
     }
 
-    public async Task AssertTableAsync(string database)
+    public async Task AssertTableAsync(string database, CancellationToken cancellationToken)
     {
         var connectionString = new SqlConnectionStringBuilder(SqlServer.GetConnectionString()) { InitialCatalog = database };
         await using var connection = new SqlConnection(connectionString.ConnectionString);
-        await connection.OpenAsync(_context.CancellationToken);
+        await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MyTable' ORDER BY ORDINAL_POSITION";
-        await using var reader = await command.ExecuteReaderAsync(_context.CancellationToken);
-        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeTrue();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        (await reader.ReadAsync(cancellationToken)).ShouldBeTrue();
         reader.GetString(0).ShouldBe("Column1");
         reader.GetString(1).ShouldBe("nvarchar");
-        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeTrue();
+        (await reader.ReadAsync(cancellationToken)).ShouldBeTrue();
         reader.GetString(0).ShouldBe("Column2");
         reader.GetString(1).ShouldBe("int");
-        (await reader.ReadAsync(_context.CancellationToken)).ShouldBeFalse();
+        (await reader.ReadAsync(cancellationToken)).ShouldBeFalse();
     }
 
-    public Task RunAsync(string executable, params string[] arguments)
+    public Task RunAsync(string executable, CancellationToken cancellationToken, params string[] arguments)
     {
-        return RunProcessAsync(executable, arguments, _context.CancellationToken);
+        return RunProcessAsync(executable, arguments, cancellationToken);
     }
 
     private Task RunProcessAsync(string executable, string[] arguments, CancellationToken cancellationToken)
