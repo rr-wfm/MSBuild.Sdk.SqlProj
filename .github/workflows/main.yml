@@ -110,7 +110,7 @@ jobs:
 
     # Run build for SDK package
     - name: dotnet build SDK
-      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
+      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj -c Release
 
     # Verify generated create scripts are copied to referencing project outputs
     - name: validate generated create script copy
@@ -128,14 +128,15 @@ jobs:
     
     # Package SDK
     - name: dotnet pack SDK
-      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj --no-build
 
     # Upload SDK package
     - name: upload SDK
       uses: actions/upload-artifact@v7
       with:
         name: sdk-package
-        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
+        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
+        if-no-files-found: error
     
     # Package TestProject
     - name: dotnet pack TestProject
@@ -156,14 +157,15 @@ jobs:
 
     # Package templates
     - name: dotnet pack templates
-      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.csproj
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.msbuildproj
 
     # Upload templates package
     - name: upload templates
       uses: actions/upload-artifact@v7
       with:
         name: template-package
-        path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
+        path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/*.nupkg
+        if-no-files-found: error
 
     - name: fail job if tests failed
       if: ${{ always() && !cancelled() && steps.tests.outcome == 'failure' }}
@@ -188,7 +190,9 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: ${{ matrix.dotnet }}
+        dotnet-version: |
+          10.0.x
+          ${{ matrix.dotnet }}
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -198,6 +202,22 @@ jobs:
     - name: set version
       run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
       id: nbgv
+
+    - name: Select matrix SDK and target framework
+      shell: pwsh
+      env:
+        MATRIX_DOTNET: ${{ matrix.dotnet }}
+      run: |
+        $sdkVersion = $env:MATRIX_DOTNET.Replace('.x', '.100')
+        @{
+          sdk = @{
+            version = $sdkVersion
+            rollForward = 'latestFeature'
+          }
+        } | ConvertTo-Json | Set-Content global.json
+        $targetFramework = 'net' + ($env:MATRIX_DOTNET -replace '\.x$', '')
+        "TEST_TARGET_FRAMEWORK=$targetFramework" >> $env:GITHUB_ENV
+        dotnet --version
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -221,12 +241,12 @@ jobs:
 
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using fallback method of resolving version via path
     - name: build project (exact version / path resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload binary log
@@ -238,12 +258,12 @@ jobs:
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
     - name: build project (single floating version)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (double floating version / dotnet 3)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload dacpac
