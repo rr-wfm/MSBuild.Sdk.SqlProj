@@ -49,7 +49,7 @@ jobs:
 
     # Build command line tool
     - name: dotnet build DacpacTool
-      run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release
+      run: dotnet build ./src/DacpacTool/DacpacTool.csproj -c Release /bl:DacpacTool.binlog
 
     # Verify analyzer fixes without applying formatting changes
     - name: dotnet format analyzers
@@ -110,7 +110,7 @@ jobs:
 
     # Run build for SDK package
     - name: dotnet build SDK
-      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj -c Release
+      run: dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj -c Release /bl:SDK.binlog
 
     # Verify generated create scripts are copied to referencing project outputs
     - name: validate generated create script copy
@@ -118,29 +118,28 @@ jobs:
 
     # Ensure that test projects build
     - name: dotnet build TestProject
-      run: dotnet build ./test/TestProject/TestProject.csproj -c Release
+      run: dotnet build ./test/TestProject/TestProject.csproj -c Release /bl:TestProject.binlog
 
     - name: dotnet build TestProjectWithAnalyzers
-      run: dotnet build ./test/TestProjectWithAnalyzers/TestProjectWithAnalyzers.csproj -c Release
+      run: dotnet build ./test/TestProjectWithAnalyzers/TestProjectWithAnalyzers.csproj -c Release /bl:TestProjectWithAnalyzers.binlog
 
     - name: dotnet build TestProjectWithGenerateScriptAndTargetDatabaseName
-      run: dotnet build ./test/TestProjectWithGenerateScriptAndTargetDatabaseName/TestProjectWithGenerateScriptAndTargetDatabaseName.csproj -c Release
-    
+      run: dotnet build ./test/TestProjectWithGenerateScriptAndTargetDatabaseName/TestProjectWithGenerateScriptAndTargetDatabaseName.csproj -c Release /bl:TestProjectWithGenerateScriptAndTargetDatabaseName.binlog
+
     # Package SDK
     - name: dotnet pack SDK
-      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj --no-build
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj /bl:SDK-pack.binlog
 
     # Upload SDK package
     - name: upload SDK
       uses: actions/upload-artifact@v7
       with:
         name: sdk-package
-        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/*.nupkg
-        if-no-files-found: error
+        path: ./src/MSBuild.Sdk.SqlProj/bin/Release/
     
     # Package TestProject
     - name: dotnet pack TestProject
-      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj
+      run: dotnet pack -c Release ./test/TestProject/TestProject.csproj /bl:TestProject-pack.binlog
 
     # Upload TestProject package
     - name: upload TestProject
@@ -157,19 +156,26 @@ jobs:
 
     # Package templates
     - name: dotnet pack templates
-      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.msbuildproj
+      run: dotnet pack -c Release src/MSBuild.Sdk.SqlProj.Templates/MSBuild.Sdk.SqlProj.Templates.msbuildproj /bl:Templates-pack.binlog
 
     # Upload templates package
     - name: upload templates
       uses: actions/upload-artifact@v7
       with:
         name: template-package
-        path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/*.nupkg
-        if-no-files-found: error
+        path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
 
     - name: fail job if tests failed
       if: ${{ always() && !cancelled() && steps.tests.outcome == 'failure' }}
       run: exit 1
+
+    - name: upload binary logs
+      uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: binary-logs-build
+        path: ./*.binlog
+        if-no-files-found: ignore
 
   # Run tests in parallel
   test:
@@ -190,9 +196,7 @@ jobs:
     # Setup .NET SDK
     - uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: |
-          10.0.x
-          ${{ matrix.dotnet }}
+        dotnet-version: ${{ matrix.dotnet }}
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -202,22 +206,6 @@ jobs:
     - name: set version
       run: ./nbgv cloud -p ./src/MSBuild.Sdk.SqlProj/ --all-vars
       id: nbgv
-
-    - name: Select matrix SDK and target framework
-      shell: pwsh
-      env:
-        MATRIX_DOTNET: ${{ matrix.dotnet }}
-      run: |
-        $sdkVersion = $env:MATRIX_DOTNET.Replace('.x', '.100')
-        @{
-          sdk = @{
-            version = $sdkVersion
-            rollForward = 'latestFeature'
-          }
-        } | ConvertTo-Json | Set-Content global.json
-        $targetFramework = 'net' + ($env:MATRIX_DOTNET -replace '\.x$', '')
-        "TEST_TARGET_FRAMEWORK=$targetFramework" >> $env:GITHUB_ENV
-        dotnet --version
 
     # Replace tokens 
     - uses: cschleiden/replace-tokens@v1
@@ -241,29 +229,22 @@ jobs:
 
     # Build the project using exact version number
     - name: build project (exact version / MSBuild resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl:exact-msbuild.binlog /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using fallback method of resolving version via path
     - name: build project (exact version / path resolution)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl:exact-path.binlog /p:DependencyVersion="$Env:NBGV_NuGetPackageVersion" /p:PkgTestProject="" /warnaserror:SQL71502
       shell: pwsh
-
-    # Upload binary log
-    - name: upload
-      uses: actions/upload-artifact@v7
-      with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-exact-version
-        path: ./msbuild.binlog
 
     # Build the project using single wildcard (i.e. 1.x.x-*)
     - name: build project (single floating version)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl:single-floating.binlog /p:DependencyVersion="${Env:NBGV_SimpleVersion}-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Build the project using double wildcard (i.e. 1.*-*)
     - name: build project (double floating version / dotnet 3)
-      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl /p:TargetFramework="$Env:TEST_TARGET_FRAMEWORK" /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
+      run: dotnet build ./test/TestProjectWithSDKRef/TestProjectWithSDKRef.csproj /bl:double-floating.binlog /p:DependencyVersion="2.*-*" /warnaserror:SQL71502
       shell: pwsh
 
     # Upload dacpac
@@ -274,14 +255,15 @@ jobs:
         name: dacpac-package
         path: ./test/TestProjectWithSDKRef/bin/Debug/net10.0/
 
-    # Upload binary log
-    - name: upload
+    - name: upload binary logs
       uses: actions/upload-artifact@v7
+      if: always()
       with:
-        name: binary-log-${{ matrix.os }}-${{ matrix.dotnet }}-floating-version
-        path: ./msbuild.binlog
+        name: binary-logs-${{ matrix.os }}-${{ matrix.dotnet }}
+        path: ./*.binlog
+        if-no-files-found: ignore
 
-  # Attempt to deploy the resulting dacpac's to a SQL Server instance running in a container using SqlPackage.exe
+  # Attempt to deploy the resulting dacpac's
   deploy-sqlpackage:
     runs-on: ubuntu-24.04
     needs: test
