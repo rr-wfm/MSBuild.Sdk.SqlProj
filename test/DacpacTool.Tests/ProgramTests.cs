@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Dac.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
@@ -10,6 +11,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
     [DoNotParallelize]
     public class ProgramTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private const string TestProjectPath = "../../../../TestProjectWithPrePost";
 
         [TestMethod]
@@ -86,6 +89,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
                 result.ShouldBe(0);
                 File.Exists(outputPath.FullName).ShouldBeTrue();
+                using var model = TSqlModel.LoadFromDacpac(outputPath.FullName, new ModelLoadOptions(), TestContext.CancellationToken);
+                model.Version.ShouldBe(SqlServerVersion.Sql170);
             }
             finally
             {

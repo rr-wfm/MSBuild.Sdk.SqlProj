@@ -3,9 +3,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SqlServerVersion>Sql160</SqlServerVersion>
+    <SqlServerVersion>Sql170</SqlServerVersion>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" DatabaseVariableLiteralValue="SomeDatabase" ServerSqlCmdVariable="SomeServer"/>
   </ItemGroup>
