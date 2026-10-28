@@ -16,6 +16,10 @@ MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the versio
 
 > If you have support issues, be prepared for us to ask you to use the latest released version of MSBuild.Sdk.SqlProj.
 
+The SDK bundles a single `net8.0` DacpacTool payload in `tools/DacpacTool/` for building, inspecting includes, and deploying. All three commands run in a separate process with `dotnet --roll-forward-on-no-candidate-fx 2`, allowing the tool to use .NET 9 or 10 when .NET 8 is not installed. This avoids packaging a separate copy of the tool and its dependencies for each supported runtime.
+
+The value `2` permits minor- and major-version roll-forward; see Microsoft's [roll-forward documentation](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-core-2-1#roll-forward). The requested runtime major is preferred when installed, so the tool does not necessarily run on the runtime matching the SDK used to build your SQL project. This does not change your project's target framework, remove native OS/architecture requirements, or guarantee compatibility with future runtime versions.
+
 ## Workaround for parser errors (SQL46010)
 
 This project relies on the publicly available T-SQL parser which may not support all T-SQL syntax constructions. Therefore, you might encounter a SQL46010 error if you have a script file that contains unsupported syntax. If that happens, there's a couple of workarounds you can try:

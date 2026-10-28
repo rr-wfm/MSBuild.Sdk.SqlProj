@@ -18,8 +18,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static readonly string ProjectFile = Path.Combine(ProjectDirectory, "ErDiagramHarnessProject.csproj");
         private static readonly string ExpectedDirectory = Path.Combine(ProjectDirectory, "Expected");
         private static readonly UTF8Encoding Utf8WithoutBom = new UTF8Encoding(false);
-        private static readonly string[] DacpacToolTargetFrameworks = { "net8.0", "net9.0", "net10.0" };
-        private static readonly string[] BuildConfigurations = { "Debug", "Release" };
         private static readonly string[] GeneratedDiagramFiles =
         {
             "sales_erdiagram.md",
@@ -157,7 +155,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
         private static (int ExitCode, string Output) BuildHarnessProject(bool useArtifactsOutput)
         {
-            var dacpacToolExe = GetDacpacToolExe();
+            var dacpacToolExe = DacpacToolPath.FilePath;
 
             File.Exists(dacpacToolExe).ShouldBeTrue($"Expected test-built DacpacTool at {dacpacToolExe}");
             var artifactsArguments = useArtifactsOutput
@@ -210,69 +208,6 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         private static string NormalizeLineEndings(string value)
         {
             return value.Replace("\r\n", "\n", StringComparison.Ordinal);
-        }
-
-        private static string GetDacpacToolExe()
-        {
-            var preferredTargetFramework = GetCurrentTargetFrameworkMoniker();
-            foreach (var candidatePath in GetDacpacToolCandidatePaths(preferredTargetFramework))
-            {
-                if (File.Exists(candidatePath))
-                {
-                    return candidatePath;
-                }
-            }
-
-            return Path.GetFullPath(
-                Path.Combine(
-                    AppContext.BaseDirectory,
-                    "../../../../../src/DacpacTool/bin/Release",
-                    preferredTargetFramework,
-                    "DacpacTool.dll"));
-        }
-
-        private static string GetCurrentTargetFrameworkMoniker()
-        {
-            var targetFrameworkAttribute = typeof(ErDiagramProjectHarnessTests).Assembly
-                .GetCustomAttributes(typeof(System.Runtime.Versioning.TargetFrameworkAttribute), false)
-                .OfType<System.Runtime.Versioning.TargetFrameworkAttribute>()
-                .FirstOrDefault();
-            var frameworkName = targetFrameworkAttribute?.FrameworkName ?? string.Empty;
-            if (frameworkName.Contains("net8.0", StringComparison.OrdinalIgnoreCase))
-            {
-                return "net8.0";
-            }
-
-            if (frameworkName.Contains("net9.0", StringComparison.OrdinalIgnoreCase))
-            {
-                return "net9.0";
-            }
-
-            if (frameworkName.Contains("net10.0", StringComparison.OrdinalIgnoreCase))
-            {
-                return "net10.0";
-            }
-
-            return "net10.0";
-        }
-
-        private static string[] GetDacpacToolCandidatePaths(string preferredTargetFramework)
-        {
-            var orderedTargetFrameworks = DacpacToolTargetFrameworks
-                .Where(tfm => !string.Equals(tfm, preferredTargetFramework, StringComparison.OrdinalIgnoreCase))
-                .Prepend(preferredTargetFramework)
-                .ToArray();
-
-            return BuildConfigurations
-                .SelectMany(configuration => orderedTargetFrameworks.Select(targetFramework =>
-                    Path.GetFullPath(
-                        Path.Combine(
-                            AppContext.BaseDirectory,
-                            "../../../../../src/DacpacTool/bin",
-                            configuration,
-                            targetFramework,
-                            "DacpacTool.dll"))))
-                .ToArray();
         }
 
         private static string ComputeSha256(string value)

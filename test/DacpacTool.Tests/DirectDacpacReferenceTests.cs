@@ -244,7 +244,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             initial.ExitCode.ShouldBe(0, initial.Output);
             // A separate build must discover copy items without relying on metadata from Build.
             var result = await Run("build", downstreamProject, "-c", "Release", "-nologo", "-v:minimal",
-                $"-p:BuildProjectReferences={buildProjectReferences}", $"-p:DacpacToolExe={typeof(Program).Assembly.Location}");
+                $"-p:BuildProjectReferences={buildProjectReferences}", $"-p:DacpacToolExe={DacpacToolPath.FilePath}");
             result.ExitCode.ShouldBe(0, result.Output);
             var output = Path.Combine(downstream, "bin/Release/net8.0");
             File.Exists(Path.Combine(output, "Downstream.dll")).ShouldBeTrue();
@@ -406,7 +406,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             Task<(int ExitCode, string Output)> BuildScratch(string name, string option = "-p:OmitProducerA=false") =>
                 Run("build", Path.Combine(fixture, name, name + ".csproj"), "-c", "Release", "-t:Rebuild", "-nologo", "-v:minimal", "-warnaserror",
-                    $"-p:DacpacToolExe={typeof(Program).Assembly.Location}", "-p:TreatTSqlWarningsAsErrors=True", option);
+                    $"-p:DacpacToolExe={DacpacToolPath.FilePath}", "-p:TreatTSqlWarningsAsErrors=True", option);
         }
 
         private void WriteProject(XElement referenceItem)
@@ -418,7 +418,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 new XElement("Import", new XAttribute("Project", Path.Combine(sdkDirectory, "Sdk.targets"))))).Save(project);
         }
 
-        private Task<(int ExitCode, string Output)> Build() => Run("build", project, "-c", "Release", "-nologo", "-v:minimal", $"-p:DacpacToolExe={typeof(Program).Assembly.Location}");
+        private Task<(int ExitCode, string Output)> Build() => Run("build", project, "-c", "Release", "-nologo", "-v:minimal", $"-p:DacpacToolExe={DacpacToolPath.FilePath}");
 
         private async Task<(int ExitCode, string Output)> Run(params string[] arguments)
         {

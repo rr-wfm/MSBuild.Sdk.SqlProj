@@ -16,6 +16,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DacpacTool\DacpacTool.csproj"
+                      ReferenceOutputAssembly="false"
+                      Private="false"
+                      PrivateAssets="all"
+                      GlobalPropertiesToRemove="TargetFramework;TargetFrameworks" />
     <None Include="Sdk\**\*" Pack="true" PackagePath="Sdk\%(RecursiveDir)" />
     <None Include="..\..\README.md" Pack="true" PackagePath="docs\" />
   </ItemGroup>
@@ -24,18 +29,15 @@
     <Copy SourceFiles="..\..\LICENSE" DestinationFiles="$(IntermediateOutputPath)LICENSE.txt" SkipUnchangedFiles="true" />
     <ItemGroup>
       <None Include="$(IntermediateOutputPath)LICENSE.txt" Pack="true" PackagePath="\" />
-      <None Include="tools\**\*" Pack="true" PackagePath="tools\%(RecursiveDir)" />
+      <None Include="tools\DacpacTool\**\*" Pack="true" PackagePath="tools\DacpacTool\%(RecursiveDir)" />
     </ItemGroup>
   </Target>
 
   <Target Name="IncludeDacpacTool" AfterTargets="Build">
-    <PropertyGroup>
-      <_DacpacToolSupportedTfms>net8.0;net9.0;net10.0</_DacpacToolSupportedTfms>
-    </PropertyGroup>
-    <ItemGroup>
-      <DacpacToolSupportedTfms Include="$(_DacpacToolSupportedTfms)" />
-    </ItemGroup>
-    <Exec Command="dotnet publish -c $(Configuration) -f %(DacpacToolSupportedTfms.Identity) -o $(MSBuildThisFileDirectory)tools/%(DacpacToolSupportedTfms.Identity)" WorkingDirectory="../DacpacTool" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\DacpacTool\DacpacTool.csproj"
+             Targets="Publish"
+             RemoveProperties="TargetFramework;TargetFrameworks"
+             Properties="Configuration=$(Configuration);PublishDir=$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'tools', 'DacpacTool'))" />
   </Target>
 
 </Project>
