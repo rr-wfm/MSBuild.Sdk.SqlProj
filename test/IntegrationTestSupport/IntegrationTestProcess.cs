@@ -31,6 +31,7 @@ internal sealed class IntegrationTestProcess
     /// </summary>
     public async Task RunAsync(string executable, string[] arguments, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var start = new ProcessStartInfo(executable)
         {
             WorkingDirectory = _workingDirectory,
