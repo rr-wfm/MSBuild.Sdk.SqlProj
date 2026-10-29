@@ -9,8 +9,8 @@ An MSBuild SDK (`MSBuild.Sdk.SqlProj`) that compiles SDK-style .NET projects of 
 ## Three-project layout
 
 - `src/DacpacTool` — .NET CLI (`net8.0;net9.0;net10.0`) that builds, inspects, and deploys dacpacs. Uses `Microsoft.SqlServer.DacFx`, `Microsoft.SqlServer.SqlManagementObjects`, and `DotMake.CommandLine`. Subcommands: `build`, `collect-includes`, `deploy` (see `Program.cs` and the `*Options.cs` files).
-- `src/MSBuild.Sdk.SqlProj` — the NuGet SDK package. `netstandard2.0` using `Microsoft.Build.NoTargets`. Holds `Sdk/Sdk.props` and `Sdk/Sdk.targets`, plus a post-Build target (`IncludeDacpacTool`) that `dotnet publish`es the CLI into `tools/net8.0|net9.0|net10.0/`.
-- `src/MSBuild.Sdk.SqlProj.Templates` — `dotnet new` templates.
+- `src/MSBuild.Sdk.SqlProj` — the NuGet SDK package. The packaging-only `MSBuild.Sdk.SqlProj.msbuildproj` uses `Microsoft.Build.NoTargets` (which imports `Microsoft.NET.Sdk`) with package metadata and file mappings declared in the project, without a custom `.nuspec`. Holds `Sdk/Sdk.props` and `Sdk/Sdk.targets`, plus a post-Build target (`IncludeDacpacTool`) that `dotnet publish`es the CLI into `tools/net8.0|net9.0|net10.0/`. Tool files are collected at pack time so newly published files are included.
+- `src/MSBuild.Sdk.SqlProj.Templates` — `dotnet new` templates. The packaging-only `MSBuild.Sdk.SqlProj.Templates.msbuildproj` uses `Microsoft.Build.NoTargets` with package metadata and `content` file mappings declared in the project, without a custom `.nuspec`.
 
 ## How the SDK wires up at build time
 
@@ -26,7 +26,7 @@ When a consumer project uses this SDK, `Sdk.targets` does the following — impo
 
 ```bash
 # Build the CLI (its publish step populates src/MSBuild.Sdk.SqlProj/tools/<tfm>/ for downstream test projects)
-dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release
+dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj -c Release
 
 # Analyzer/style check that CI enforces
 dotnet format analyzers ./MSBuild.Sdk.SqlProj.slnx --verify-no-changes --severity info
@@ -41,7 +41,7 @@ dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj --filter "FullyQuali
 dotnet build ./test/TestProject/TestProject.csproj -c Release
 
 # Pack the SDK
-dotnet pack -c Release ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj
+dotnet pack -c Release ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj
 ```
 
 CI (`.github/workflows/main.yml`) runs the above sequence, then a matrix across Ubuntu/macOS/Windows × .NET 8/9/10 building `TestProjectWithSDKRef` against the packed SDK, then three deploy jobs (`deploy-sqlpackage`, `deploy-publish`, `deploy-container`) against `mcr.microsoft.com/mssql/server:2022-latest`. Publishing to NuGet only fires for `release/*` branches.

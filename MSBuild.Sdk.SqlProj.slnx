@@ -13,7 +13,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DacpacTool/DacpacTool.csproj" />
-    <Project Path="src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj" />
+    <Project Path="src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj" Type="13b669be-bb05-4ddf-9536-439f39a36129" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/DacpacTool.Tests/DacpacTool.Tests.csproj" />
