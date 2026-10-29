@@ -96,13 +96,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         [DataRow("GetIncludedFiles", "collect-includes")]
         [DataRow("CoreCompile", "build")]
         [DataRow("PublishDatabase", "deploy")]
-        public void SdkCommand_UsesMajorRollForwardBeforeToolPath(string targetName, string command)
+        public void SdkCommand_UsesToolRuntimeConfiguration(string targetName, string command)
         {
             var target = LoadSdkTarget(targetName);
 
             var toolCommand = target.Descendants(Msbuild + "DacpacToolCommand").Single().Value;
 
-            toolCommand.ShouldStartWith($"dotnet --roll-forward-on-no-candidate-fx 2 \"$(DacpacToolExe)\" {command} ");
+            toolCommand.ShouldStartWith($"dotnet \"$(DacpacToolExe)\" {command} ");
+            toolCommand.ShouldNotContain("--roll-forward");
+        }
+
+        [TestMethod]
+        public void DacpacToolRuntimeConfiguration_UsesMajorRollForward()
+        {
+            using var runtimeConfig = JsonDocument.Parse(File.ReadAllText(Path.ChangeExtension(DacpacToolPath.FilePath, "runtimeconfig.json")));
+
+            var runtimeOptions = runtimeConfig.RootElement.GetProperty("runtimeOptions");
+
+            runtimeOptions.GetProperty("tfm").GetString().ShouldBe("net8.0");
+            runtimeOptions.GetProperty("rollForward").GetString().ShouldBe("Major");
+            runtimeOptions.TryGetProperty("rollForwardOnNoCandidateFx", out _).ShouldBeFalse();
         }
 
         [TestMethod]
@@ -115,10 +128,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var sdkProjectPath = Path.Combine(sdkDirectory.FullName, "MSBuild.Sdk.SqlProj.msbuildproj");
             var sdkProject = XDocument.Load(Path.Combine(SdkProjectDirectory, "MSBuild.Sdk.SqlProj.msbuildproj"));
             sdkProject.Save(sdkProjectPath);
+            var toolProject = XDocument.Load(Path.Combine(SdkProjectDirectory, "..", "DacpacTool", "DacpacTool.csproj"));
+            var rollForward = toolProject.Root.Elements("PropertyGroup").Elements("RollForward").Single();
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
                 new XElement("PropertyGroup",
                     new XElement("OutputType", "Exe"),
-                    new XElement("TargetFramework", "net8.0")),
+                    new XElement("TargetFramework", "net8.0"),
+                    new XElement(rollForward)),
                 new XElement("ItemGroup",
                     new XElement("Content", new XAttribute("Include", "tool-content.txt"),
                         new XAttribute("CopyToOutputDirectory", "PreserveNewest")))))
@@ -143,6 +159,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             File.ReadAllText(Path.Combine(publishDirectory, "tool-content.txt")).ShouldBe("Published tool content");
             using var runtimeConfig = JsonDocument.Parse(File.ReadAllText(Path.Combine(publishDirectory, "DacpacTool.runtimeconfig.json")));
             runtimeConfig.RootElement.GetProperty("runtimeOptions").GetProperty("tfm").GetString().ShouldBe("net8.0");
+            runtimeConfig.RootElement.GetProperty("runtimeOptions").GetProperty("rollForward").GetString().ShouldBe("Major");
             var sdkOutputFiles = Directory.GetFiles(Path.Combine(sdkDirectory.FullName, "bin"), "*", SearchOption.AllDirectories)
                 .Select(Path.GetFileName).ToArray();
             sdkOutputFiles.ShouldNotContain("DacpacTool.dll");

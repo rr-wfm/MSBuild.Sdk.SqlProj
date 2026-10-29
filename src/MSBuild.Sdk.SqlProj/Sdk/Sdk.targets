@@ -115,7 +115,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
   <!--
-    Locates the single net8.0 tool payload. Invocations allow minor and major runtime roll-forward
+    Locates the single net8.0 tool payload. The tool's runtime configuration allows minor and major roll-forward
     so a newer runtime can run the tool when .NET 8 is not installed.
   -->
   <Target Name="ValidateEnvironment">
@@ -207,7 +207,7 @@
       <PrePlanScriptArgument>@(PrePlan->'--preplan &quot;%(Identity)&quot;', ' ')</PrePlanScriptArgument>
       <PostDeploymentScriptArgument>@(PostDeploy->'--postdeploy &quot;%(Identity)&quot;', ' ')</PostDeploymentScriptArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet --roll-forward-on-no-candidate-fx 2 &quot;$(DacpacToolExe)&quot; collect-includes $(PrePlanScriptArgument) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; collect-includes $(PrePlanScriptArgument) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="low" Text="Running command: $(DacpacToolCommand)" />
@@ -280,7 +280,7 @@
       <GenerateErDiagramArgument Condition="'$(GenerateEntityRelationshipDiagram)' == 'True'">-ged</GenerateErDiagramArgument>
       <ErDiagramConfigArgument>@(_DistinctEntityRelationshipDiagramConfigFile->'-edc &quot;%(Identity)&quot;', ' ')</ErDiagramConfigArgument>
       <ProjectGuidArgument Condition="'$(ProjectGuid)' != ''">-pg &quot;$(ProjectGuid)&quot;</ProjectGuidArgument>
-      <DacpacToolCommand>dotnet --roll-forward-on-no-candidate-fx 2 &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PrePlanScriptArgument) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument) $(ProjectGuidArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; build $(OutputPathArgument) $(MetadataArguments) $(SqlServerVersionArgument) $(InputFileArguments) $(ReferenceArguments) $(SqlCmdVariableArguments) $(BuildPropertyArguments) $(DeployPropertyArguments) $(PrePlanScriptArgument) $(PreDeploymentScriptArgument) $(PostDeploymentScriptArgument) $(RefactorLogScriptArgument) $(TreatTSqlWarningsAsErrorsArgument) $(SuppressTSqlWarningsArgument) $(WarningsSuppressionListArgument) $(DebugArgument) $(GenerateCreateScriptArgument) $(TargetDatabaseNameArgument) $(RunSqlCodeAnalysisArgument) $(CodeAnalysisRulesArgument) $(CodeAnalysisAssemblyLookupPathsArgument) $(GenerateErDiagramArgument) $(ErDiagramConfigArgument) $(ProjectGuidArgument)</DacpacToolCommand>
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
@@ -347,7 +347,7 @@
       <SqlCmdVariableArguments>@(_ResolvedSqlCmdVariable->'-sc %(Identity)=%(Value)', ' ')</SqlCmdVariableArguments>
       <RunScriptsFromReferencesArgument Condition="'$(RunScriptsFromReferences)' == 'True'">-sff</RunScriptsFromReferencesArgument>
       <DebugArgument Condition="'$(MSBuildSdkSqlProjDebug)' == 'True'">--debug</DebugArgument>
-      <DacpacToolCommand>dotnet --roll-forward-on-no-candidate-fx 2 &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
+      <DacpacToolCommand>dotnet &quot;$(DacpacToolExe)&quot; deploy $(InputArgument) $(TargetServerNameArgument) $(TargetDatabaseNameArgument) $(TargetPortArgument) $(TargetUserArgument) $(TargetPasswordArgument) $(PropertyArguments) $(SqlCmdVariableArguments) $(RunScriptsFromReferencesArgument) $(DebugArgument)</DacpacToolCommand>
     </PropertyGroup>
     <Message Importance="Low" Text="Running command: $(DacpacToolCommand)" />
     <Exec Command="$(DacpacToolCommand)" />

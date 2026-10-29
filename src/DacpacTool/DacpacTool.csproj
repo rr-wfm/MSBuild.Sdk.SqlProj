@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>MSBuild.Sdk.SqlProj.DacpacTool</RootNamespace>
     <TargetFramework>net8.0</TargetFramework>
+    <RollForward>Major</RollForward>
     <AnalysisMode>all</AnalysisMode>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
