@@ -9,8 +9,8 @@ These are scratch SQL database projects targeting `net10.0` and requiring no SQL
 From the repository root, using .NET SDK 10:
 
 ```sh
-dotnet build src/DacpacTool/DacpacTool.csproj -c Release -f net10.0
-TOOL="$PWD/src/DacpacTool/bin/Release/net10.0/DacpacTool.dll"
+dotnet build src/DacpacTool/DacpacTool.csproj -c Release
+TOOL="$PWD/src/DacpacTool/bin/Release/net8.0/DacpacTool.dll"
 
 dotnet build test/DirectDacpacReferences/ProducerA/ProducerA.csproj -c Release -p:DacpacToolExe="$TOOL" -p:TreatTSqlWarningsAsErrors=True -warnaserror
 dotnet build test/DirectDacpacReferences/ProducerB/ProducerB.csproj -c Release -p:DacpacToolExe="$TOOL" -p:TreatTSqlWarningsAsErrors=True -warnaserror

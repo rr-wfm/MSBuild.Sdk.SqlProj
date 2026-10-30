@@ -62,6 +62,6 @@ internal static class RepositoryWorkspace
     private static string BuildToolProperty()
     {
         var configuration = typeof(RepositoryWorkspace).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, "net10.0", "DacpacTool.dll")}";
+        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, "net8.0", "DacpacTool.dll")}";
     }
 }

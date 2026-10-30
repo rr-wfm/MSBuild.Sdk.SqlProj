@@ -38,7 +38,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             startInfo.ArgumentList.Add("-c");
             startInfo.ArgumentList.Add("Release");
             startInfo.ArgumentList.Add("-v:minimal");
-            startInfo.ArgumentList.Add($"-p:DacpacToolExe={typeof(Program).Assembly.Location}");
+            startInfo.ArgumentList.Add($"-p:DacpacToolExe={DacpacToolPath.FilePath}");
             if (useArtifactsOutput)
             {
                 startInfo.ArgumentList.Add("-p:UseArtifactsOutput=true");
