@@ -30,6 +30,8 @@
   <!-- Cover effective paths that can be overridden independently of their bases. -->
   <Content Remove="$(OutputPath)**/*.sql" />
   <Content Remove="$(IntermediateOutputPath)**/*.sql" />
+
+  <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" Include="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog)" />
 </ItemGroup>
 
   <ItemGroup>
