@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
+using MSBuild.Sdk.SqlProj.TestSupport;
 using Shouldly;
 using Testcontainers.MsSql;
 
@@ -11,12 +12,14 @@ internal sealed class PublishingFixture : IAsyncDisposable
     private readonly TestContext _context;
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("SqlProjPublishing_");
     private readonly SqlServerFixture _server = new();
+    private readonly IntegrationTestProcess _process;
     private bool _imageBuildAttempted;
     private bool _disposed;
 
     public PublishingFixture(TestContext context)
     {
         _context = context;
+        _process = new IntegrationTestProcess(context, _directory.FullName, Password);
     }
 
     public string WorkspaceDirectory => _directory.FullName;
@@ -130,7 +133,7 @@ internal sealed class PublishingFixture : IAsyncDisposable
                     // A failed image build might not have created a tag to remove.
                     try
                     {
-                        await RunProcessAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
+                        await _process.RunAsync("docker", ["image", "rm", ImageName], CancellationToken.None);
                     }
                     catch (ShouldAssertException exception)
                     {

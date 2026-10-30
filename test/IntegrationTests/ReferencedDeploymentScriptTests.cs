@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using MSBuild.Sdk.SqlProj.DacpacTool;
+using MSBuild.Sdk.SqlProj.TestSupport;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.IntegrationTests
