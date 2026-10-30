@@ -9,7 +9,8 @@
     <ReadCommittedSnapshot>True</ReadCommittedSnapshot>
     <ServiceBrokerOption>EnableBroker</ServiceBrokerOption>
     <PackageProjectUrl>https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/</PackageProjectUrl>
-    <GenerateEntityRelationshipDiagram>true</GenerateEntityRelationshipDiagram>
+    <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
+    <GenerateCreateScript>True</GenerateCreateScript>
   </PropertyGroup>
 
   <PropertyGroup>
