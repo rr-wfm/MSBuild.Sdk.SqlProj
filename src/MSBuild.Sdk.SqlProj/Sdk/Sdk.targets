@@ -31,7 +31,7 @@
   <Content Remove="$(OutputPath)**/*.sql" />
   <Content Remove="$(IntermediateOutputPath)**/*.sql" />
 
-  <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" Include="@(Content)" />
+  <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" Include="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog)" />
 </ItemGroup>
 
   <ItemGroup>
