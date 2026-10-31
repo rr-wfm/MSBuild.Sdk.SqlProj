@@ -26,11 +26,11 @@ If a maintainer asks you to "rebase" your PR, they're saying that a lot of code 
 In order to get started contributing code, make sure you have the following installed on your machine:
 
 * .NET SDK (you can get it from [here](https://dotnet.microsoft.com/en-us/download))
-* Optionally: A local [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2022) (possibly as a [Docker container](https://hub.docker.com/_/microsoft-mssql-server))
+* For deployment integration tests only: Docker running Linux containers (the tests provision SQL Server automatically).
 
-This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.Tests` folder.
+This project is made up of a [command line tool](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/DacpacTool) that does most of the heavy lifting and an [accompanying NuGet package](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/tree/master/src/MSBuild.Sdk.SqlProj) that puts it all together. The command line tool is accompanied with a set of unit tests in the `test/DacpacTool.UnitTests` folder.
 
-The deployment integration tests use Testcontainers to start a disposable SQL Server. With Docker running, run `dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --filter TestCategory=SqlServer` to test referenced post-deployment script behavior. No manually configured SQL Server or connection string is required. See [Integration tests](#integration-tests) for the full suite and its additional prerequisites.
+The deployment integration tests use Testcontainers to start a disposable SQL Server. With Docker running, run `dotnet test test/Deployment.IntegrationTests/Deployment.IntegrationTests.csproj -c Release --filter TestCategory=SqlServer` to test referenced post-deployment script behavior. No manually configured SQL Server or connection string is required. See [Integration tests](#integration-tests) for the full suite and its additional prerequisites.
 
 In order to test your changes on your development machine you should first run `dotnet build` from the `src/MSBuild.Sdk.SqlProj` folder. Its build-only project reference restores and builds the command line tool, and an MSBuild publish task stages the single `net8.0` payload in `src/MSBuild.Sdk.SqlProj/tools/DacpacTool/`. Tool invocations allow runtime roll-forward, so separate payloads are not needed for each supported runtime. You can then build any of the test projects in the `test` folder to try out your changes without having to build the SDK package and push it a NuGet package feed. This works because these projects reference the `Sdk.props` and `Sdk.targets` files directly like for example `TestProjectWithPackageReference.csproj`:
 
@@ -68,12 +68,38 @@ Feel free to provide feature suggestions or enhancements to this project through
 # Code review process
 Before any change is merged it will be reviewed by someone from the team.
 
-# Integration tests
+# Running Unit and Integration Tests
 
-When changing publishing behavior, run the [integration tests](test/IntegrationTests/README.md). They use Testcontainers to start a disposable SQL Server and verify referenced deployment script behavior, the built-in publisher, SqlPackage profile workflows, and container publishing. You need a current .NET 10 SDK, Docker with Linux containers on an x64 host, and SqlPackage on `PATH` (or set `SQLPACKAGE_PATH`).
+Use the .NET 10 SDK. Unit and SDK integration tests target .NET 8, 9, and 10; install all three runtimes or add `-f net10.0` to run only .NET 10.
+
+## Unit Tests
+
+Test the command-line tool without Docker or SQL Server:
 
 ```bash
-dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release
+dotnet test test/DacpacTool.UnitTests/DacpacTool.UnitTests.csproj -c Release
 ```
 
-The tests also run in CI and clean up their test resources automatically.
+## Integration Tests
+
+SDK tests run without Docker. Deployment tests require Docker. Testcontainers manages SQL Server automatically. SqlPackage scenarios also require SqlPackage on `PATH` or `SQLPACKAGE_PATH` set.
+
+Run individual projects below to choose a suite. Running `dotnet test` on the full solution includes the Docker-dependent tests.
+
+### SDK Integration Tests
+
+Test SDK builds, default settings, package layout, DACPAC references, scripts, and ER diagrams. See the [SDK integration test guide](test/Sdk.IntegrationTests/README.md) for details. Mermaid rendering checks are optional and skip when `mmdc` is unavailable.
+
+```bash
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj -c Release
+```
+
+### Deployment Integration Tests
+
+Test publishing and deployment scripts using code from the checkout:
+
+```bash
+dotnet test test/Deployment.IntegrationTests/Deployment.IntegrationTests.csproj -c Release
+```
+
+See the [deployment test guide](test/Deployment.IntegrationTests/README.md) for details. To test the built NuGet package as a consumer would use it, follow the [packaged deployment test guide](test/PackagedDeployment.IntegrationTests/README.md), including artifact preparation.

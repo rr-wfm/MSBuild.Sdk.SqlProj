@@ -7,7 +7,7 @@
   - `./src/MSBuild.Sdk.SqlProj`: SDK packaging and MSBuild `Sdk.props`/`Sdk.targets`.
   - `./src/MSBuild.Sdk.SqlProj.Templates`: `dotnet new` templates.
 - Tests and scenario projects:
-  - `./test/DacpacTool.Tests`: unit tests for CLI logic.
+  - `./test/DacpacTool.UnitTests`: unit tests for CLI logic.
   - `./test/TestProject*`: integration-style build/publish scenarios.
 
 ## Where to change code
@@ -28,7 +28,7 @@ Run from the repository root.
 2. Analyzer/style verification:
    - `dotnet format analyzers ./MSBuild.Sdk.SqlProj.slnx --verify-no-changes --severity info`
 3. Unit tests:
-   - `dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release`
+   - `dotnet test ./test/DacpacTool.UnitTests/DacpacTool.UnitTests.csproj -c Release`
 4. SDK build:
    - `dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.csproj -c Release`
 5. Integration sanity scenarios commonly used in CI:

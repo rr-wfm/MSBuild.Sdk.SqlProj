@@ -29,13 +29,13 @@ Each config file can optionally reference the schema for editor help:
 Run the project-harness tests:
 
 ```bash
-dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests
 ```
 
 Run only the golden-file comparison test:
 
 ```bash
-dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests.BuildProject_GeneratesExpectedDiagrams
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests.BuildProject_GeneratesExpectedDiagrams
 ```
 
 ## Optional Mermaid CLI Validation
@@ -50,7 +50,7 @@ Install Mermaid CLI so `mmdc` is available on your `PATH`:
 Then run:
 
 ```bash
-dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests.BuildProject_GeneratedDiagramsParseWithMermaidCli_WhenAvailable
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj --filter FullyQualifiedName~ErDiagramProjectHarnessTests.BuildProject_GeneratedDiagramsParseWithMermaidCli_WhenAvailable
 ```
 
 If `mmdc` is not installed, that test is skipped.

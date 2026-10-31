@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   deploy:
@@ -46,7 +47,7 @@ jobs:
           PackagedSqlPackage|PackagedPublish|PackagedContainer) ;;
           *) echo "Unknown packaged deployment category: $TEST_CATEGORY" >&2; exit 1 ;;
         esac
-        dotnet test test/PackagedDeploymentIntegrationTests/PackagedDeploymentIntegrationTests.csproj -c Release \
+        dotnet test test/PackagedDeployment.IntegrationTests/PackagedDeployment.IntegrationTests.csproj -c Release \
           --filter "TestCategory=$TEST_CATEGORY" --logger trx \
           --results-directory artifacts/packaged-results
     - name: Upload test results and deployment diagnostics
@@ -56,3 +57,10 @@ jobs:
         name: packaged-deployment-${{ inputs.test-category }}
         path: artifacts/packaged-results
         if-no-files-found: warn
+    - name: Publish packaged deployment test results
+      if: ${{ always() && !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        check_name: "Packaged Deployment Test Results - ${{ inputs.test-category }}"
+        comment_mode: off
+        files: "artifacts/packaged-results/**/*.trx"

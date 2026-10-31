@@ -63,11 +63,11 @@ The template has no `CodeAnalysisRules` override: all three projects likewise us
 
 Verified with SDK 10.0.112 / DacFx 170.5.96.0: both producers and the valid/restored consumer succeed with zero warnings/errors; omitting either reference independently fails with SQL71561. Use `-t:Rebuild` to force analysis rather than reuse an incremental result.
 
-The automated regression copies only the fixture SQL/project inputs into a unique per-invocation directory under `test/DacpacTool.Tests/obj/DirectReferences`, rewrites SDK imports to the local SDK, and removes the copy during cleanup. Its builds never write the checked-in fixture's `bin`/`obj`, so separate net8.0/net10.0 test hosts can run concurrently. The manual commands above still build in place. Both test hosts build the scratch projects as `net10.0` via SDK 10; the test host framework does not change the fixture target framework.
+The automated regression copies only the fixture SQL/project inputs into a unique per-invocation directory under `test/Sdk.IntegrationTests/obj/DirectReferences`, rewrites SDK imports to the local SDK, and removes the copy during cleanup. Its builds never write the checked-in fixture's `bin`/`obj`, so separate net8.0/net10.0 test hosts can run concurrently. The manual commands above still build in place. Both test hosts build the scratch projects as `net10.0` via SDK 10; the test host framework does not change the fixture target framework.
 
 It verifies package/version/asset parity against the actual template for all three projects, checks that no rule override is present, then runs the three builds in order and requires each to load `SqlServer.Rules` and produce a clean analysis report. It verifies both copied references and the consumer view in the resulting DacFx model, checks both independent failure cases, then rebuilds the valid consumer:
 
 ```sh
-dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f net10.0 --filter FullyQualifiedName~DirectDacpacReferenceTests
-dotnet test test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release -f net8.0 --filter FullyQualifiedName~DirectDacpacReferenceTests
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj -c Release -f net10.0 --filter FullyQualifiedName~DirectDacpacReferenceTests
+dotnet test test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj -c Release -f net8.0 --filter FullyQualifiedName~DirectDacpacReferenceTests
 ```
