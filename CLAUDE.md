@@ -32,10 +32,10 @@ dotnet build ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj -c Releas
 dotnet format analyzers ./MSBuild.Sdk.SqlProj.slnx --verify-no-changes --severity info
 
 # Unit tests (MSTest + Shouldly + NSubstitute, multi-TFM)
-dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release
+dotnet test ./test/DacpacTool.UnitTests/DacpacTool.UnitTests.csproj -c Release
 
 # Run a single test
-dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj --filter "FullyQualifiedName~PackageBuilderTests.SomeTestName"
+dotnet test ./test/DacpacTool.UnitTests/DacpacTool.UnitTests.csproj --filter "FullyQualifiedName~PackageBuilderTests.SomeTestName"
 
 # Build a representative integration scenario
 dotnet build ./test/TestProject/TestProject.csproj -c Release

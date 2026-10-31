@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>MSBuild.Sdk.SqlProj.Sdk.IntegrationTests</AssemblyName>
+    <RootNamespace>MSBuild.Sdk.SqlProj.Sdk.IntegrationTests</RootNamespace>
+    <NuGetAudit>false</NuGetAudit>
+    <TestTfmsInParallel>false</TestTfmsInParallel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.5.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.5.1" />
+    <PackageReference Include="NuGet.Packaging" Version="7.9.0" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <Compile Include="../IntegrationTestSupport/Build/*.cs" Link="TestSupport/%(Filename)%(Extension)" />
+    <ProjectReference Include="../../src/DacpacTool/DacpacTool.csproj" />
+  </ItemGroup>
+</Project>

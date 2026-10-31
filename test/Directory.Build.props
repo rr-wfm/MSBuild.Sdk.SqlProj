@@ -1,0 +1,8 @@
+<Project>
+  <!-- Preserve repository-wide package/version settings before applying test defaults. -->
+  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>

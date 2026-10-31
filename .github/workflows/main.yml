@@ -60,7 +60,21 @@ jobs:
     - name: dotnet test with coverage
       id: tests
       continue-on-error: true
-      run: dotnet test ./test/DacpacTool.Tests/DacpacTool.Tests.csproj -c Release --results-directory ./artifacts/test-results --logger trx --collect:"XPlat Code Coverage"
+      run: dotnet test ./test/DacpacTool.UnitTests/DacpacTool.UnitTests.csproj -c Release --results-directory ./artifacts/test-results --logger trx --collect:"XPlat Code Coverage"
+
+    # Run SDK build harnesses separately from the unit tests (no Docker required)
+    - name: dotnet test SDK integration tests
+      id: sdk-tests
+      continue-on-error: true
+      run: dotnet test ./test/Sdk.IntegrationTests/Sdk.IntegrationTests.csproj -c Release --results-directory ./artifacts/sdk-integration-tests --logger trx
+
+    - name: upload SDK integration test results
+      if: ${{ always() && !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: sdk-integration-test-results
+        path: ./artifacts/sdk-integration-tests/**/*
+        if-no-files-found: ignore
 
     # Install ReportGenerator for coverage report generation
     - name: install reportgenerator
@@ -108,6 +122,14 @@ jobs:
         check_name: "Unit Test Results"
         comment_mode: off
         files: "./artifacts/test-results/**/*.trx"
+
+    - name: publish SDK integration test results
+      if: ${{ always() && !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        check_name: "SDK Integration Test Results"
+        comment_mode: off
+        files: "./artifacts/sdk-integration-tests/**/*.trx"
 
     # Run build for SDK package
     - name: dotnet build SDK
@@ -168,7 +190,7 @@ jobs:
         path: ./src/MSBuild.Sdk.SqlProj.Templates/bin/Release/
 
     - name: fail job if tests failed
-      if: ${{ always() && !cancelled() && steps.tests.outcome == 'failure' }}
+      if: ${{ always() && !cancelled() && (steps.tests.outcome == 'failure' || steps.sdk-tests.outcome == 'failure') }}
       run: exit 1
 
     - name: upload binary logs
@@ -269,18 +291,27 @@ jobs:
         if-no-files-found: ignore
 
   deploy-sqlpackage:
+    permissions:
+      contents: read
+      checks: write
     needs: test
     uses: ./.github/workflows/packaged-deployment.yml
     with:
       test-category: PackagedSqlPackage
 
   deploy-publish:
+    permissions:
+      contents: read
+      checks: write
     needs: test
     uses: ./.github/workflows/packaged-deployment.yml
     with:
       test-category: PackagedPublish
 
   deploy-container:
+    permissions:
+      contents: read
+      checks: write
     needs: test
     uses: ./.github/workflows/packaged-deployment.yml
     with:
@@ -288,6 +319,9 @@ jobs:
 
   integration-tests:
     name: Integration tests (SQL Server 2025)
+    permissions:
+      contents: read
+      checks: write
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -300,13 +334,20 @@ jobs:
     - name: Install SqlPackage
       run: dotnet tool install --global Microsoft.SqlPackage
     - name: Run integration tests with Testcontainers
-      run: dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
+      run: dotnet test test/Deployment.IntegrationTests/Deployment.IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
     - name: Upload integration test results
       if: always()
       uses: actions/upload-artifact@v7
       with:
         name: integration-test-results-sqlserver
         path: artifacts/integration-tests
+    - name: Publish deployment integration test results
+      if: ${{ always() && !cancelled() }}
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        check_name: "Deployment Integration Test Results"
+        comment_mode: off
+        files: "artifacts/integration-tests/**/*.trx"
 
   # Publish the NuGet package to NuGet.org when building master branch
   publish:

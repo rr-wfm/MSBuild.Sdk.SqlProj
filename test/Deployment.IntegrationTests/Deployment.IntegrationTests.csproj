@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>MSBuild.Sdk.SqlProj.Deployment.IntegrationTests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.5.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.5.1" />
+    <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.16.0" />
+    <Compile Include="../IntegrationTestSupport/*.cs" Link="TestSupport/%(Filename)%(Extension)" />
+    <Compile Include="../IntegrationTestSupport/Build/*.cs" Link="TestSupport/%(Filename)%(Extension)" />
+    <ProjectReference Include="../../src/DacpacTool/DacpacTool.csproj" />
+  </ItemGroup>
+</Project>
