@@ -230,7 +230,7 @@
                      '$(DesignTimeBuild)' == 'true' AND
                      ('@(PrePlan)' != '' OR '@(PreDeploy)' != '' OR '@(PostDeploy)' != '')">
     <ItemGroup>
-      <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" Include="$(IncludedFiles)" />
+      <UpToDateCheckInput Include="$(IncludedFiles)" />
     </ItemGroup>
   </Target>  
 
