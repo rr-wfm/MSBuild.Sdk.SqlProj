@@ -31,7 +31,8 @@
   <Content Remove="$(OutputPath)**/*.sql" />
   <Content Remove="$(IntermediateOutputPath)**/*.sql" />
 
-  <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" Include="@(Content)" />
+  <UpToDateCheckInput Condition="'$(BuildingInsideVisualStudio)' == 'true'" 
+                      Include="@(Content);@(PrePlan);@(PreDeploy);@(PostDeploy);@(RefactorLog)" />
 </ItemGroup>
 
   <ItemGroup>
@@ -202,7 +203,11 @@
   <!--
     Gets a list of included files in the pre-plan, pre-deploy, and post-deploy scripts to include in the incremental build Inputs
   -->
-  <Target Name="GetIncludedFiles" DependsOnTargets="ValidateEnvironment">
+  <Target Name="GetIncludedFiles"
+            DependsOnTargets="_CollectSqlIncludedFiles"
+            Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'" />
+
+  <Target Name="_CollectSqlIncludedFiles" DependsOnTargets="ValidateEnvironment">  
     <!-- Build arguments for the command line tool  -->
     <PropertyGroup>
       <PreDeploymentScriptArgument>@(PreDeploy->'--predeploy &quot;%(Identity)&quot;', ' ')</PreDeploymentScriptArgument>
@@ -213,12 +218,22 @@
     </PropertyGroup>
     <!-- Run it, except during design-time builds -->
     <Message Importance="low" Text="Running command: $(DacpacToolCommand)" />
-    <Exec Command="$(DacpacToolCommand)" ConsoleToMsBuild="true" EchoOff="true" StandardOutputImportance="Low"
-          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
+    <Exec Command="$(DacpacToolCommand)" ConsoleToMsBuild="true" EchoOff="true" StandardOutputImportance="Low">
       <Output TaskParameter="ConsoleOutput" PropertyName="IncludedFiles" />
     </Exec>
     <Message Importance="low" Text="Included Files: $(IncludedFiles)" />
   </Target>
+
+  <Target Name="CollectSqlUpToDateCheckInputs"
+            BeforeTargets="CollectUpToDateCheckInputDesignTime"
+            DependsOnTargets="_CollectSqlIncludedFiles"
+            Condition="'$(BuildingInsideVisualStudio)' == 'true' AND
+                     '$(DesignTimeBuild)' == 'true' AND
+                     ('@(PrePlan)' != '' OR '@(PreDeploy)' != '' OR '@(PostDeploy)' != '')">
+    <ItemGroup>
+      <UpToDateCheckInput Include="$(IncludedFiles)" />
+    </ItemGroup>
+  </Target>  
 
   <!--
     Performs the actual compilation of the input files (*.sql) into a .dacpac package by calling into a command line tool to do the actual work.
