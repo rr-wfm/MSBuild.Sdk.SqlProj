@@ -127,18 +127,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 var (entryScript, firstInclude, nestedInclude, overridesPath) = CreateIncludeFixture(fixtureDirectory, itemType);
                 var expectIncludes = buildingInsideVisualStudio && designTimeBuild && itemType.Length > 0;
                 var toolPath = expectIncludes
-                    ? typeof(Program).Assembly.Location
+                    ? DacpacToolPath.FilePath
                     : Path.Combine(fixtureDirectory.FullName, "MissingTool.dll");
-                var expectedPaths = new List<string>();
-
-                if (buildingInsideVisualStudio)
+                var expectedPaths = new List<string>
                 {
-                    expectedPaths.Add(Path.Combine(ProjectDirectory, "Tables", "MyTable.sql"));
-                    expectedPaths.Add(Path.Combine(ProjectDirectory, "RefactorLog", "TestProjectWithPrePost.refactorlog"));
-                    if (itemType.Length > 0)
-                    {
-                        expectedPaths.Add(entryScript);
-                    }
+                    Path.Combine(ProjectDirectory, "Tables", "MyTable.sql"),
+                    Path.Combine(ProjectDirectory, "RefactorLog", "TestProjectWithPrePost.refactorlog"),
+                };
+
+                if (itemType.Length > 0)
+                {
+                    expectedPaths.Add(entryScript);
                 }
 
                 if (expectIncludes)
@@ -155,7 +154,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                     $"-p:BuildingInsideVisualStudio={buildingInsideVisualStudio}",
                     $"-p:DesignTimeBuild={designTimeBuild}",
                     "-p:BuildingProject=false",
-                    $"-p:DacpacToolExe={toolPath}",
+                    $"-p:DacpacToolExe={DacpacToolPath.FilePath}",
                     "-verbosity:quiet");
 
                 using var document = JsonDocument.Parse(output);
