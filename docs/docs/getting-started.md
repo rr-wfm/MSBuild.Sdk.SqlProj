@@ -16,12 +16,12 @@ dotnet new sqlproj
 
 If you don't want to target the latest version of SQL Server, you can specify a version to target using the `-s Sql<version>` switch.
 
-See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2022` to `16.0`.
+See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2025` to `17.0`.
 
-See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `16.0` to `Sql160`.
+See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `17.0` to `Sql170`.
 
 ```bash
-dotnet new sqlproj -s Sql160
+dotnet new sqlproj -s Sql170
 ```
 
 The project template also supports additional options such as enabling code analysis and ER diagram generation:
@@ -35,10 +35,10 @@ When `--erDiagram true` is specified, the template includes a sample `*_erdiagra
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.5.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <SqlServerVersion>Sql160</SqlServerVersion>
+    <SqlServerVersion>Sql170</SqlServerVersion>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <!-- For additional properties that can be set here, please refer to https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/project-configuration.html#model-properties -->
   </PropertyGroup>
