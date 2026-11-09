@@ -9,7 +9,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
     [TestClass]
     public class DirectDacpacReferenceTests
     {
-        public TestContext TestContext { get; set; }
+        public required TestContext TestContext { get; set; }
 
         private string directory = null!;
         private string sdkDirectory = null!;
