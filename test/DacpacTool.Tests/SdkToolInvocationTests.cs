@@ -93,7 +93,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
-        [DataRow("GetIncludedFiles", "collect-includes")]
+        [DataRow("_CollectSqlIncludedFiles", "collect-includes")]
         [DataRow("CoreCompile", "build")]
         [DataRow("PublishDatabase", "deploy")]
         public void SdkCommand_UsesToolRuntimeConfiguration(string targetName, string command)

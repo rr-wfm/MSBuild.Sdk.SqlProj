@@ -6,7 +6,9 @@
   </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".github/workflows/docfx.yml" />
     <File Path=".github/workflows/main.yml" />
+    <File Path=".github/workflows/packaged-deployment.yml" />
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
     <File Path="version.json" />
