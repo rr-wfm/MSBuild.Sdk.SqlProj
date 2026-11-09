@@ -11,10 +11,10 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
     {
         public TestContext TestContext { get; set; }
 
-        private string directory;
-        private string sdkDirectory;
-        private string reference;
-        private string project;
+        private string directory = null!;
+        private string sdkDirectory = null!;
+        private string reference = null!;
+        private string project = null!;
 
         [TestInitialize]
         public void Initialize()
@@ -164,7 +164,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             WriteProject(new XElement("ArtifactReference", new XAttribute("Include", reference),
                 new XElement("Private", "false"), new XElement("DatabaseVariableLiteralValue", "External")));
             var document = XDocument.Load(project);
-            document.Root.Element("ItemGroup").Add(new XElement("ArtifactReference", new XAttribute("Include", copiedReference),
+            document.Root!.Element("ItemGroup")!.Add(new XElement("ArtifactReference", new XAttribute("Include", copiedReference),
                 new XElement("Private", "true"), new XElement("DatabaseVariableLiteralValue", "Copied")));
             document.Save(project);
             File.WriteAllText(Path.Combine(directory, "View.sql"),
@@ -288,7 +288,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             WriteProject(new XElement("DacpacReference", new XAttribute("Include", "LegacyIdentity"),
                 new XAttribute("DacpacFile", reference), new XAttribute("ExternalParts", "dbl=Legacy|dbv=|srv=")));
             var document = XDocument.Load(project);
-            document.Root.Add(new XElement("ItemGroup", new XElement("ArtifactReference", new XAttribute("Include", "ArtifactIdentity"),
+            document.Root!.Add(new XElement("ItemGroup", new XElement("ArtifactReference", new XAttribute("Include", "ArtifactIdentity"),
                 new XElement("HintPath", reference), new XElement("DatabaseVariableLiteralValue", "ArtifactDatabase"))));
             document.Root.Add(new XElement("Target", new XAttribute("Name", "SupplyProjectReference"),
                 new XElement("ItemGroup", new XElement("_ResolvedProjectReferencePaths", new XAttribute("Include", reference), new XAttribute("DatabaseVariableLiteralValue", "ProjectDatabase")))));
@@ -327,29 +327,29 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
                 foreach (var sql in Directory.EnumerateFiles(Path.Combine(source, name), "*.sql", SearchOption.AllDirectories))
                 {
                     var copy = Path.Combine(destination, Path.GetRelativePath(Path.Combine(source, name), sql));
-                    Directory.CreateDirectory(Path.GetDirectoryName(copy));
+                    Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
                     File.Copy(sql, copy);
                 }
                 var document = XDocument.Load(Path.Combine(source, name, name + ".csproj"));
-                document.Root.Element("PropertyGroup").Element("TargetFramework").Value.ShouldBe("net10.0");
-                ((string)document.Root.Element("PropertyGroup").Element("RunSqlCodeAnalysis")).ShouldBe("True");
-                ((string)document.Root.Element("PropertyGroup").Element("TreatTSqlWarningsAsErrors")).ShouldBe("True");
+                document!.Root!.Element("PropertyGroup")!.Element("TargetFramework")!.Value.ShouldBe("net10.0");
+                ((string)document.Root.Element("PropertyGroup")!.Element("RunSqlCodeAnalysis")!).ShouldBe("True");
+                ((string)document.Root.Element("PropertyGroup")!.Element("TreatTSqlWarningsAsErrors")!).ShouldBe("True");
                 // Follow the template's default rule selection, not a fixture-specific override.
                 document.Root.Descendants("CodeAnalysisRules").ShouldBeEmpty();
                 var template = XDocument.Load(Path.Combine(root, "src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj/sqlproj.csproj"));
-                var expectedPackages = template.Root.Descendants("PackageReference").ToArray();
+                var expectedPackages = template!.Root!.Descendants("PackageReference").ToArray();
                 var actualPackages = document.Root.Descendants("PackageReference").ToArray();
                 actualPackages.Length.ShouldBe(expectedPackages.Length);
                 foreach (var expected in expectedPackages)
                 {
-                    var actual = actualPackages.Single(package => (string)package.Attribute("Include") == (string)expected.Attribute("Include"));
-                    ((string)actual.Attribute("Version")).ShouldBe((string)expected.Attribute("Version"));
-                    ((string)actual.Element("PrivateAssets")).ShouldBe((string)expected.Element("PrivateAssets"));
-                    ((string)actual.Element("IncludeAssets")).ShouldBe((string)expected.Element("IncludeAssets"));
+                    var actual = actualPackages.Single(package => (string)package.Attribute("Include")! == (string)expected.Attribute("Include")!);
+                    ((string)actual.Attribute("Version")!).ShouldBe((string)expected.Attribute("Version")!);
+                    ((string)actual.Element("PrivateAssets")!).ShouldBe((string)expected.Element("PrivateAssets")!);
+                    ((string)actual.Element("IncludeAssets")!).ShouldBe((string)expected.Element("IncludeAssets")!);
                 }
                 foreach (var import in document.Root.Elements("Import"))
                 {
-                    import.SetAttributeValue("Project", Path.Combine(sdkDirectory, Path.GetFileName(import.Attribute("Project").Value)));
+                    import.SetAttributeValue("Project", Path.Combine(sdkDirectory, Path.GetFileName(import.Attribute("Project")!.Value)));
                 }
                 document.Save(Path.Combine(destination, name + ".csproj"));
             }
@@ -394,7 +394,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
                 output.ShouldNotContain("SQL71561");
                 output.ShouldNotContain("SuppressMissingDependenciesErrors True");
                 var report = XDocument.Load(Path.Combine(fixture, name, $"obj/Release/net10.0/{name}.CodeAnalysis.xml"));
-                report.Root.Name.LocalName.ShouldBe("Problems");
+                report.Root!.Name.LocalName.ShouldBe("Problems");
                 report.Root.Elements().ShouldBeEmpty();
                 TestContext.WriteLine(output);
             }
