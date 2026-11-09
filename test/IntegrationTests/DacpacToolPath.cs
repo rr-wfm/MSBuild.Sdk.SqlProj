@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     internal static class DacpacToolPath
     {

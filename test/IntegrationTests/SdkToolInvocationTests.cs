@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     [TestClass]
     public class SdkToolInvocationTests
