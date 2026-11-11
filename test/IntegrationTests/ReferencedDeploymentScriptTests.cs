@@ -130,7 +130,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
                 builder.AddReference(reference.FullName);
             }
 
-            builder.Model.AddObjects(sql);
+            builder.Model!.AddObjects(sql);
             builder.ValidateModel().ShouldBeTrue();
             var package = new FileInfo(Path.Combine(directory.FullName, $"{name}.dacpac"));
             builder.SaveToDisk(package);

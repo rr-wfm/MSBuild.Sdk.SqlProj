@@ -8,7 +8,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public sealed class PackageDeployer : IBatchEventsHandler
     {
         private readonly IConsole _console;
-        private string _currentSource;
+        private string? _currentSource;
 
         public PackageDeployer(IConsole console)
         {
@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             ConnectionStringBuilder.DataSource = $"{targetServer},{targetPort}";
         }
 
-        public void UseSqlAuthentication(string username, string password)
+        public void UseSqlAuthentication(string username, string? password)
         {
             ConnectionStringBuilder.UserID = username;
             if (string.IsNullOrWhiteSpace(password))
@@ -196,7 +196,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return result;
         }
 
-        private void HandleDacServicesMessage(object sender, DacMessageEventArgs args)
+        private void HandleDacServicesMessage(object? sender, DacMessageEventArgs args)
         {
             var message = args.Message;
             if (message.MessageType == DacMessageType.Message)
