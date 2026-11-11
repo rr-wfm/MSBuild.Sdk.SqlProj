@@ -61,7 +61,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act & Assert
             Should.Throw<ArgumentNullException>(() =>
-                modifier.SetProjectGuid(null, Guid.NewGuid()));
+                modifier.SetProjectGuid(null!, Guid.NewGuid()));
         }
 
         [TestMethod]
