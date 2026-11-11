@@ -26,7 +26,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql170);
 
             // Assert
-            packageBuilder.Model.Version.ShouldBe(SqlServerVersion.Sql170);
+            packageBuilder.Model!.Version.ShouldBe(SqlServerVersion.Sql170);
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             result.ShouldBe(true);
-            packageBuilder.Model.GetObject(Table.TypeClass, new ObjectIdentifier("dbo", "MyTable"), DacQueryScopes.Default).ShouldNotBeNull();
+            packageBuilder.Model!.GetObject(Table.TypeClass, new ObjectIdentifier("dbo", "MyTable"), DacQueryScopes.Default).ShouldNotBeNull();
         }
 
         [TestMethod]
@@ -118,7 +118,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.AddReference(reference);
 
             // Assert
-            packageBuilder.Model.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
+            packageBuilder.Model!.GetObject(Procedure.TypeClass, new ObjectIdentifier("dbo", "MyStoredProcedure"), DacQueryScopes.All).ShouldNotBeNull();
 
             // Cleanup
             File.Delete(reference);
@@ -139,7 +139,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var referencingStoredProcedure = "CREATE PROCEDURE [MyOtherStoredProcedure] AS BEGIN EXEC [SomeOtherDatabase].[dbo].[MyStoredProcedure] END";
-            packageBuilder.Model.AddObjects(referencingStoredProcedure);
+            packageBuilder.Model!.AddObjects(referencingStoredProcedure);
             packageBuilder.Model.Validate().ShouldBeEmpty();
 
             // Cleanup
@@ -163,7 +163,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.AddReference(model1File, "Model1", true);
-            packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
+            packageBuilder.Model!.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
             // Assert Does not throw
@@ -191,7 +191,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Act
             packageBuilder.AddReference(model1File, "Model1", false);
-            packageBuilder.Model.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
+            packageBuilder.Model!.AddObjects($"CREATE VIEW [View2] AS SELECT Col2 FROM [Model1].[dbo].[View1]");
             DacPackageExtensions.BuildPackage(model2File, packageBuilder.Model, new PackageMetadata());
 
             // Assert
@@ -643,7 +643,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
 
             // Assert
-            packageBuilder.Metadata.Name.ShouldBe("MyPackage");
+            packageBuilder.Metadata!.Name.ShouldBe("MyPackage");
             packageBuilder.Metadata.Version.ShouldBe("1.0.0.0");
         }
 
@@ -654,7 +654,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql170);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT 1 END");
+            packageBuilder.Model!.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT 1 END");
 
             // Act
             bool result = packageBuilder.ValidateModel();
@@ -670,7 +670,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql170);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
+            packageBuilder.Model!.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
 
             // Act
             bool result = packageBuilder.ValidateModel();
@@ -687,7 +687,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.UsingVersion(SqlServerVersion.Sql170);
             packageBuilder.TreatTSqlWarningsAsErrors = true;
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
+            packageBuilder.Model!.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
 
             // Act
             bool result = packageBuilder.ValidateModel();
@@ -706,7 +706,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.TreatTSqlWarningsAsErrors = true;
             packageBuilder.AddWarningsToSuppress("71502");
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
+            packageBuilder.Model!.AddObjects("CREATE PROCEDURE [csp_Test] AS BEGIN SELECT * FROM [dbo].[MyTable] END");
 
             // Act
             bool result = packageBuilder.ValidateModel();
@@ -744,7 +744,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageBuilder = new PackageBuilder(new TestConsole());
             packageBuilder.UsingVersion(SqlServerVersion.Sql170);
             packageBuilder.SetMetadata("MyPackage", "1.0.0.0");
-            packageBuilder.Model.AddObjects("CREATE PROCEDURE [csp_Test] @p_Parameter [dbo].[CustomType] AS BEGIN SELECT 1 END");
+            packageBuilder.Model!.AddObjects("CREATE PROCEDURE [csp_Test] @p_Parameter [dbo].[CustomType] AS BEGIN SELECT 1 END");
 
             // Act
             bool result = packageBuilder.ValidateModel();

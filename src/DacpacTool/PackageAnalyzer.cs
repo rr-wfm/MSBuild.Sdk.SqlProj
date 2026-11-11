@@ -13,7 +13,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly Dictionary<string, HashSet<string>> _suppressedProblemsByRule = new(StringComparer.Ordinal);
         private readonly char[] separator = new[] { ';' };
 
-        public PackageAnalyzer(IConsole console, string rulesExpression)
+        public PackageAnalyzer(IConsole console, string? rulesExpression)
         {
             _console = console ?? throw new ArgumentNullException(nameof(console));
 
@@ -103,7 +103,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
-        private void BuildRuleLists(string rulesExpression)
+        private void BuildRuleLists(string? rulesExpression)
         {
             if (!string.IsNullOrWhiteSpace(rulesExpression))
             {
