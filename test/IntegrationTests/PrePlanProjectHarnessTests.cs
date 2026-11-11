@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.SqlServer.Dac;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     [TestClass]
     [DoNotParallelize]
@@ -232,7 +227,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 var firstBuildOutput = BuildProject();
                 using var document = JsonDocument.Parse(firstBuildOutput);
                 var dacpacFile = GetFullProjectPath(document.RootElement.GetProperty("Properties"), "TargetPath");
-                var createScriptFile = Path.Combine(Path.GetDirectoryName(dacpacFile), "TestProjectWithPrePost_Create.sql");
+                var createScriptFile = Path.Combine(Path.GetDirectoryName(dacpacFile)!, "TestProjectWithPrePost_Create.sql");
 
                 // Assert
 

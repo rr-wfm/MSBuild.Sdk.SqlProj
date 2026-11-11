@@ -1,26 +1,21 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
+namespace MSBuild.Sdk.SqlProj.IntegrationTests
 {
     [TestClass]
     public class SdkToolInvocationTests
     {
         private static readonly XNamespace Msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
         private static readonly string SdkProjectDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/MSBuild.Sdk.SqlProj"));
-        private DirectoryInfo directory;
-        private string toolPath;
-        private string projectPath;
-        private string propertiesPath;
+        private DirectoryInfo directory = null!;
+        private string toolPath = null!;
+        private string projectPath = null!;
+        private string propertiesPath = null!;
 
-        public TestContext TestContext { get; set; }
+        public required TestContext TestContext { get; set; }
 
         [TestInitialize]
         public void Initialize()
@@ -29,7 +24,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var sdkDirectory = Path.Combine(directory.FullName, "Sdk");
             Directory.CreateDirectory(sdkDirectory);
             toolPath = Path.Combine(directory.FullName, "tools", "DacpacTool", "DacpacTool.dll");
-            Directory.CreateDirectory(Path.GetDirectoryName(toolPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(toolPath)!);
             File.WriteAllText(toolPath, string.Empty);
             propertiesPath = Path.Combine(directory.FullName, "properties.txt");
             projectPath = Path.Combine(directory.FullName, "Inspect.proj");
@@ -69,7 +64,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public async Task ValidateEnvironment_PreservesExplicitToolPath()
         {
             var customTool = Path.Combine(directory.FullName, "custom tool", "DacpacTool.dll");
-            Directory.CreateDirectory(Path.GetDirectoryName(customTool));
+            Directory.CreateDirectory(Path.GetDirectoryName(customTool)!);
             File.WriteAllText(customTool, string.Empty);
 
             var result = await InspectEnvironment($"-p:DacpacToolExe={customTool}");
@@ -129,7 +124,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var sdkProject = XDocument.Load(Path.Combine(SdkProjectDirectory, "MSBuild.Sdk.SqlProj.msbuildproj"));
             sdkProject.Save(sdkProjectPath);
             var toolProject = XDocument.Load(Path.Combine(SdkProjectDirectory, "..", "DacpacTool", "DacpacTool.csproj"));
-            var rollForward = toolProject.Root.Elements("PropertyGroup").Elements("RollForward").Single();
+            var rollForward = toolProject.Root!.Elements("PropertyGroup").Elements("RollForward").Single();
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
                 new XElement("PropertyGroup",
                     new XElement("OutputType", "Exe"),
@@ -164,33 +159,33 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 .Select(Path.GetFileName).ToArray();
             sdkOutputFiles.ShouldNotContain("DacpacTool.dll");
             sdkOutputFiles.ShouldNotContain("tool-content.txt");
-            var reference = sdkProject.Root.Elements("ItemGroup").Elements("ProjectReference").Single();
-            ((string)reference.Attribute("ReferenceOutputAssembly")).ShouldBe("false");
-            ((string)reference.Attribute("Private")).ShouldBe("false");
-            ((string)reference.Attribute("PrivateAssets")).ShouldBe("all");
+            var reference = sdkProject.Root!.Elements("ItemGroup").Elements("ProjectReference").Single();
+            ((string)reference.Attribute("ReferenceOutputAssembly")!).ShouldBe("false");
+            ((string)reference.Attribute("Private")!).ShouldBe("false");
+            ((string)reference.Attribute("PrivateAssets")!).ShouldBe("all");
         }
 
         [TestMethod]
         public void SdkPackage_UsesDedicatedToolDirectory()
         {
             var sdkProject = XDocument.Load(Path.Combine(SdkProjectDirectory, "MSBuild.Sdk.SqlProj.msbuildproj"));
-            var collectFiles = sdkProject.Root.Elements("Target").Single(target => (string)target.Attribute("Name") == "CollectPackageFiles");
+            var collectFiles = sdkProject.Root!.Elements("Target").Single(target => (string)target.Attribute("Name")! == "CollectPackageFiles");
 
             var toolFiles = collectFiles.Elements("ItemGroup").Elements("None")
-                .Where(file => ((string)file.Attribute("Include")).StartsWith("tools", StringComparison.Ordinal)).ToArray();
+                .Where(file => ((string)file.Attribute("Include")!).StartsWith("tools", StringComparison.Ordinal)).ToArray();
 
-            ((string)collectFiles.Attribute("BeforeTargets")).ShouldBe("_GetPackageFiles");
+            ((string)collectFiles.Attribute("BeforeTargets")!).ShouldBe("_GetPackageFiles");
             toolFiles.Length.ShouldBe(1);
-            ((string)toolFiles[0].Attribute("Include")).ShouldBe(@"tools\DacpacTool\**\*");
-            ((string)toolFiles[0].Attribute("Pack")).ShouldBe("true");
-            ((string)toolFiles[0].Attribute("PackagePath")).ShouldBe(@"tools\DacpacTool\%(RecursiveDir)");
+            ((string)toolFiles[0].Attribute("Include")!).ShouldBe(@"tools\DacpacTool\**\*");
+            ((string)toolFiles[0].Attribute("Pack")!).ShouldBe("true");
+            ((string)toolFiles[0].Attribute("PackagePath")!).ShouldBe(@"tools\DacpacTool\%(RecursiveDir)");
         }
 
         private static XElement LoadSdkTarget(string name)
         {
             var targetsPath = Path.Combine(SdkProjectDirectory, "Sdk", "Sdk.targets");
             var targets = XDocument.Load(targetsPath);
-            return new XElement(targets.Root.Elements(Msbuild + "Target").Single(target => (string)target.Attribute("Name") == name));
+            return new XElement(targets.Root!.Elements(Msbuild + "Target").Single(target => (string)target.Attribute("Name")! == name));
         }
 
         private Task<(int ExitCode, string Output)> InspectEnvironment(params string[] properties)
