@@ -16,7 +16,7 @@ The [main workflow](../../.github/workflows/main.yml) builds one SDK package, de
 
 The `deploy-sqlpackage`, `deploy-publish`, and `deploy-container` jobs call the [packaged deployment workflow](../../.github/workflows/packaged-deployment.yml). Each runs its corresponding test category against SQL Server 2025 with the matching artifacts. Results are uploaded separately for each category, including when tests fail.
 
-Release publishing requires `deploy-sqlpackage` and `deploy-publish` to pass, along with the separate [integration test suite](../IntegrationTests/README.md). `deploy-container` runs in CI but is not a release prerequisite.
+Release publishing requires `deploy-sqlpackage`, `deploy-publish`, and `deploy-container` to pass, along with the separate [integration test suite](../IntegrationTests/README.md).
 
 ## Run locally
 

@@ -317,6 +317,7 @@ jobs:
     needs:
     - deploy-sqlpackage
     - deploy-publish
+    - deploy-container
     - integration-tests
     steps:
     # Setup .NET SDK
