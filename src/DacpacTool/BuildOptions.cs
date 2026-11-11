@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using DotMake.CommandLine;
+﻿using DotMake.CommandLine;
 using Microsoft.SqlServer.Dac.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool

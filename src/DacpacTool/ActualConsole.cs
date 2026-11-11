@@ -1,5 +1,3 @@
-using System;
-
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public class ActualConsole : IConsole
