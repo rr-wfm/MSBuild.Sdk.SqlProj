@@ -1,5 +1,4 @@
-﻿using System.IO;
-using DotMake.CommandLine;
+﻿using DotMake.CommandLine;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
