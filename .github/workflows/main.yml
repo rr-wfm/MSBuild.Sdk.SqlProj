@@ -299,7 +299,14 @@ jobs:
         dotnet-version: '10.0.x'
     - name: Install SqlPackage
       run: dotnet tool install --global Microsoft.SqlPackage
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '22'
+    - name: Install Mermaid CLI
+      run: npm install --global @mermaid-js/mermaid-cli@12.2.0
     - name: Run integration tests with Testcontainers
+      env:
+        SQLPROJ_REQUIRE_MERMAID_CLI: 'true'
       run: dotnet test test/IntegrationTests/IntegrationTests.csproj -c Release --logger trx --results-directory artifacts/integration-tests
     - name: Upload integration test results
       if: always()
