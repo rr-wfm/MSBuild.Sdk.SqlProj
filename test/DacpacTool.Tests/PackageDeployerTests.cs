@@ -93,7 +93,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.UseSqlAuthentication("testuser", null);
+            packageDeployer.UseSqlAuthentication("testuser", null!);
 
             // Assert
             packageDeployer.ConnectionStringBuilder.IntegratedSecurity.ShouldBeFalse();
@@ -109,7 +109,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var packageDeployer = new PackageDeployer(_console);
 
             // Act
-            packageDeployer.UseSqlAuthentication("testuser", null);
+            packageDeployer.UseSqlAuthentication("testuser", null!);
 
             // Assert
             packageDeployer.ConnectionStringBuilder.IntegratedSecurity.ShouldBeFalse();

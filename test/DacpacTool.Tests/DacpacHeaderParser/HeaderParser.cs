@@ -22,7 +22,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
             reader.MoveToContent();
 
             var data = new List<CustomData>();
-            CustomData currentCustomData = null;
+            CustomData? currentCustomData = null;
 
             while (reader.Read())
             {
@@ -40,7 +40,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests.DacpacHeaderParser
                     var name = reader.GetAttribute("Name");
                     var value = reader.GetAttribute("Value");
 
-                    currentCustomData.AddMetadata(name, value);
+                    currentCustomData!.AddMetadata(name!, value);
                 }
 
                 if (reader.Name == "Header" && reader.NodeType == XmlNodeType.EndElement)

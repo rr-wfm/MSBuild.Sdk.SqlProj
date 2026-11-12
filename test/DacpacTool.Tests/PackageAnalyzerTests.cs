@@ -28,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var packageAnalyzer = new PackageAnalyzer(_console, null!);
 
             // Act
             packageAnalyzer.Analyze(result.model, result.fileInfo, CollectAssemblyPaths());
@@ -266,7 +266,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
             var result = BuildSimpleModel();
-            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var packageAnalyzer = new PackageAnalyzer(_console, null!);
 
             // Act
             packageAnalyzer.Analyze(result.model, result.fileInfo, Array.Empty<FileInfo>());
@@ -299,7 +299,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.ValidateModel();
             packageBuilder.SaveToDisk(path);
 
-            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var packageAnalyzer = new PackageAnalyzer(_console, null!);
 
             // PackageAnalyzer resolves the suppression file from CurrentDirectory,
             // so these tests must serialize any CurrentDirectory changes.
@@ -308,14 +308,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 try
                 {
                     // Set the current directory.
-                    Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location), "Suppression"));
+                    Directory.SetCurrentDirectory(Path.Combine(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location)!, "Suppression"));
                     // Act
                     packageAnalyzer.Analyze(packageBuilder.Model, path, Array.Empty<FileInfo>());
                 }
                 finally
                 {
                     // Reset the current directory.
-                    Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location));
+                    Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location)!);
                 }
             }
 
@@ -332,7 +332,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var testConsole = (TestConsole)_console;
             testConsole.Lines.Clear();
-            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var packageAnalyzer = new PackageAnalyzer(_console, null!);
             var method = typeof(PackageAnalyzer).GetMethod("WriteAnalysisResults", BindingFlags.NonPublic | BindingFlags.Instance);
             var outputFile = new FileInfo("test.dacpac");
             var serialized = false;
@@ -377,7 +377,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SaveToDisk(path);
 
             var originalDirectory = Environment.CurrentDirectory;
-            var packageAnalyzer = new PackageAnalyzer(_console, null);
+            var packageAnalyzer = new PackageAnalyzer(_console, null!);
             var suppressionDirectory = Path.Combine(
                 Path.GetDirectoryName(typeof(PackageAnalyzerTests).Assembly.Location)!,
                 "Suppression",
@@ -443,7 +443,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
     internal static class ProjectSource
     {
-        private static string CallerFilePath([CallerFilePath] string callerFilePath = null) =>
+        private static string CallerFilePath([CallerFilePath] string callerFilePath = "") =>
             callerFilePath ?? throw new ArgumentNullException(nameof(callerFilePath));
 
         public static string ProjectDirectory() => Path.GetDirectoryName(CallerFilePath())!;
