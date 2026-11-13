@@ -42,7 +42,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         [TestMethod]
@@ -219,7 +219,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             // Assert
             var validationErrors = model.Validate();
-            validationErrors.Any().ShouldBeFalse();
+            validationErrors.Count.ShouldBe(0);
         }
 
         [TestMethod]
