@@ -35,7 +35,7 @@ When `--erDiagram true` is specified, the template includes a sample `*_erdiagra
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.4.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/5.0.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <SqlServerVersion>Sql170</SqlServerVersion>
