@@ -1,11 +1,11 @@
 # MSBuild.Sdk.SqlProj
 
-![Build Status](https://github.com/jmezach/MSBuild.Sdk.SqlProj/workflows/CI/badge.svg)
-![Latest Stable Release](https://img.shields.io/nuget/v/MSBuild.Sdk.SqlProj)
-![Latest Prerelease](https://img.shields.io/nuget/vpre/MSBuild.Sdk.SqlProj)
-![Downloads](https://img.shields.io/nuget/dt/MSBuild.Sdk.SqlProj)
+[![Build Status](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/actions/workflows/main.yml/badge.svg)](https://github.com/rr-wfm/MSBuild.Sdk.SqlProj/actions/workflows/main.yml)
+[![Latest Release](https://img.shields.io/nuget/v/MSBuild.Sdk.SqlProj)](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj)
+[![Latest Prerelease](https://img.shields.io/nuget/vpre/MSBuild.Sdk.SqlProj)](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj)
+[![Downloads](https://img.shields.io/nuget/dt/MSBuild.Sdk.SqlProj)](https://www.nuget.org/packages/MSBuild.Sdk.SqlProj#statistics-body)
 
-## Introduction 
+## Introduction
 
 A MSBuild SDK that produces SQL Server Data-Tier Application packages (`.dacpac`) from SQL scripts using SDK-style .NET projects.
 

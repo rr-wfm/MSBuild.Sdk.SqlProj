@@ -35,11 +35,13 @@ When `--erDiagram true` is specified, the template includes a sample `*_erdiagra
 You should now have a project file with the following contents:
 
 ```xml
-<Project Sdk="MSBuild.Sdk.SqlProj/4.3.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.4.0">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <SqlServerVersion>Sql160</SqlServerVersion>
+    <SqlServerVersion>Sql170</SqlServerVersion>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
+    <ProjectGuid>{<your guid>}</ProjectGuid>
     <!-- For additional properties that can be set here, please refer to https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/project-configuration.html#model-properties -->
   </PropertyGroup>
 

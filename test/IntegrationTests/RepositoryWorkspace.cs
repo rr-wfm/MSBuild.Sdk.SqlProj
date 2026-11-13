@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using Shouldly;
 
 namespace MSBuild.Sdk.SqlProj.IntegrationTests;
@@ -17,7 +16,7 @@ internal static class RepositoryWorkspace
     /// <summary>
     /// MSBuild property pointing builds at the DacpacTool built in this checkout.
     /// </summary>
-    public static string DacpacToolProperty { get; } = BuildToolProperty();
+    public static string DacpacToolProperty { get; } = $"-p:DacpacToolExe={DacpacToolPath.FilePath}";
 
     /// <summary>
     /// Copies <c>test/TestProject</c> into <paramref name="directory"/>, rewiring its SDK imports to
@@ -57,11 +56,5 @@ internal static class RepositoryWorkspace
         }
         root.ShouldNotBeNull("Run these tests from a repository checkout.");
         return root.FullName;
-    }
-
-    private static string BuildToolProperty()
-    {
-        var configuration = typeof(RepositoryWorkspace).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-        return $"-p:DacpacToolExe={Path.Combine(Root, "src", "DacpacTool", "bin", configuration, "net8.0", "DacpacTool.dll")}";
     }
 }

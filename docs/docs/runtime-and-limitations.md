@@ -4,8 +4,9 @@
 
 MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the version of MSBuild.Sdk.SqlProj you can use varying versions of the .NET SDK (released once a year). The following table lists the supported .NET SDK versions by each MSBuild.Sdk.SqlProj version:
 
-| MSBuild.Sdk.SqlProj version | .NET runtime version |
+| MSBuild.Sdk.SqlProj version | .NET SDK version |
 | ------------ | -------------------- |
+| 5.0.0 | 10.0 or later |
 | 4.0.0 | 8.0, 9.0, 10.0 |
 | 3.2.0 | 8.0, 9.0, 10.0 |
 | 3.0.0 | 8.0, 9.0 |
@@ -15,10 +16,6 @@ MSBuild.Sdk.SqlProj requires a .NET SDK to be installed. Depending on the versio
 | 2.0.0 | 3.1, 5.0, 6.0 |
 
 > If you have support issues, be prepared for us to ask you to use the latest released version of MSBuild.Sdk.SqlProj.
-
-The SDK bundles a single `net8.0` DacpacTool payload in `tools/DacpacTool/` for building, inspecting includes, and deploying. The CLI project sets `<RollForward>Major</RollForward>`, which writes the policy into `DacpacTool.runtimeconfig.json` and allows the tool to use .NET 9 or 10 when .NET 8 is not installed. All three commands run in a separate process without command-line roll-forward flags. This also applies when invoking the CLI directly and avoids packaging a separate copy of the tool and its dependencies for each supported runtime.
-
-The `Major` policy permits minor- and major-version roll-forward; see Microsoft's [RollForward property documentation](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#rollforward). The requested runtime major is preferred when installed, so the tool does not necessarily run on the runtime matching the SDK used to build your SQL project. This does not change your project's target framework, remove native OS/architecture requirements, or guarantee compatibility with future runtime versions.
 
 ## Workaround for parser errors (SQL46010)
 
@@ -88,7 +85,7 @@ Some xml schema content....
 </xs:schema>';
 ```
 
-In practice, the workaround is to copy the contents of the `.xsd` file into the `N'...'` string of a `CREATE XML SCHEMA COLLECTION` statement and include that `.sql` file in your project instead of the `.xsd` file. If the schema content contains single quotes, escape them by doubling them (`''`). 
+In practice, the workaround is to copy the contents of the `.xsd` file into the `N'...'` string of a `CREATE XML SCHEMA COLLECTION` statement and include that `.sql` file in your project instead of the `.xsd` file. If the schema content contains single quotes, escape them by doubling them (`''`).
 
 > Note that large schemas may exceed the 4,000-character `NVARCHAR` literal limit, in which case you will need to split and concatenate the string or otherwise construct an `NVARCHAR(MAX)` value.
 
