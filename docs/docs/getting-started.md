@@ -41,7 +41,7 @@ You should now have a project file with the following contents:
     <SqlServerVersion>Sql170</SqlServerVersion>
     <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
     <GenerateEntityRelationshipDiagram>True</GenerateEntityRelationshipDiagram>
-    <ProjectGuid>{<your guid>}</ProjectGuid>
+    <ProjectGuid>{YOUR-GUID}</ProjectGuid>
     <!-- For additional properties that can be set here, please refer to https://rr-wfm.github.io/MSBuild.Sdk.SqlProj/docs/project-configuration.html#model-properties -->
   </PropertyGroup>
 
