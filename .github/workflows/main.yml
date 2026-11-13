@@ -31,14 +31,13 @@ jobs:
       with:
         fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
-    # Install .NET SDKs for 8.0, 9.0 and 10.0
+    # Install .NET SDKs for 10.0 and 11.0
     - name: Setup dotnet SDKs
       uses: actions/setup-dotnet@v6
       with:
         dotnet-version: |
+          11.0.x
           10.0.x
-          9.0.x
-          8.0.x
 
     # Install Nerdbank.GitVersioning
     - name: install nbgv
@@ -186,7 +185,7 @@ jobs:
     strategy:
       matrix:
         os: [ "ubuntu-24.04", "macos-15", "windows-2025" ]
-        dotnet: [ '8.0.x', '9.0.x', '10.0.x' ]
+        dotnet: [ '10.0.x', '11.0.x' ]
       fail-fast: false
 
     env:

@@ -231,7 +231,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             Directory.CreateDirectory(downstream);
             var downstreamProject = Path.Combine(downstream, "Downstream.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net8.0")),
+                new XElement("PropertyGroup", new XElement("TargetFramework", DacpacToolPath.TargetFramework)),
                 new XElement("ItemGroup", new XElement("ProjectReference", new XAttribute("Include", project),
                     new XAttribute("ReferenceOutputAssembly", "false"))))).Save(downstreamProject);
             File.WriteAllText(Path.Combine(downstream, "Class1.cs"), "public class Class1 { }");
@@ -241,7 +241,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             var result = await Run("build", downstreamProject, "-c", "Release", "-nologo", "-v:minimal",
                 $"-p:BuildProjectReferences={buildProjectReferences}", $"-p:DacpacToolExe={DacpacToolPath.FilePath}");
             result.ExitCode.ShouldBe(0, result.Output);
-            var output = Path.Combine(downstream, "bin/Release/net8.0");
+            var output = Path.Combine(downstream, $"bin/Release/{DacpacToolPath.TargetFramework}");
             File.Exists(Path.Combine(output, "Downstream.dll")).ShouldBeTrue();
             File.Exists(Path.Combine(output, "Consumer.dacpac")).ShouldBeTrue();
             File.Exists(Path.Combine(output, "Library.dacpac")).ShouldBe(expectCopy);
