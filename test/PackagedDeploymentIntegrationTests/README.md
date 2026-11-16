@@ -20,7 +20,7 @@ Release publishing requires `deploy-sqlpackage`, `deploy-publish`, and `deploy-c
 
 ## Run locally
 
-Use an x64 host, Docker running Linux containers, and the .NET 8, 9, and 10 SDKs to prepare the packages. The SqlPackage test also requires SqlPackage on `PATH`; set `SQLPACKAGE_PATH` to use another installation. Package restores and container downloads require network access.
+Use an x64 host, Docker running Linux containers, and the .NET 10 SDK to prepare the packages. The SqlPackage test also requires SqlPackage on `PATH`; set `SQLPACKAGE_PATH` to use another installation. Package restores and container downloads require network access.
 
 From the repository root, run:
 

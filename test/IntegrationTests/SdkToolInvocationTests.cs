@@ -108,7 +108,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
 
             var runtimeOptions = runtimeConfig.RootElement.GetProperty("runtimeOptions");
 
-            runtimeOptions.GetProperty("tfm").GetString().ShouldBe("net8.0");
+            runtimeOptions.GetProperty("tfm").GetString().ShouldBe(DacpacToolPath.TargetFramework);
             runtimeOptions.GetProperty("rollForward").GetString().ShouldBe("Major");
             runtimeOptions.TryGetProperty("rollForwardOnNoCandidateFx", out _).ShouldBeFalse();
         }
@@ -128,7 +128,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
                 new XElement("PropertyGroup",
                     new XElement("OutputType", "Exe"),
-                    new XElement("TargetFramework", "net8.0"),
+                    new XElement("TargetFramework", DacpacToolPath.TargetFramework),
                     new XElement(rollForward)),
                 new XElement("ItemGroup",
                     new XElement("Content", new XAttribute("Include", "tool-content.txt"),
@@ -147,13 +147,13 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
 
             result.ExitCode.ShouldBe(0, result.Output);
             File.Exists(Path.Combine(toolDirectory.FullName, "obj", "project.assets.json")).ShouldBeTrue();
-            var builtTool = Path.Combine(toolDirectory.FullName, "bin", "Release", "net8.0", "DacpacTool.dll");
+            var builtTool = Path.Combine(toolDirectory.FullName, "bin", "Release", DacpacToolPath.TargetFramework, "DacpacTool.dll");
             File.Exists(builtTool).ShouldBeTrue();
             var publishDirectory = Path.Combine(sdkDirectory.FullName, "tools", "DacpacTool");
             File.ReadAllBytes(Path.Combine(publishDirectory, "DacpacTool.dll")).ShouldBe(File.ReadAllBytes(builtTool));
             File.ReadAllText(Path.Combine(publishDirectory, "tool-content.txt")).ShouldBe("Published tool content");
             using var runtimeConfig = JsonDocument.Parse(File.ReadAllText(Path.Combine(publishDirectory, "DacpacTool.runtimeconfig.json")));
-            runtimeConfig.RootElement.GetProperty("runtimeOptions").GetProperty("tfm").GetString().ShouldBe("net8.0");
+            runtimeConfig.RootElement.GetProperty("runtimeOptions").GetProperty("tfm").GetString().ShouldBe(DacpacToolPath.TargetFramework);
             runtimeConfig.RootElement.GetProperty("runtimeOptions").GetProperty("rollForward").GetString().ShouldBe("Major");
             var sdkOutputFiles = Directory.GetFiles(Path.Combine(sdkDirectory.FullName, "bin"), "*", SearchOption.AllDirectories)
                 .Select(Path.GetFileName).ToArray();
