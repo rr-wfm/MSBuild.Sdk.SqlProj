@@ -16,12 +16,12 @@ dotnet new sqlproj
 
 If you don't want to target the latest version of SQL Server, you can specify a version to target using the `-s Sql<version>` switch.
 
-See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2022` to `16.0`.
+See [How to determine the version, edition, and update level of SQL Server and its components](https://support.microsoft.com/help/321185/how-to-determine-the-version-edition-and-update-level-of-sql-server-an) to map from the SQL Server SKU name to the version number, e.g. `SQL Server 2025` to `17.0`.
 
-See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `16.0` to `Sql160`.
+See [SqlServerVersion Enum](https://docs.microsoft.com/dotnet/api/microsoft.sqlserver.dac.model.sqlserverversion) to map from the SQL Server version number to the `SqlServerVersion` needed by the template and project file, e.g. `17.0` to `Sql170`.
 
 ```bash
-dotnet new sqlproj -s Sql160
+dotnet new sqlproj -s Sql170
 ```
 
 The project template also supports additional options such as enabling code analysis and ER diagram generation:
@@ -48,7 +48,7 @@ You should now have a project file with the following contents:
   <ItemGroup>
     <!-- This package adds additional code analysis rules -->
     <!-- We recommend using it, but it can be removed if desired -->
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.4">
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
