@@ -36,6 +36,25 @@ Use Rebuild for the negative checks because command-line metadata/property chang
 
 All three projects enable semantic validation and the same analyzer package/default rule selection as `src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj/sqlproj.csproj`
 
+All three projects enable semantic validation and the same analyzer package/default rule selection as `src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj/sqlproj.csproj`:
+
+```xml
+<PropertyGroup>
+  <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+  <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
+  <PageVerifyMode>Checksum</PageVerifyMode>
+  <QueryStoreDesiredState>ReadWrite</QueryStoreDesiredState>
+  <QueryStoreCaptureMode>Auto</QueryStoreCaptureMode>
+  <TargetRecoveryTimePeriod>60</TargetRecoveryTimePeriod>
+</PropertyGroup>
+<ItemGroup>
+  <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.6">
+    <PrivateAssets>all</PrivateAssets>
+    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
+</ItemGroup>
+```
+
 The template has no `CodeAnalysisRules` override: all three projects likewise use the default rules, with no rule exclusions or severity overrides. The database model properties above are fixture fixes, not template settings. The analyzer package is not a database dependency; the two producer dependencies remain direct DACPAC references.
 
 - **Semantic model validation** resolves database/table/column references using both DACPACs before static analysis. `TreatTSqlWarningsAsErrors=True` promotes unresolved-reference warnings to errors. Removing either dependency fails with `error SQL71561` naming the missing producer table, before the analyzer starts.
