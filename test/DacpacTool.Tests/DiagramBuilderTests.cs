@@ -34,7 +34,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             testConsole.Lines.ShouldContain($"Generating ER diagram MyPackage_erdiagram.md");
 
-            var diagramText = File.ReadAllText(diagram, Encoding.UTF8);
+            var diagramText = File.ReadAllText(diagram!, Encoding.UTF8);
 
             diagramText.ShouldContain("erDiagram");
 
