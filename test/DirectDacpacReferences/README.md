@@ -34,8 +34,6 @@ Use Rebuild for the negative checks because command-line metadata/property chang
 
 ## Semantic validation and static lint
 
-All three projects enable semantic validation and the same analyzer package/default rule selection as `src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj/sqlproj.csproj`
-
 All three projects enable semantic validation and the same analyzer package/default rule selection as `src/MSBuild.Sdk.SqlProj.Templates/templates/sqlproj/sqlproj.csproj`:
 
 ```xml
