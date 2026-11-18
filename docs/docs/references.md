@@ -149,7 +149,7 @@ Microsoft has released NuGet packages containing the definitions of the `master`
 
 ```xml
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="160.2.8" DacpacName="master" DatabaseVariableLiteralValue="master" />
+    <PackageReference Include="Microsoft.SqlServer.Dacpacs.Master" Version="170.0.4" DacpacName="master" DatabaseVariableLiteralValue="master" />
   </ItemGroup>
 ```
 
