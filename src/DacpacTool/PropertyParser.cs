@@ -38,7 +38,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return deployOptions;
         }
 
-        private static PropertyInfo GetDacDeployOptionsProperty(string propertyName)
+        private static PropertyInfo? GetDacDeployOptionsProperty(string propertyName)
         {
             var property = typeof(DacDeployOptions).GetProperties()
                 .SingleOrDefault(p => string.Equals(p.Name, propertyName, StringComparison.OrdinalIgnoreCase));
@@ -104,7 +104,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             };
         }
 
-        public static void SetDeployProperties(this DacDeployOptions deployOptions, string[] deployProperties, IConsole console = null)
+        public static void SetDeployProperties(this DacDeployOptions deployOptions, string[] deployProperties, IConsole? console = null)
         {
             foreach (var deployProperty in deployProperties.Where(p => string.IsNullOrWhiteSpace(p) == false))
             {
@@ -117,7 +117,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     {
                         ObjectType[] o => string.Join(',', o),
                         DacAzureDatabaseSpecification s => $"{s.Edition},{s.MaximumSize},{s.ServiceObjective}",
-                        _ => propertyValue.ToString()
+                        _ => $"{propertyValue}"
                     };
 
                     console.WriteLine($"Setting property {databaseProperty.Name} to value {parsedValue}");
@@ -125,9 +125,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public static object SetDeployProperty(this DacDeployOptions deployOptions, string name, string value)
+        public static object? SetDeployProperty(this DacDeployOptions deployOptions, string name, string value)
         {
-            object propertyValue;
+            object? propertyValue;
             var property = GetDacDeployOptionsProperty(name);
 
             if (property == null)
@@ -164,9 +164,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return propertyValue;
         }
 
-        private static object StringToTypedValue(string stringValue, Type targetType)
+        private static object? StringToTypedValue(string stringValue, Type targetType)
         {
-            object result = null;
+            object? result = null;
 
             var converter = TypeDescriptor.GetConverter(targetType);
 

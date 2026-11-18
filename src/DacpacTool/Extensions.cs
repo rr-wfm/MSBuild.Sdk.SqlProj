@@ -13,9 +13,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public static class Extensions
 #pragma warning restore CA1724 // Type names should not match namespaces
     {
-        static Type CustomSchemaDataType;
+        static Type CustomSchemaDataType = null!;
 
-        static MethodInfo SetMetadataMethod;
+        static MethodInfo SetMetadataMethod = null!;
         private static readonly Regex ExternalPartsRegex = new Regex(@"dbl=(?<dbl>\w+)|dbv=(?<dbv>\w+)|srv=(?<srv>\w+)", 
             RegexOptions.CultureInvariant | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
@@ -49,7 +49,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             SetMetadataMethod = setMetadataMethod;
         }
 
-        public static string Format(this BatchErrorEventArgs args, string source)
+        public static string Format(this BatchErrorEventArgs args, string? source)
         {
             ArgumentNullException.ThrowIfNull(args);
 
@@ -77,7 +77,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return outputMessageBuilder.ToString();
         }
 
-        public static string Format(this BatchParserExecutionErrorEventArgs args, string source)
+        public static string Format(this BatchParserExecutionErrorEventArgs args, string? source)
         {
             ArgumentNullException.ThrowIfNull(args);
 
@@ -137,7 +137,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return stringBuilder.ToString().Trim();
         }
 
-        public static string GetPreDeploymentScript(this DacPackage package)
+        public static string? GetPreDeploymentScript(this DacPackage package)
         {
             ArgumentNullException.ThrowIfNull(package);
 
@@ -151,7 +151,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return streamReader.ReadToEnd();
         }
 
-        public static string GetPrePlanScript(this DacPackage package)
+        public static string? GetPrePlanScript(this DacPackage package)
         {
             ArgumentNullException.ThrowIfNull(package);
 
@@ -165,7 +165,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return streamReader.ReadToEnd();
         }
 
-        public static string GetPostDeploymentScript(this DacPackage package)
+        public static string? GetPostDeploymentScript(this DacPackage package)
         {
             ArgumentNullException.ThrowIfNull(package);
 
@@ -179,7 +179,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             return streamReader.ReadToEnd();
         }
 
-        public static void AddReference(this TSqlModel model, string referencePath, string externalParts, bool suppressErrorsForMissingDependencies)
+        public static void AddReference(this TSqlModel model, string referencePath, string? externalParts, bool suppressErrorsForMissingDependencies)
         {
             ArgumentNullException.ThrowIfNull(model);
             ArgumentNullException.ThrowIfNull(referencePath);
@@ -212,16 +212,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             AddCustomData(dataSchemaModel, customData);
         }
 
-        private static string ParseExternalParts(string externalParts)
+        private static string? ParseExternalParts(string externalParts)
         {
             return ParseExternalParts(externalParts, ExternalPartsRegex);
         }
 
-        private static string ParseExternalParts(string externalParts, Regex externalPartsRegex)
+        private static string? ParseExternalParts(string externalParts, Regex externalPartsRegex)
         {
-            string serverVariableName = null;
-            string databaseVariableName = null;
-            string databaseVariableLiteralValue = null;
+            string? serverVariableName = null;
+            string? databaseVariableName = null;
+            string? databaseVariableLiteralValue = null;
 
             // If there are '=' sign in argument assumes that this is formula, else assume that a single value passed and that it is database literal.
             if (externalParts.Contains('=', StringComparison.Ordinal))
@@ -274,7 +274,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         /// <summary>
         /// Cached method info for FileUtils.EnsureIsDelimited
         /// </summary>
-        private static MethodInfo _ensureIsDelimitedMethod;
+        private static MethodInfo? _ensureIsDelimitedMethod;
         /// <summary>
         /// This method found in Microsoft.Data.Tools.Utilities in class FileUtils. because of it is internal we do call through Reflection
         /// </summary>
@@ -298,7 +298,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("Unable to find EnsureIsDelimited method in Microsoft.Data.Tools.Utilities assembly.");
             }
 
-            return (string)_ensureIsDelimitedMethod.Invoke(null, new object[]{ name });
+            return (string)_ensureIsDelimitedMethod.Invoke(null, new object[]{ name })!;
         }
 
         public static IEnumerable<string> GetReferencedDacPackages(this TSqlModel model)
@@ -315,14 +315,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 throw new InvalidOperationException("Unable to find GetCustomData method on DataSchemaModel.");
             }
 
-            var references = (IEnumerable) getCustomDataMethod.Invoke(dataSchemaModel, new object[] { "Reference", "SqlSchema" });
+            var references = (IEnumerable?) getCustomDataMethod.Invoke(dataSchemaModel, new object[] { "Reference", "SqlSchema" });
 
             if (references == null)
             {
                 return result;
             }
 
-            MethodInfo getMetadataMethod = null;
+            MethodInfo? getMetadataMethod = null;
             foreach (var reference in references)
             {
                 if (getMetadataMethod == null)
@@ -335,7 +335,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     throw new InvalidOperationException("Unable to find GetMetadata method on reference.");
                 }
 
-                var fileName = (string)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
+                var fileName = (string?)getMetadataMethod.Invoke(reference, new object[] { "FileName" });
                 if (!string.IsNullOrEmpty(fileName))
                 {
                     result.Add(fileName);
@@ -408,7 +408,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             var result = new List<ModelValidationError>();
-            PropertyInfo documentProperty = null;
+            PropertyInfo? documentProperty = null;
             foreach (var modelValidationError in modelValidationErrors)
             {
                 if (documentProperty == null)
@@ -421,7 +421,8 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     throw new InvalidOperationException("Unable to find Document property on model validation error.");
                 }
 
-                var dacModelError = createDacModelErrorMethod.Invoke(service, new[] { modelValidationError }) as DacModelError;
+                var dacModelError = createDacModelErrorMethod.Invoke(service, new[] { modelValidationError }) as DacModelError
+                    ?? throw new InvalidOperationException("Unable to create DacModelError for model validation error.");
                 result.Add(new ModelValidationError(dacModelError, documentProperty.GetValue(modelValidationError) as string));
             }
 

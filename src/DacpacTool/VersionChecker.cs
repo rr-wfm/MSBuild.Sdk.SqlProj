@@ -32,7 +32,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
                 var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt");
 
-                NuGetVersion latestVersion = null;
+                NuGetVersion? latestVersion = null;
 
                 if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) > DateTime.UtcNow.AddDays(-7))
                 {

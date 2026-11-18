@@ -17,7 +17,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         private readonly int _errorCode;
         private readonly string _message;
 
-        public ModelValidationError(DacModelError modelError, string sourceName)
+        public ModelValidationError(DacModelError modelError, string? sourceName)
         {
             modelError = modelError ?? throw new ArgumentNullException(nameof(modelError));
             _sourceName = string.IsNullOrEmpty(sourceName) ? 

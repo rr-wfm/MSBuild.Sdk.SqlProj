@@ -2,7 +2,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public class ActualConsole : IConsole
     {
-        public string ReadLine()
+        public string? ReadLine()
         {
             return Console.ReadLine();
         }

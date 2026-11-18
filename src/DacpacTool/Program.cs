@@ -146,6 +146,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Save the package to disk
+            ArgumentNullException.ThrowIfNull(options.Output);
             packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
             // Add pre-plan, predeployment, and postdeployment scripts and set the ProjectGuid in Origin.xml
