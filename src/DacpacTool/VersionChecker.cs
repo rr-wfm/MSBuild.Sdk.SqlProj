@@ -1,66 +1,57 @@
-﻿using System.Diagnostics;
-using System.Net.Http.Json;
+﻿#nullable enable
+
+using System.Diagnostics;
 using NuGet.Versioning;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
-
     public class VersionChecker
     {
         private readonly IConsole _console;
         private readonly IVersionProvider _versionProvider;
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-        private sealed record Release(string tag_name);
-#pragma warning restore CA1812
+        private readonly Func<CancellationToken, Task<string?>> _getLatestReleaseTagAsync;
+        private readonly string _cacheFile;
 
         public VersionChecker(IConsole console, IVersionProvider versionProvider)
+            : this(console, versionProvider, GitHubReleaseTagSource.GetLatestTagAsync,
+                Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt"))
         {
-            _versionProvider = versionProvider;
+        }
+
+        internal VersionChecker(IConsole console, IVersionProvider versionProvider,
+            Func<CancellationToken, Task<string?>> getLatestReleaseTagAsync, string cacheFile)
+        {
             _console = console;
+            _versionProvider = versionProvider;
+            _getLatestReleaseTagAsync = getLatestReleaseTagAsync;
+            _cacheFile = cacheFile;
         }
 
         public async Task CheckForPackageUpdateAsync()
         {
-            var fileVersion = FileVersionInfo.GetVersionInfo(typeof(Microsoft.SqlServer.Dac.DacPackage).Assembly.Location).FileVersion; 
+            var fileVersion = FileVersionInfo.GetVersionInfo(typeof(Microsoft.SqlServer.Dac.DacPackage).Assembly.Location).FileVersion;
             Console.WriteLine($"Using DacFX version: {fileVersion}");
 
             try
             {
-                var timeout = TimeSpan.FromSeconds(2);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                NuGetVersion latestVersion;
 
-                using var cts = new CancellationTokenSource(timeout);
-
-                var cacheFile = Path.Join(Path.GetTempPath(), "MSBuild.Sdk.SqlProj.tag.txt");
-
-                NuGetVersion latestVersion = null;
-
-                if (File.Exists(cacheFile) && File.GetLastWriteTimeUtc(cacheFile) > DateTime.UtcNow.AddDays(-7))
+                if (File.Exists(_cacheFile) && File.GetLastWriteTimeUtc(_cacheFile) > DateTime.UtcNow.AddDays(-7))
                 {
-                    var cache = await File.ReadAllTextAsync(cacheFile, cts.Token).ConfigureAwait(false);
+                    var cache = await File.ReadAllTextAsync(_cacheFile, cts.Token).ConfigureAwait(false);
                     latestVersion = NuGetVersion.Parse(cache);
                 }
                 else
                 {
-                    using var httpClient = new HttpClient
-                    {
-                        DefaultRequestHeaders = { { "User-Agent", "MSBuild.Sdk.SqlProj" } },
-                        Timeout = timeout,
-                    };
-
-                    var response = await httpClient.GetFromJsonAsync<Release>("https://api.github.com/repos/rr-wfm/MSBuild.Sdk.SqlProj/releases/latest").ConfigureAwait(false);
-                    if (response is null || response.tag_name is null)
+                    var releaseTag = await _getLatestReleaseTagAsync(cts.Token).ConfigureAwait(false);
+                    if (string.IsNullOrWhiteSpace(releaseTag))
                     {
                         return;
                     }
 
-                    latestVersion = NuGetVersion.Parse(response.tag_name.TrimStart('v'));
-
-                    await File.WriteAllTextAsync(cacheFile, latestVersion.ToNormalizedString(), cts.Token).ConfigureAwait(false);
-                }
-
-                if (latestVersion is null)
-                {
-                    return;
+                    latestVersion = NuGetVersion.Parse(releaseTag.TrimStart('v'));
+                    await File.WriteAllTextAsync(_cacheFile, latestVersion.ToNormalizedString(), cts.Token).ConfigureAwait(false);
                 }
 
                 if (latestVersion > _versionProvider.CurrentPackageVersion())
@@ -77,3 +68,4 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
     }
 }
+#nullable restore
