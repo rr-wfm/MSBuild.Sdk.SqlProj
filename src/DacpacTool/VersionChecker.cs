@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public async Task CheckForPackageUpdateAsync()
         {
             var fileVersion = FileVersionInfo.GetVersionInfo(typeof(Microsoft.SqlServer.Dac.DacPackage).Assembly.Location).FileVersion;
-            _console.WriteLine($"Using DacFX version: {fileVersion}");
+            Console.WriteLine($"Using DacFX version: {fileVersion}");
 
             try
             {
