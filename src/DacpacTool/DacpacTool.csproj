@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.8" />
     <PackageReference Include="Microsoft.SqlServer.DacFx" Version="170.5.96" />
     <PackageReference Include="NuGet.Versioning" Version="8.0.0" />
-    <PackageReference Include="DotMake.CommandLine" Version="3.7.0" />
+    <PackageReference Include="DotMake.CommandLine" Version="3.8.0" />
   </ItemGroup>
 
   <!-- References to Microsoft.SqlTools.ManagedBatchParser -->
