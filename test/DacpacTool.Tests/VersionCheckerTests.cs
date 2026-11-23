@@ -63,6 +63,26 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         }
 
         [TestMethod]
+        public async Task ReplacesFreshInvalidCacheWithNormalizedReleaseVersion()
+        {
+            File.WriteAllText(CacheFile, "not-a-version");
+            File.SetLastWriteTimeUtc(CacheFile, DateTime.UtcNow);
+            var lookups = 0;
+            var checker = new VersionChecker(_console, new VersionProvider("1.17.0"), _ =>
+            {
+                lookups++;
+                return Task.FromResult<string?>("v9.8.7.0");
+            }, CacheFile);
+
+            await checker.CheckForPackageUpdateAsync();
+
+            lookups.ShouldBe(1);
+            File.ReadAllText(CacheFile).ShouldBe("9.8.7");
+            _console.Lines.Count.ShouldBe(1);
+            _console.Lines[0].ShouldStartWith("DacpacTool warning SQLPROJ0002:");
+        }
+
+        [TestMethod]
         [DataRow("9.8.7+build")]
         [DataRow("9.8.8")]
         public async Task DoesNotWarnWhenInstalledVersionIsCurrentOrNewer(string installedVersion)
