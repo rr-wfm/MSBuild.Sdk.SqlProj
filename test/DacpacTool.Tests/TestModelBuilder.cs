@@ -28,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             return this;
         }
 
-        public TestModelBuilder AddStoredProcedure(string procName, string body, string fileName = null)
+        public TestModelBuilder AddStoredProcedure(string procName, string body, string? fileName = null)
         {
             var procDefinition = $"CREATE PROCEDURE [{procName}] AS BEGIN {body} END";
             if (!string.IsNullOrEmpty(fileName))

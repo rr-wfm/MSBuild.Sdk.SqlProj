@@ -418,7 +418,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 new[] { typeof(string), typeof(SqlError), typeof(TextSpan), typeof(Exception) },
                 null);
 
-            var args = (BatchErrorEventArgs)constructor!.Invoke(new object[] { message, error, CreateTextSpan(startIndex), null });
+            var args = (BatchErrorEventArgs)constructor!.Invoke(new object?[] { message, error, CreateTextSpan(startIndex), null });
             SetField(args, "line", line);
             return args;
         }
@@ -435,7 +435,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
                 },
                 null);
 
-            return (SqlError)constructor!.Invoke(new object[] { number, (byte)0, (byte)0, "server", message, "proc", 1, null });
+            return (SqlError)constructor!.Invoke(new object?[] { number, (byte)0, (byte)0, "server", message, "proc", 1, null });
         }
 
         private static void SetField(object target, string fieldName, object value)
@@ -453,7 +453,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             target = (T)boxed;
         }
 
-        private static FieldInfo FindField(Type type, string fieldName)
+        private static FieldInfo? FindField(Type? type, string fieldName)
         {
             while (type != null)
             {
