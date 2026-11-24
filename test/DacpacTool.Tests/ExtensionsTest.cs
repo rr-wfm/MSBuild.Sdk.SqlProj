@@ -286,9 +286,9 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
 
             using var package = DacPackage.Load(tempFile.FullName);
 
-            package.GetPrePlanScript().ShouldMatch(@"PRINT N'Pre plan'[\r\n]*PRINT N'Pre-plan include'[\r\n]*GO[\r\n]*");
-            package.GetPreDeploymentScript().ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*GO[\r\n]*");
-            var postDeploymentScript = package.GetPostDeploymentScript();
+            package.GetPrePlanScript()!.ShouldMatch(@"PRINT N'Pre plan'[\r\n]*PRINT N'Pre-plan include'[\r\n]*GO[\r\n]*");
+            package.GetPreDeploymentScript()!.ShouldMatch(@"PRINT N'Pre deploy'[\r\n]*PRINT N'Script1.sql'[\r\n]*GO[\r\n]*");
+            var postDeploymentScript = package.GetPostDeploymentScript()!;
             postDeploymentScript.ShouldContain("PRINT 'Inserting record into MyTable'");
             postDeploymentScript.ShouldContain("ALTER ROLE db_datareader ADD MEMBER [DbReader];");
             postDeploymentScript.ShouldEndWith($"{Environment.NewLine}GO{Environment.NewLine}");

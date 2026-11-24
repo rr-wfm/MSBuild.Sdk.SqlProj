@@ -7,13 +7,13 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public class InspectOptions : BaseOptions
     {
         [CliOption(Description = "Filename of optional pre-deployment script", Name = "--predeploy", Required = false)]
-        public FileInfo PreDeploy { get; set; }
+        public FileInfo? PreDeploy { get; set; }
 
         [CliOption(Description = "Filename of optional pre-plan script", Name = "--preplan", Required = false)]
-        public FileInfo PrePlan { get; set; }
+        public FileInfo? PrePlan { get; set; }
         
         [CliOption(Description = "Filename of optional post-deployment script", Name = "--postdeploy", Required = false)]
-        public FileInfo PostDeploy { get; set; }
+        public FileInfo? PostDeploy { get; set; }
         
         public int Run()
         {

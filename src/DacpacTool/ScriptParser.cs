@@ -28,7 +28,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                 }
                 catch (BatchParserException ex)
                 {
-                    string mostRecentFile = _includedFileNames.LastOrDefault();
+                    string? mostRecentFile = _includedFileNames.LastOrDefault();
                     throw new InvalidOperationException(
                         mostRecentFile == null ? 
                             ex.Message : 

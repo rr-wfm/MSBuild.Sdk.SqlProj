@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO.Packaging;
 using System.Reflection;
 using System.Text;
@@ -26,7 +27,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _console.WriteLine($"Using SQL Server version {version}");
         }
 
-        public void AddReference(string referenceFile, string externalParts = null, bool suppressErrorsForMissingDependencies = false)
+        public void AddReference(string referenceFile, string? externalParts = null, bool suppressErrorsForMissingDependencies = false)
         {
             // Ensure that the model has been created
             EnsureModelCreated();
@@ -89,7 +90,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void AddOutputArtifacts(FileInfo prePlanScript, FileInfo preDeployScript, FileInfo postDeployScript, Guid? projectGuid, FileInfo outputFile)
+        public void AddOutputArtifacts(FileInfo? prePlanScript, FileInfo? preDeployScript, FileInfo? postDeployScript, Guid? projectGuid, FileInfo outputFile)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
@@ -105,6 +106,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
+        [MemberNotNull(nameof(Model))]
         public bool ValidateModel()
         {
             // Ensure that the model has been created
@@ -161,7 +163,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void SaveToDisk(FileInfo outputFile, PackageOptions packageOptions = null)
+        public void SaveToDisk(FileInfo outputFile, PackageOptions? packageOptions = null)
         {
             ArgumentNullException.ThrowIfNull(outputFile);
 
@@ -182,7 +184,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             DacPackageExtensions.BuildPackage(outputFile.FullName, Model, Metadata, packageOptions ?? new PackageOptions { });
         }
 
-        public void SetMetadata(string name, string version)
+        public void SetMetadata(string name, string? version)
         {
             Metadata = new PackageMetadata
             {
@@ -276,7 +278,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
                     _ => throw new ArgumentException($"Unknown property with name {key}", nameof(key))
                 };
 
-                PropertyInfo property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+                PropertyInfo? property = typeof(TSqlModelOptions).GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
 
                 if (property == null)
                 {
@@ -313,10 +315,11 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         }
 
         public TSqlModelOptions Options { get; } = new TSqlModelOptions();
-        public TSqlModel Model { get; private set; }
+        public TSqlModel? Model { get; private set; }
 
-        public PackageMetadata Metadata { get; private set; }
+        public PackageMetadata? Metadata { get; private set; }
 
+        [MemberNotNull(nameof(Model))]
         private void EnsureModelCreated()
         {
             if (Model == null)
@@ -325,6 +328,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
+        [MemberNotNull(nameof(Metadata))]
         private void EnsureMetadataCreated()
         {
             if (Metadata == null)
@@ -341,7 +345,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
         }
 
-        public void AddScript(FileInfo script, Package package, string path)
+        public void AddScript(FileInfo? script, Package package, string path)
         {
             ArgumentNullException.ThrowIfNull(package);
 
@@ -385,7 +389,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             _suppressedWarnings.AddRange(ParseSuppressionList(suppressionList));
         }
 
-        public void AddFileWarningsToSuppress(FileInfo inputFile, string suppressionList)
+        public void AddFileWarningsToSuppress(FileInfo inputFile, string? suppressionList)
         {
             ArgumentNullException.ThrowIfNull(inputFile);
 
@@ -404,7 +408,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
         }
 
-        private static List<int> ParseSuppressionList(string suppressionList)
+        private static List<int> ParseSuppressionList(string? suppressionList)
         {
             var result = new List<int>();
             if (!string.IsNullOrEmpty(suppressionList))

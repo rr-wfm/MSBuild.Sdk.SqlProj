@@ -37,20 +37,17 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             packageBuilder.SetMetadata(options.Name, options.Version);
 
             // Set properties on the model (if defined)
-            if (options.BuildProperty != null)
+            foreach (var propertyValue in options.BuildProperty)
             {
-                foreach (var propertyValue in options.BuildProperty)
+                string[] keyValuePair = propertyValue.Split('=', 2);
+                try
                 {
-                    string[] keyValuePair = propertyValue.Split('=', 2);
-                    try
-                    {
-                        packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        Console.WriteLine($"ERROR: {ex.Message}");
-                        return 1;
-                    }
+                    packageBuilder.SetProperty(keyValuePair[0], keyValuePair[1]);
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine($"ERROR: {ex.Message}");
+                    return 1;
                 }
             }
 
@@ -58,33 +55,30 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             packageBuilder.UsingVersion(options.SqlServerVersion);
 
             // Add references to the model
-            if (options.Reference != null)
+            foreach (var reference in options.Reference)
             {
-                foreach (var reference in options.Reference)
+                string[] referenceDetails = reference.Split(';', 3, StringSplitOptions.RemoveEmptyEntries);
+                if (referenceDetails.Length == 1)
                 {
-                    string[] referenceDetails = reference.Split(';', 3, StringSplitOptions.RemoveEmptyEntries);
-                    if (referenceDetails.Length == 1)
+                    packageBuilder.AddReference(referenceDetails[0]);
+                }
+                if (referenceDetails.Length == 2)
+                {
+                    packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
+                }
+                else
+                {
+                    if (!bool.TryParse(referenceDetails[2], out bool suppressErrorsForMissingDependencies))
                     {
-                        packageBuilder.AddReference(referenceDetails[0]);
+                        throw new ArgumentException(
+                            $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
                     }
-                    if (referenceDetails.Length == 2)
-                    {
-                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1]);
-                    }
-                    else
-                    {
-                        if (!bool.TryParse(referenceDetails[2], out bool suppressErrorsForMissingDependencies))
-                        {
-                            throw new ArgumentException(
-                                $"Invalid Option for SuppressMissingDependenciesErrors on {referenceDetails[0]}, must be True/False");
-                        }
-                        packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
-                    }
+                    packageBuilder.AddReference(referenceDetails[0], referenceDetails[1], suppressErrorsForMissingDependencies);
                 }
             }
 
             // Add SqlCmdVariables to the package (if defined)
-            if (options.SqlCmdVar != null)
+            if (options.SqlCmdVar.Length > 0)
             {
                 packageBuilder.AddSqlCmdVariables(options.SqlCmdVar);
             }
@@ -146,6 +140,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             }
 
             // Save the package to disk
+            ArgumentNullException.ThrowIfNull(options.Output);
             packageBuilder.SaveToDisk(options.Output, new PackageOptions() { RefactorLogPath = options.RefactorLog?.FullName });
 
             // Add pre-plan, predeployment, and postdeployment scripts and set the ProjectGuid in Origin.xml
@@ -174,7 +169,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var analyzer = new PackageAnalyzer(new ActualConsole(), options.CodeAnalysisRules);
 
-                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies ?? Array.Empty<FileInfo>());
+                analyzer.Analyze(packageBuilder.Model, options.Output, options.CodeAnalysisAssemblies);
             }
 
             if (options.GenerateErDiagram)
@@ -224,20 +219,14 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
             {
                 var deployer = new PackageDeployer(new ActualConsole());
 
-                if (options.Property != null)
-                {
-                    deployer.SetDeployProperties(options.Property);
-                }
+                deployer.SetDeployProperties(options.Property);
 
                 deployer.UseEncrypt(options.Encrypt);
 
-                if (options.SqlCmdVar != null)
+                foreach (var sqlCmdVar in options.SqlCmdVar)
                 {
-                    foreach (var sqlCmdVar in options.SqlCmdVar)
-                    {
-                        string[] keyValuePair = sqlCmdVar.Split('=', 2);
-                        deployer.SetSqlCmdVariable(keyValuePair[0], keyValuePair[1]);
-                    }
+                    string[] keyValuePair = sqlCmdVar.Split('=', 2);
+                    deployer.SetSqlCmdVariable(keyValuePair[0], keyValuePair[1]);
                 }
 
                 if (options.TargetPort.HasValue)

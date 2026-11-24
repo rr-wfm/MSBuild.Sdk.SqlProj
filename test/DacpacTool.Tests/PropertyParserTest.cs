@@ -12,7 +12,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithBooleanProperties_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[]
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[]
             {
                 "CreateNewDatabase=True",
                 "IgnoreAuthorizer=True"
@@ -30,7 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithIntegerProperty_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=200" } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { "CommandTimeout=200" } };
 
             // Act
             var deployOptions = buildOptions.ExtractDeployOptions();
@@ -45,6 +45,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             // Arrange
             var buildOptions = new BuildOptions
             {
+                Name = "MyPackage",
                 DeployProperty = new[]
                 {
                     "createNewDatabase=True",
@@ -68,7 +69,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithObjectTypesProperties_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[]
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[]
             {
                 $"ExcludeObjectTypes={ObjectType.Audits},{ObjectType.Endpoints},{ObjectType.Queues}",
                 $"DoNotDropObjectTypes={ObjectType.Certificates},{ObjectType.Contracts}"
@@ -94,7 +95,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithIncorrectObjectTypesProperty_ShouldThrowException(string property)
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
@@ -107,7 +108,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithDacAzureDatabaseSpecificationProperty_ShouldParse()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={DacAzureEdition.DataWarehouse},20,S3" } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { $"DatabaseSpecification={DacAzureEdition.DataWarehouse},20,S3" } };
 
             // Act
             var deployOptions = buildOptions.ExtractDeployOptions();
@@ -127,7 +128,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithIncorrectDacAzureDatabaseSpecificationProperty_ShouldThrowException(string propertyValue, string exceptionMessage)
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { $"DatabaseSpecification={propertyValue}" } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
@@ -140,7 +141,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithIncorrectIntegerProperty_ShouldThrowException()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { "CommandTimeout=WrongValue" } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { "CommandTimeout=WrongValue" } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
@@ -153,7 +154,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithIncorrectBooleanProperty_ShouldThrowException()
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { "CreateNewDatabase=WrongValue" } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { "CreateNewDatabase=WrongValue" } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
@@ -169,7 +170,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithWronglyFormattedOrhUnknownProperty_ShouldThrowException(string property, Type exceptionType)
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
@@ -185,7 +186,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
         public void ExtractDeployOptions_WithNullOrEmptyProperty_ShouldNotThrowException(string property)
         {
             // Arrange
-            var buildOptions = new BuildOptions { DeployProperty = new[] { property } };
+            var buildOptions = new BuildOptions { Name = "MyPackage", DeployProperty = new[] { property } };
 
             // Act
             Action action = () => buildOptions.ExtractDeployOptions();
