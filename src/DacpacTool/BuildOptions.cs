@@ -9,7 +9,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
     public class BuildOptions : BaseOptions
     {
         [CliOption(Description = "Name of the package", Required = true, Name = "--name", Alias = "-n")]
-        public string Name { get; set; } = null!;
+        public required string Name { get; set; }
         
         [CliOption(Description = "Version of the package", Required = false, Name = "--version", Alias = "-v")]
         public string? Version { get; set; }
@@ -24,16 +24,16 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public FileInfo? InputFile { get; set; }
         
         [CliOption(Description = "Reference(s) to include", Required = false, Name = "--reference", Alias = "-r")]
-        public string[]? Reference { get; set; }
+        public string[] Reference { get; set; } = [];
         
         [CliOption(Description = "Build properties to be set on the model", Name = "--buildproperty", Required = false, Alias = "-bp")]
-        public string[]? BuildProperty { get; set; }
+        public string[] BuildProperty { get; set; } = [];
         
         [CliOption(Description = "Deploy properties to be set for the create script", Name = "--deployproperty", Required = false, Alias = "-dp")]
-        public string[]? DeployProperty { get; set; }
+        public string[] DeployProperty { get; set; } = [];
         
         [CliOption(Description = "SqlCmdVariable(s) to include", Name = "--sqlcmdvar", Required = false, Alias = "-sc")]
-        public string[]? SqlCmdVar { get; set; }
+        public string[] SqlCmdVar { get; set; } = [];
         
         [CliOption(Description = "Filename of optional pre-deployment script", Name = "--predeploy", Required = false)]
         public FileInfo? PreDeploy { get; set; }
@@ -54,7 +54,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public string? CodeAnalysisRules { get; set; }
         
         [CliOption(Description = "Custom code analysis rule assemblies to use", Name = "--codeanalysisassemblies", Required = false, Alias = "-aa")]
-        public FileInfo[]? CodeAnalysisAssemblies { get; set; }
+        public FileInfo[] CodeAnalysisAssemblies { get; set; } = [];
         
         [CliOption(Description = "Treat T-SQL Warnings As Errors", Name = "--warnaserror", Required = false)]
         public bool WarnAsError { get; set; }
@@ -75,7 +75,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
         public bool GenerateErDiagram { get; set; }
 
         [CliOption(Description = "JSON config file for ER diagram generation", Name = "--erdiagramconfig", Required = false, Alias = "-edc")]
-        public FileInfo[]? ErDiagramConfig { get; set; }
+        public FileInfo[] ErDiagramConfig { get; set; } = [];
 
         [CliOption(Description = "Optional ProjectGuid", Name = "--projectguid", Required = false, Alias = "-pg")]
         public string? ProjectGuid { get; set; }

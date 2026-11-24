@@ -30,10 +30,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool
 
             var deployOptions = new DacDeployOptions();
 
-            if (options.DeployProperty != null)
-            {
-                deployOptions.SetDeployProperties(options.DeployProperty);
-            }
+            deployOptions.SetDeployProperties(options.DeployProperty);
 
             return deployOptions;
         }

@@ -862,7 +862,7 @@ namespace MSBuild.Sdk.SqlProj.DacpacTool.Tests
             packageBuilder.SetMetadata(null, "1.0.0.0");
             packageBuilder.ValidateModel();
 
-            var buildOptions = new BuildOptions();
+            var buildOptions = new BuildOptions { Name = "MyPackage" };
             buildOptions.Output = tempFile;
 
             // Act
