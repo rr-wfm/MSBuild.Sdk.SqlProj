@@ -117,8 +117,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
   <!--
-    Locates the single net8.0 tool payload. The tool's runtime configuration allows minor and major roll-forward
-    so a newer runtime can run the tool when .NET 8 is not installed.
+    Locates the single net10.0 tool payload. The tool's runtime configuration allows minor and major roll-forward
+    so a newer runtime can run the tool when .NET 10 is not installed.
   -->
   <Target Name="ValidateEnvironment">
     <PropertyGroup>
