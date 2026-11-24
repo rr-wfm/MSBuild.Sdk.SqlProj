@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
 using Microsoft.SqlServer.Dac.Model;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model;

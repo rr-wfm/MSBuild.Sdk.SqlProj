@@ -68,7 +68,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
 
                 if (!CanRunProcess("mmdc", "-h"))
                 {
-                    Assert.Inconclusive("Mermaid CLI was not found on PATH. Install `mmdc` to enable parser validation.");
+                    SkipUnlessMermaidCliRequired("Mermaid CLI was not found on PATH. Install `mmdc` to enable parser validation.");
                 }
 
                 foreach (var diagramFile in GeneratedDiagramFiles)
@@ -86,7 +86,7 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
                         var render = RunProcess("mmdc", $"-p \"{puppeteerConfigPath}\" -i \"{mermaidSourcePath}\" -o \"{outputPath}\"");
                         if (IsMermaidCliEnvironmentFailure(render))
                         {
-                            Assert.Inconclusive("Mermaid CLI is installed, but the browser runtime could not start in this environment.");
+                            SkipUnlessMermaidCliRequired("Mermaid CLI is installed, but the browser runtime could not start in this environment." + Environment.NewLine + render.Output);
                         }
 
                         render.ExitCode.ShouldBe(0, render.Output);
@@ -176,6 +176,19 @@ namespace MSBuild.Sdk.SqlProj.IntegrationTests
             {
                 return false;
             }
+        }
+
+        // CI sets this so that the Mermaid checks fail there instead of being skipped when mmdc is missing or can't start
+        private const string RequireMermaidCliVariable = "SQLPROJ_REQUIRE_MERMAID_CLI";
+
+        private static void SkipUnlessMermaidCliRequired(string message)
+        {
+            if (string.Equals(Environment.GetEnvironmentVariable(RequireMermaidCliVariable), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.Fail($"{message} {RequireMermaidCliVariable} is set, so the Mermaid checks must run.");
+            }
+
+            Assert.Inconclusive(message);
         }
 
         private static bool IsMermaidCliEnvironmentFailure((int ExitCode, string Output) result)

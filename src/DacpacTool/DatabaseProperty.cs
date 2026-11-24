@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+﻿namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     internal sealed class DatabaseProperty
     {

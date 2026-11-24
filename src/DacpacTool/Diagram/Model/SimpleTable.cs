@@ -1,7 +1,5 @@
 ﻿#nullable enable
 
-using System.Collections.Generic;
-
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model
 {
     public class SimpleTable

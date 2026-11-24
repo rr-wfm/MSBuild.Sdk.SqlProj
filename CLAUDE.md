@@ -8,7 +8,7 @@ An MSBuild SDK (`MSBuild.Sdk.SqlProj`) that compiles SDK-style .NET projects of 
 
 ## Three-project layout
 
-- `src/DacpacTool` — .NET CLI (`net8.0`) that builds, inspects, and deploys dacpacs. Uses `Microsoft.SqlServer.DacFx`, `Microsoft.SqlServer.SqlManagementObjects`, and `DotMake.CommandLine`. Subcommands: `build`, `collect-includes`, `deploy` (see `Program.cs` and the `*Options.cs` files).
+- `src/DacpacTool` — .NET CLI (`net10.0`) that builds, inspects, and deploys dacpacs. Uses `Microsoft.SqlServer.DacFx`, `Microsoft.SqlServer.SqlManagementObjects`, and `DotMake.CommandLine`. Subcommands: `build`, `collect-includes`, `deploy` (see `Program.cs` and the `*Options.cs` files).
 - `src/MSBuild.Sdk.SqlProj` — the NuGet SDK package. The packaging-only `MSBuild.Sdk.SqlProj.msbuildproj` uses `Microsoft.Build.NoTargets` (which imports `Microsoft.NET.Sdk`) with package metadata and file mappings declared in the project, without a custom `.nuspec`. A build-only project reference restores and builds the CLI; a post-Build `MSBuild` task (`IncludeDacpacTool`) publishes it into `tools/DacpacTool/`. Only that tool directory is packaged alongside `Sdk/Sdk.props` and `Sdk/Sdk.targets`. Tool files are collected at pack time so newly published files are included.
 - `src/MSBuild.Sdk.SqlProj.Templates` — `dotnet new` templates. The packaging-only `MSBuild.Sdk.SqlProj.Templates.msbuildproj` uses `Microsoft.Build.NoTargets` with package metadata and `content` file mappings declared in the project, without a custom `.nuspec`.
 
@@ -16,7 +16,7 @@ An MSBuild SDK (`MSBuild.Sdk.SqlProj`) that compiles SDK-style .NET projects of 
 
 When a consumer project uses this SDK, `Sdk.targets` does the following — important when changing build behavior:
 
-1. **`ValidateEnvironment`** locates the single `net8.0` DacpacTool payload independently of the SDK in use. The CLI project sets `RollForward=Major`, which is written into its runtime configuration and supports .NET 8/9/10 without separate payloads or command-line roll-forward flags. `DacpacToolExe` can be overridden via `-p:DacpacToolExe=...` (used by tests).
+1. **`ValidateEnvironment`** locates the single `net10.0` DacpacTool payload independently of the SDK in use. The .NET 10 runtime is required; the CLI project's `RollForward=Major` runtime configuration also allows later runtimes without separate payloads or command-line roll-forward flags. `DacpacToolExe` can be overridden via `-p:DacpacToolExe=...` (used by tests).
 2. **`ResolveDatabaseReferences`** turns each `<PackageReference>` into a dacpac path by reading the auto-generated `Pkg<package-id>` property (dots → underscores). Falls back to `$(NuGetPackageRoot)/<id>/<version>` if that property isn't set. Project references resolve from `_ResolvedProjectReferencePaths`. This is the first place to look for reference-resolution bugs.
 3. **`CoreCompile`** writes `$(MSBuildProjectName).InputFiles.txt` and `WarningsSuppression.txt` to `obj/`, then shells out to `dotnet DacpacTool.dll build` with a long argument list. Inputs include `@(Content)`, pre/post-deploy scripts, refactor log, and the list of `--include`-resolved files from a prior `collect-includes` invocation (`GetIncludedFiles` target).
 4. **`PublishDatabase`** invokes the CLI's `deploy` subcommand. `Publish` from inside Visual Studio chains this; from CLI you call `/t:PublishDatabase` explicitly.
@@ -44,7 +44,7 @@ dotnet build ./test/TestProject/TestProject.csproj -c Release
 dotnet pack -c Release ./src/MSBuild.Sdk.SqlProj/MSBuild.Sdk.SqlProj.msbuildproj
 ```
 
-CI (`.github/workflows/main.yml`) runs the above sequence, then a matrix across Ubuntu/macOS/Windows × .NET 8/9/10 building `TestProjectWithSDKRef` against the packed SDK, then three deploy jobs (`deploy-sqlpackage`, `deploy-publish`, `deploy-container`) against `mcr.microsoft.com/mssql/server:2022-latest`. Publishing to NuGet only fires for `release/*` branches.
+CI (`.github/workflows/main.yml`) runs the above sequence, then a matrix across Ubuntu/macOS/Windows × .NET 10/11 building `TestProjectWithSDKRef` against the packed SDK, then three deploy jobs (`deploy-sqlpackage`, `deploy-publish`, `deploy-container`) against `mcr.microsoft.com/mssql/server:2022-latest`. Publishing to NuGet only fires for `release/*` branches.
 
 ## Iterating on changes locally
 

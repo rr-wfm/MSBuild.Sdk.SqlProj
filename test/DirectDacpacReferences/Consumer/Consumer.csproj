@@ -12,7 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Match the SQL project template's analyzer package and asset settings. -->
-    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.4">
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.1.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

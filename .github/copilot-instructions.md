@@ -38,7 +38,7 @@ Run from the repository root.
 
 ## CI alignment
 - Primary CI workflow: `./.github/workflows/main.yml`.
-- CI runs across Ubuntu/macOS/Windows and .NET 8/9/10 for SDK reference scenarios.
+- CI runs across Ubuntu/macOS/Windows and .NET 10/11 for SDK reference scenarios.
 - CI also validates deployment flows using SQL Server containers (`deploy-sqlpackage`, `deploy-publish`, `deploy-container`).
 - Keep local validation focused first; use workflow logs to debug matrix/platform-specific failures.
 

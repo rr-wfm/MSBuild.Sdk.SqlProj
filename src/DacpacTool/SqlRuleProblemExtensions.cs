@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Microsoft.SqlServer.Dac.CodeAnalysis;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
-namespace MSBuild.Sdk.SqlProj.DacpacTool
+﻿namespace MSBuild.Sdk.SqlProj.DacpacTool
 {
     public sealed class ScriptInspector
     {

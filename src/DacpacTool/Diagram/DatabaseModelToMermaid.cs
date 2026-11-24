@@ -1,8 +1,5 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using MSBuild.Sdk.SqlProj.DacpacTool.Diagram.Model;
 
 namespace MSBuild.Sdk.SqlProj.DacpacTool.Diagram
